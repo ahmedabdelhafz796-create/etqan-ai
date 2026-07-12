@@ -272,6 +272,35 @@ Output
     </ul>
     <a href="https://nowpayments.io/payment/?iid=4794108128" class="btn btn-primary" style="width:100%;">اشترِ دلوقتي</a>
   </div>
+  <div style="border:2px solid #B7791F; border-radius:12px; padding:24px; margin:20px 0; background:#F7F4EE;">
+  <h3 style="color:#1F2937; margin-bottom:12px;">🇹🇷 تحويل بنكي مباشر (تركيا)</h3>
+  <p style="margin-bottom:8px;"><strong>البنك:</strong> Kuveyt Türk</p>
+  <p style="margin-bottom:8px;"><strong>اسم المستفيد:</strong> AHMED HAMDY MOHAMED MAHMOUD ABDELHAFEZ</p>
+  <p style="margin-bottom:8px;"><strong>العملة:</strong> دولار أمريكي (USD)</p>
+  <p style="margin-bottom:16px;"><strong>IBAN:</strong> 
+    <span id="ibanText" style="font-family:monospace; background:#fff; padding:4px 8px; border-radius:4px;">TR030020500009936541700102</span>
+    <button onclick="copyIban()" style="margin-right:8px; padding:4px 12px; background:#B7791F; color:#fff; border:none; border-radius:4px; cursor:pointer;">نسخ</button>
+  </p>
+  <p style="font-size:14px; color:#c0392b; margin-bottom:16px;">
+    ⚠️ تأكد إن التحويل يكون بالدولار الأمريكي (USD) مش الليرة التركية.
+  </p>
+  <p style="font-size:14px; color:#555; margin-bottom:12px;">
+    بعد التحويل، ابعت صورة إيصال التحويل على تليجرام عشان نفعّلك الكورس فورًا.
+  </p>
+  <a href="https://t.me/Ahm_t_AHZ01" target="_blank" 
+     style="display:inline-block; background:#0088cc; color:#fff; padding:10px 24px; 
+     border-radius:8px; text-decoration:none; font-weight:bold;">
+     📩 تواصل عبر تليجرام
+  </a>
+</div>
+
+<script>
+function copyIban() {
+  const text = document.getElementById('ibanText').innerText;
+  navigator.clipboard.writeText(text);
+  alert('تم نسخ رقم الـ IBAN');
+}
+</script>
 </section>
 
 <footer>
