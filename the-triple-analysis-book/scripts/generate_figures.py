@@ -20,14 +20,14 @@ def fig_01_01():
     fig.patch.set_facecolor("white")
 
     items = [
-        ("box", GOLD_LIGHT, GOLD, "Bullish Order Block"),
-        ("box", "#F4A6A6", RED, "Bearish Order Block"),
-        ("box", "#F2D98A", "#B7791F", "Fair Value Gap (FVG)"),
-        ("hline", GREY, None, "Liquidity Level"),
-        ("arrow_solid", NAVY, None, "Break of Structure (BOS)"),
-        ("arrow_dashed", RED, None, "Change of Character (CHOCH)"),
-        ("tri_down", NAVY, None, "Swing High"),
-        ("tri_up", NAVY, None, "Swing Low"),
+        ("box", GOLD_LIGHT, GOLD, "كتلة طلب صعودية (Order Block)"),
+        ("box", "#F4A6A6", RED, "كتلة طلب هبوطية (Order Block)"),
+        ("box", "#F2D98A", "#B7791F", "فجوة القيمة العادلة (FVG)"),
+        ("hline", GREY, None, "مستوى السيولة"),
+        ("arrow_solid", NAVY, None, "كسر الهيكل (BOS)"),
+        ("arrow_dashed", RED, None, "تغيّر الطابع (CHOCH)"),
+        ("tri_down", NAVY, None, "قمة تأرجحية (Swing High)"),
+        ("tri_up", NAVY, None, "قاع تأرجحي (Swing Low)"),
     ]
     y = 9.0
     for kind, c1, c2, label in items:
@@ -56,13 +56,13 @@ def fig_02_01():
     closes = np.concatenate([asian, london])
     o, h, l, c = to_ohlc(closes, seed=11)
     plot_candles(ax, o, h, l, c)
-    hline(ax, h[:18].max(), 0, 17, color=GREY, label="Asian range high")
-    hline(ax, l[:18].min(), 0, 17, color=GREY, label="Asian range low")
-    arrow(ax, (17, h[:18].max()), (20, h[:18].max() + 1.6), color=RED, label="Liquidity sweep")
-    arrow(ax, (20, l[19]), (39, c[-1]), color=NAVY, label="London expansion")
+    hline(ax, h[:18].max(), 0, 17, color=GREY, label="أعلى نطاق الجلسة الآسيوية")
+    hline(ax, l[:18].min(), 0, 17, color=GREY, label="أدنى نطاق الجلسة الآسيوية")
+    arrow(ax, (17, h[:18].max()), (20, h[:18].max() + 1.6), color=RED, label="اكتساح سيولة")
+    arrow(ax, (20, l[19]), (39, c[-1]), color=NAVY, label="توسّع جلسة لندن")
     ax.axvline(18, color=GOLD, linestyle=":", linewidth=1.4)
-    ax.text(9, ax.get_ylim()[1], "Asian session", color=GOLD, fontsize=9, ha="center", va="bottom", fontweight="bold")
-    ax.text(29, ax.get_ylim()[1], "London session", color=GOLD, fontsize=9, ha="center", va="bottom", fontweight="bold")
+    ax.text(9, ax.get_ylim()[1], "الجلسة الآسيوية", color=GOLD, fontsize=9, ha="center", va="bottom", fontweight="bold")
+    ax.text(29, ax.get_ylim()[1], "جلسة لندن", color=GOLD, fontsize=9, ha="center", va="bottom", fontweight="bold")
     set_ylim_pad(ax, list(l) + list(h) + [h[:18].max() + 2.2])
     save(fig, "fig-02-01")
 
@@ -98,9 +98,9 @@ def fig_04_01():
     o, h, l, c = to_ohlc(closes, seed=31)
     plot_candles(ax, o, h, l, c)
     eq_level = min(l[13], l[13 + 10 + 8 - 1])
-    hline(ax, eq_level, 0, 36, color=GREY, label="Equal lows (liquidity)")
-    arrow(ax, (36, l[36] - 0.6), (40, l[36] - 2.2), color=RED, label="Sweep")
-    arrow(ax, (36, l[36] - 2.0), (51, c[-1]), color=NAVY, label="CHOCH → reversal")
+    hline(ax, eq_level, 0, 36, color=GREY, label="قيعان متساوية (سيولة)")
+    arrow(ax, (36, l[36] - 0.6), (40, l[36] - 2.2), color=RED, label="اكتساح")
+    arrow(ax, (36, l[36] - 2.0), (51, c[-1]), color=NAVY, label="CHOCH ثم انعكاس")
     set_ylim_pad(ax, list(l) + list(h) + [eq_level - 2.5])
     save(fig, "fig-04-01")
 
@@ -116,9 +116,9 @@ def fig_05_01():
     plot_candles(ax, o, h, l, c)
     ob_x = 11
     box(ax, ob_x - 0.5, ob_x + 0.5, min(o[ob_x], c[ob_x]) - 0.15, max(o[ob_x], c[ob_x]) + 0.15,
-        color=GOLD_LIGHT, edge=GOLD, label="Bullish Order Block")
+        color=GOLD_LIGHT, edge=GOLD, label="كتلة طلب صعودية (Order Block)")
     arrow(ax, (12, c[12]), (21, c[21] + 1.2), color=NAVY, label="BOS")
-    arrow(ax, (29, l[29] + 0.3), (30, o[ob_x]), color=GOLD, ls="dashed", label="Retest")
+    arrow(ax, (29, l[29] + 0.3), (30, o[ob_x]), color=GOLD, ls="dashed", label="إعادة اختبار")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-05-01")
 
@@ -134,10 +134,10 @@ def fig_05_02():
     plot_candles(ax, o, h, l, c)
     ob_x = 16
     y0, y1 = min(o[ob_x], c[ob_x]) - 0.15, max(o[ob_x], c[ob_x]) + 0.15
-    box(ax, ob_x - 0.6, ob_x + 0.6, y0, y1, color=GOLD_LIGHT, edge=GOLD, label="Bullish OB (broken)")
-    arrow(ax, (18, c[18]), (30, l[30] - 1.4), color=RED, label="Break")
-    arrow(ax, (38, h[38] + 0.3), (41, y0), color=RED, ls="dashed", label="Retest as resistance")
-    ax.text(ob_x, y0 - 1.0, "→ Breaker Block", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    box(ax, ob_x - 0.6, ob_x + 0.6, y0, y1, color=GOLD_LIGHT, edge=GOLD, label="كتلة طلب صعودية مكسورة (OB)")
+    arrow(ax, (18, c[18]), (30, l[30] - 1.4), color=RED, label="كسر")
+    arrow(ax, (38, h[38] + 0.3), (41, y0), color=RED, ls="dashed", label="إعادة اختبار كمقاومة")
+    ax.text(ob_x, y0 - 1.0, "كتلة الكاسر (Breaker Block)", color=RED, fontsize=9.5, ha="center", fontweight="bold")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-05-02")
 
@@ -159,7 +159,7 @@ def fig_06_01():
     box(ax, x1 + 0.3, x3 - 0.3, fvg_low, fvg_high, color="#F2D98A", edge="#B7791F", label="FVG")
     box(ax, 9.5, 10.5, min(o[9], c[9]) - 0.1, max(o[9], c[9]) + 0.1, color=GOLD_LIGHT, edge=GOLD)
     ax.text(10, min(o[9], c[9]) - 1.0, "Order Block", color=GOLD, fontsize=9, ha="center", fontweight="bold")
-    arrow(ax, (33, l[33] + 0.4), (37, fvg_high), color=NAVY, ls="dashed", label="Return to FVG / OB")
+    arrow(ax, (33, l[33] + 0.4), (37, fvg_high), color=NAVY, ls="dashed", label="العودة إلى FVG / OB")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-06-01")
 
@@ -173,9 +173,9 @@ def fig_07_01():
     o, h, l, c = to_ohlc(closes, seed=71)
     plot_candles(ax, o, h, l, c)
     dip_x = 17
-    marker_point(ax, dip_x, l[dip_x] - 0.15, color=RED, label="Inducement (small sweep)", va="top", dy=0.9)
+    marker_point(ax, dip_x, l[dip_x] - 0.15, color=RED, label="استدراج (اكتساح صغير)", va="top", dy=0.9)
     arrow(ax, (dip_x, l[dip_x]), (dip_x + 3, l[dip_x] + 1.5), color=RED, ls="dashed")
-    arrow(ax, (dip_x + 3, l[dip_x] + 1.5), (35, c[-1]), color=NAVY, label="Continuation to main OB / target")
+    arrow(ax, (dip_x + 3, l[dip_x] + 1.5), (35, c[-1]), color=NAVY, label="استمرار نحو الهدف / OB الرئيسية")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-07-01")
 
@@ -192,9 +192,9 @@ def fig_08_01():
     rng = swing_high - swing_low
     disc_top = swing_low + rng * 0.30
     disc_bot = swing_low + rng * 0.15
-    box(ax, 0, 42, disc_bot, disc_top, color="#DDEBDD", edge=GREEN, alpha=0.35, label="Discount zone (70-85% retr.)")
-    hline(ax, swing_high, 0, 42, color=GREY, ls=":", label="Swing High")
-    hline(ax, swing_low, 0, 42, color=GREY, ls=":", label="Swing Low")
+    box(ax, 0, 42, disc_bot, disc_top, color="#DDEBDD", edge=GREEN, alpha=0.35, label="منطقة الخصم (ارتداد 70-85%)")
+    hline(ax, swing_high, 0, 42, color=GREY, ls=":", label="قمة تأرجحية (Swing High)")
+    hline(ax, swing_low, 0, 42, color=GREY, ls=":", label="قاع تأرجحي (Swing Low)")
     box(ax, 38, 40, disc_bot - 0.2, disc_top + 0.2, color=GOLD_LIGHT, edge=GOLD, label="OB")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-08-01")
@@ -209,20 +209,20 @@ def fig_09_01():
     o, h, l, c = to_ohlc(closes, seed=91)
     plot_candles(ax, o, h, l, c, width=0.7)
     news_x = 16
-    ax.annotate("IFC / news candle", xy=(news_x, c[news_x]), xytext=(news_x + 3, c[news_x] + 3.5),
+    ax.annotate("شمعة تمويل مؤسسي / خبر (IFC)", xy=(news_x, c[news_x]), xytext=(news_x + 3, c[news_x] + 3.5),
                 fontsize=9.5, color=RED, fontweight="bold",
                 arrowprops=dict(arrowstyle="-|>", color=RED, linewidth=1.8))
     fvg_lo, fvg_hi = h[15], l[17]
     if fvg_hi < fvg_lo:
         fvg_lo, fvg_hi = fvg_hi, fvg_lo
-    box(ax, 15.6, 17.4, fvg_lo, fvg_hi, color="#F2D98A", edge="#B7791F", label="FVG left behind")
+    box(ax, 15.6, 17.4, fvg_lo, fvg_hi, color="#F2D98A", edge="#B7791F", label="FVG متروكة خلفها")
     set_ylim_pad(ax, list(l) + list(h) + [c[news_x] + 4.5])
     save(fig, "fig-09-01")
 
 # ============================================================ 10.1 Multi-timeframe triptych
 def fig_10_01():
     fig, axes = plt.subplots(1, 3, figsize=(11.5, 4.2), dpi=150)
-    titles = ["Daily — bias", "1H — zone of interest", "5M — entry timing"]
+    titles = ["يومي — الانحياز", "ساعة — منطقة الاهتمام", "5 دقائق — توقيت الدخول"]
     seeds = [101, 102, 103]
     drifts = [0.5, 0.15, 0.05]
     for ax, title, sd, dr in zip(axes, titles, seeds, drifts):
@@ -248,13 +248,13 @@ def fig_11_01():
     plot_candles(ax, o, h, l, c)
     swing_low, swing_high = l[:26].min(), h[:26].max()
     rng = swing_high - swing_low
-    box(ax, 24, 40, swing_low + rng * 0.15, swing_low + rng * 0.30, color="#DDEBDD", edge=GREEN, alpha=0.3, label="Discount zone")
+    box(ax, 24, 40, swing_low + rng * 0.15, swing_low + rng * 0.30, color="#DDEBDD", edge=GREEN, alpha=0.3, label="منطقة الخصم")
     box(ax, 35, 37, min(o[36], c[36]) - 0.2, max(o[36], c[36]) + 0.2, color=GOLD_LIGHT, edge=GOLD, label="Order Block")
     fvg_lo, fvg_hi = h[37], l[39]
     if fvg_hi < fvg_lo: fvg_lo, fvg_hi = fvg_hi, fvg_lo
     box(ax, 37.6, 39.4, fvg_lo, fvg_hi, color="#F2D98A", edge="#B7791F", label="FVG")
-    hline(ax, l[26:40].min(), 24, 40, color=GREY, label="Liquidity swept")
-    ax.text(20, ax.get_ylim()[1], "5 confluences → high-probability entry", color=NAVY, fontsize=9.5,
+    hline(ax, l[26:40].min(), 24, 40, color=GREY, label="سيولة مكتسحة")
+    ax.text(20, ax.get_ylim()[1], "5 عوامل تقارب ← دخول عالي الاحتمالية", color=NAVY, fontsize=9.5,
             ha="center", va="bottom", fontweight="bold")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-11-01")
@@ -269,9 +269,9 @@ def fig_12_01():
     closes = np.concatenate([seg1, seg2, seg3, seg4])
     o, h, l, c = to_ohlc(closes, seed=121)
     plot_candles(ax, o, h, l, c)
-    marker_point(ax, 5, l[5] - 0.2, color=NAVY, label="Mon: System 1 (OB)", va="top", dy=0.9)
-    marker_point(ax, 23, l[23] - 0.2, color=GOLD, label="Wed: System 2 (Sweep+FVG)", va="top", dy=0.9)
-    for day_x, day in zip([0, 10, 20, 30], ["Mon", "Tue", "Wed", "Thu"]):
+    marker_point(ax, 5, l[5] - 0.2, color=NAVY, label="الإثنين: النظام 1 (OB)", va="top", dy=0.9)
+    marker_point(ax, 23, l[23] - 0.2, color=GOLD, label="الأربعاء: النظام 2 (اكتساح+FVG)", va="top", dy=0.9)
+    for day_x, day in zip([0, 10, 20, 30], ["الإثنين", "الثلاثاء", "الأربعاء", "الخميس"]):
         ax.axvline(day_x, color=GRID, linewidth=1)
         ax.text(day_x + 4, ax.get_ylim()[1] if False else h.max() + 1.2, day, fontsize=8.5, color=GREY, ha="center")
     set_ylim_pad(ax, list(l) + list(h) + [h.max() + 1.6])
@@ -281,11 +281,11 @@ def fig_12_01():
 def fig_13_01():
     fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
     fig.patch.set_facecolor("white")
-    cats = ["Forecast", "Actual"]
+    cats = ["التوقع", "الفعلي"]
     vals = [3.1, 3.4]
     colors = [GREY, GOLD]
     bars = ax.bar(cats, vals, color=colors, width=0.5, zorder=3)
-    ax.set_ylabel("CPI YoY (%)")
+    ax.set_ylabel("التضخم السنوي CPI (%)")
     ax.grid(axis="y", color=GRID, zorder=0)
     for spine in ["top", "right"]:
         ax.spines[spine].set_visible(False)
@@ -296,8 +296,8 @@ def fig_13_01():
     closes[8:] += 1.4
     ax2.plot(closes, color=NAVY, linewidth=2)
     ax2.axvline(8, color=RED, linestyle="--", linewidth=1.2)
-    ax2.text(8.3, closes.max(), "Release", color=RED, fontsize=8)
-    ax2.set_title("Price reaction", fontsize=9, color=NAVY)
+    ax2.text(8.3, closes.max(), "صدور البيانات", color=RED, fontsize=8)
+    ax2.set_title("ردة فعل السعر", fontsize=9, color=NAVY)
     ax2.set_xticks([]); ax2.set_yticks([])
     for s in ax2.spines.values(): s.set_visible(False)
     save(fig, "fig-13-01")
@@ -312,10 +312,10 @@ def fig_14_01():
     ax.plot(closes, color=NAVY, linewidth=1.8)
     ax.axvline(decision_x, color=GREY, linestyle=":", linewidth=1.4)
     ax.axvline(presser_x, color=GOLD, linestyle="--", linewidth=1.6)
-    ax.text(decision_x, closes.max() + 0.3, "Rate decision\n(as expected)", fontsize=8.5, color=GREY, ha="center")
-    ax.text(presser_x, closes.max() + 1.6, "Press conference\n(hawkish tone)", fontsize=8.5, color=GOLD, ha="center", fontweight="bold")
-    arrow(ax, (presser_x, closes[presser_x]), (39, closes[-1]), color=GOLD, label="Currency rallies")
-    ax.set_ylabel("Currency Index")
+    ax.text(decision_x, closes.max() + 0.3, "قرار الفائدة\n(كما هو متوقع)", fontsize=8.5, color=GREY, ha="center")
+    ax.text(presser_x, closes.max() + 1.6, "المؤتمر الصحفي\n(نبرة متشددة)", fontsize=8.5, color=GOLD, ha="center", fontweight="bold")
+    arrow(ax, (presser_x, closes[presser_x]), (39, closes[-1]), color=GOLD, label="ارتفاع العملة")
+    ax.set_ylabel("مؤشر العملة")
     save(fig, "fig-14-01")
 
 # ============================================================ 15.1 Rate differential vs FX
@@ -325,17 +325,17 @@ def fig_15_01():
     n = 30
     diff = np.linspace(0.5, 2.8, n) + np.random.default_rng(151).normal(0, 0.05, n)
     fx = 1.10 + np.cumsum(np.random.default_rng(152).normal(0.004, 0.006, n))
-    ax1.plot(diff, color=GOLD, linewidth=2.2, label="Rate differential (pp)")
-    ax1.set_ylabel("Rate differential (pp)", color=GOLD)
+    ax1.plot(diff, color=GOLD, linewidth=2.2, label="فارق الفائدة (نقطة مئوية)")
+    ax1.set_ylabel("فارق الفائدة (نقطة مئوية)", color=GOLD)
     ax1.tick_params(axis="y", labelcolor=GOLD)
     for s in ["top"]: ax1.spines[s].set_visible(False)
     ax2 = ax1.twinx()
-    ax2.plot(fx, color=NAVY, linewidth=2.2, label="FX pair")
-    ax2.set_ylabel("FX pair", color=NAVY)
+    ax2.plot(fx, color=NAVY, linewidth=2.2, label="زوج العملات")
+    ax2.set_ylabel("زوج العملات", color=NAVY)
     ax2.tick_params(axis="y", labelcolor=NAVY)
     for s in ["top"]: ax2.spines[s].set_visible(False)
     ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
-    ax1.set_xlabel("Time →")
+    ax1.set_xlabel("الزمن")
     save(fig, "fig-15-01")
 
 # ============================================================ 16.1 Headline vs core CPI
@@ -345,10 +345,10 @@ def fig_16_01():
     months = np.arange(12)
     headline = 6.5 - months * 0.25 + np.random.default_rng(161).normal(0, 0.1, 12)
     core = 5.8 - months * 0.12 + np.random.default_rng(162).normal(0, 0.08, 12)
-    ax.plot(months, headline, color=NAVY, linewidth=2.2, marker="o", markersize=4, label="Headline CPI")
-    ax.plot(months, core, color=GOLD, linewidth=2.2, marker="o", markersize=4, label="Core CPI")
-    ax.set_ylabel("YoY (%)")
-    ax.set_xlabel("Month →")
+    ax.plot(months, headline, color=NAVY, linewidth=2.2, marker="o", markersize=4, label="التضخم العام (CPI)")
+    ax.plot(months, core, color=GOLD, linewidth=2.2, marker="o", markersize=4, label="التضخم الأساسي (Core CPI)")
+    ax.set_ylabel("التغير السنوي (%)")
+    ax.set_xlabel("الشهر")
     ax.grid(axis="y", color=GRID)
     for s in ["top", "right"]: ax.spines[s].set_visible(False)
     ax.legend(frameon=False, fontsize=9.5)
@@ -363,16 +363,16 @@ def fig_17_01():
     closes = np.concatenate([pre, spike, fade])
     ax.plot(closes, color=NAVY, linewidth=1.9)
     ax.axvline(10, color=RED, linestyle="--", linewidth=1.4)
-    ax.text(10.2, closes.max(), "NFP release", color=RED, fontsize=9, fontweight="bold")
-    arrow(ax, (13, spike[-1]), (16, fade[2]), color=GOLD, ls="dashed", label="Partial fade\n(soft wages)")
-    ax.set_ylabel("USD Index")
+    ax.text(10.2, closes.max(), "صدور بيانات التوظيف (NFP)", color=RED, fontsize=9, fontweight="bold")
+    arrow(ax, (13, spike[-1]), (16, fade[2]), color=GOLD, ls="dashed", label="تراجع جزئي\n(ضعف الأجور)")
+    ax.set_ylabel("مؤشر الدولار")
     save(fig, "fig-17-01")
 
 # ============================================================ 18.1 GDP components pie
 def fig_18_01():
     fig, ax = plt.subplots(figsize=(6.4, 6.4), dpi=150)
     fig.patch.set_facecolor("white")
-    labels = ["Consumption", "Investment", "Government\nSpending", "Net Exports"]
+    labels = ["الاستهلاك", "الاستثمار", "الإنفاق\nالحكومي", "صافي الصادرات"]
     sizes = [58, 20, 17, 5]
     colors = [NAVY, GOLD, GOLD_LIGHT, GREY]
     ax.pie(sizes, labels=labels, colors=colors, autopct="%1.0f%%", startangle=90,
@@ -399,10 +399,10 @@ def fig_19_01():
     for s in ["top"]: ax1.spines[s].set_visible(False)
     ax2 = ax1.twinx()
     ax2.plot(months, gdp, color=NAVY, linewidth=2.2, linestyle="--", marker="s", markersize=4)
-    ax2.set_ylabel("GDP growth (%)", color=NAVY)
+    ax2.set_ylabel("نمو الناتج المحلي الإجمالي (%)", color=NAVY)
     ax2.tick_params(axis="y", labelcolor=NAVY)
     for s in ["top"]: ax2.spines[s].set_visible(False)
-    ax1.set_xlabel("Month →")
+    ax1.set_xlabel("الشهر")
     ax1.grid(axis="y", color=GRID)
     save(fig, "fig-19-01")
 
@@ -413,17 +413,17 @@ def fig_20_01():
     months = np.arange(12)
     surplus = 2 + months * 0.6 + np.random.default_rng(201).normal(0, 0.3, 12)
     curr = 100 + np.cumsum(np.random.default_rng(202).normal(0.5, 0.4, 12))
-    ax1.bar(months, surplus, color=GOLD_LIGHT, width=0.5, zorder=3, label="Trade surplus")
-    ax1.set_ylabel("Trade surplus (USD bn)", color=GOLD)
+    ax1.bar(months, surplus, color=GOLD_LIGHT, width=0.5, zorder=3, label="الفائض التجاري")
+    ax1.set_ylabel("الفائض التجاري (مليار دولار)", color=GOLD)
     ax1.tick_params(axis="y", labelcolor=GOLD)
     ax1.grid(axis="y", color=GRID, zorder=0)
     for s in ["top"]: ax1.spines[s].set_visible(False)
     ax2 = ax1.twinx()
     ax2.plot(months, curr, color=NAVY, linewidth=2.4)
-    ax2.set_ylabel("Currency value", color=NAVY)
+    ax2.set_ylabel("قيمة العملة", color=NAVY)
     ax2.tick_params(axis="y", labelcolor=NAVY)
     for s in ["top"]: ax2.spines[s].set_visible(False)
-    ax1.set_xlabel("Month →")
+    ax1.set_xlabel("الشهر")
     save(fig, "fig-20-01")
 
 # ============================================================ 21.1 Earnings beat, weak guidance
@@ -436,8 +436,8 @@ def fig_21_01():
     o, h, l, c = to_ohlc(closes, seed=211)
     plot_candles(ax, o, h, l, c)
     ax.axvline(10, color=GREY, linestyle=":", linewidth=1.2)
-    ax.text(10.2, h.max(), "Earnings: beat estimates", fontsize=8.5, color=GREEN, fontweight="bold")
-    arrow(ax, (12, c[12]), (26, c[-1]), color=RED, label="Weak guidance → sells off")
+    ax.text(10.2, h.max(), "الأرباح: تفوق التوقعات", fontsize=8.5, color=GREEN, fontweight="bold")
+    arrow(ax, (12, c[12]), (26, c[-1]), color=RED, label="توجيهات ضعيفة ← بيع مكثف")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-21-01")
 
@@ -445,16 +445,16 @@ def fig_21_01():
 def fig_22_01():
     fig, ax = plt.subplots(figsize=(8.6, 4.2), dpi=150)
     fig.patch.set_facecolor("white")
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    days = ["الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"]
     impact = [1, 2, 3, 2, 1]
     colors = [GOLD_LIGHT if v < 3 else RED for v in impact]
     ax.barh(days, impact, color=colors, zorder=3)
-    ax.set_xlabel("Expected impact (1=low, 3=high)")
+    ax.set_xlabel("الأثر المتوقع (1=منخفض، 3=مرتفع)")
     ax.set_xlim(0, 3.5)
     ax.invert_yaxis()
     for s in ["top", "right"]: ax.spines[s].set_visible(False)
     ax.grid(axis="x", color=GRID, zorder=0)
-    labels = ["Retail Sales", "PMI", "Rate Decision", "Jobless Claims", "Consumer Sentiment"]
+    labels = ["مبيعات التجزئة", "PMI", "قرار الفائدة", "طلبات إعانة البطالة", "ثقة المستهلك"]
     for i, (d, lab) in enumerate(zip(days, labels)):
         ax.text(impact[i] + 0.1, i, lab, va="center", fontsize=9, color=NAVY)
     save(fig, "fig-22-01")
@@ -478,9 +478,9 @@ def fig_23_01():
     plot_candles(ax, o, h, l, c)
     # primary trendline through major swing lows
     ax.plot([0, 41], [l[0] + 0.5, l[26] + 3], color=NAVY, linewidth=2, linestyle="-")
-    ax.text(41.5, l[26] + 3, "Primary trend", color=NAVY, fontsize=9, fontweight="bold", va="center")
+    ax.text(41.5, l[26] + 3, "الاتجاه الرئيسي", color=NAVY, fontsize=9, fontweight="bold", va="center")
     ax.axvspan(10, 16, color=RED, alpha=0.08)
-    ax.text(13, h.max() + 0.5, "Secondary\ncorrection", color=RED, fontsize=8.5, ha="center", fontweight="bold")
+    ax.text(13, h.max() + 0.5, "تصحيح\nثانوي", color=RED, fontsize=8.5, ha="center", fontweight="bold")
     set_ylim_pad(ax, list(l) + list(h) + [h.max() + 1.5])
     save(fig, "fig-23-01")
 
@@ -490,7 +490,7 @@ def fig_24_01():
     closes = synth_walk(24, drift=0.3, vol=0.7, start=100, seed=241)
     o, h, l, c = to_ohlc(closes, seed=241)
     plot_candles(axes[0], o, h, l, c)
-    axes[0].set_title("Candlestick", fontsize=10.5, color=NAVY, fontweight="bold")
+    axes[0].set_title("الشموع اليابانية", fontsize=10.5, color=NAVY, fontweight="bold")
     # Heikin Ashi transform
     ha_c = (o + h + l + c) / 4
     ha_o = np.zeros_like(o)
@@ -500,7 +500,7 @@ def fig_24_01():
     ha_h = np.maximum.reduce([h, ha_o, ha_c])
     ha_l = np.minimum.reduce([l, ha_o, ha_c])
     plot_candles(axes[1], ha_o, ha_h, ha_l, ha_c)
-    axes[1].set_title("Heikin Ashi (smoothed)", fontsize=10.5, color=NAVY, fontweight="bold")
+    axes[1].set_title("هايكن آشي (ممهدة)", fontsize=10.5, color=NAVY, fontweight="bold")
     for ax in axes:
         for s in ["top", "right"]: ax.spines[s].set_visible(False)
         ax.set_xticks([]); ax.set_yticks([])
@@ -519,12 +519,12 @@ def _draw_candle_shape(ax, cx, o, h, l, c, w=0.5):
 def fig_25_01():
     fig, axes = plt.subplots(2, 3, figsize=(10, 6.4), dpi=150)
     specs = [
-        ("Hammer", [(0, 1, 0, 4, 1)]),
-        ("Shooting Star", [(0, 4, 5, 1, 0)]),
-        ("Bullish Engulfing", [(0, 3, 0.3, 3.3, 1), (1, 1, -0.2, 3.5, 3.3)]),
-        ("Bearish Engulfing", [(0, 1, 3, 3.5, 3.3), (1, 3.3, 0.3, 3.6, 1)]),
-        ("Doji", [(0, 2, 0, 5, 2.08)]),
-        ("Morning Star", [(0, 4, 4.3, 0.8, 1), (1, 1.15, 1.35, 0.75, 0.95), (2, 1.2, 4.3, 1.0, 4)]),
+        ("المطرقة (Hammer)", [(0, 1, 0, 4, 1)]),
+        ("الشهاب (Shooting Star)", [(0, 4, 5, 1, 0)]),
+        ("الابتلاع الصعودي (Bullish Engulfing)", [(0, 3, 0.3, 3.3, 1), (1, 1, -0.2, 3.5, 3.3)]),
+        ("الابتلاع الهبوطي (Bearish Engulfing)", [(0, 1, 3, 3.5, 3.3), (1, 3.3, 0.3, 3.6, 1)]),
+        ("الدوجي (Doji)", [(0, 2, 0, 5, 2.08)]),
+        ("نجمة الصباح (Morning Star)", [(0, 4, 4.3, 0.8, 1), (1, 1.15, 1.35, 0.75, 0.95), (2, 1.2, 4.3, 1.0, 4)]),
     ]
     for ax, (title, candles) in zip(axes.flat, specs):
         for cx, o, h, l, c in candles:
@@ -546,9 +546,9 @@ def fig_25_02():
     o, h, l, c = to_ohlc(closes, seed=252)
     o[10], h[10], l[10], c[10] = 98.5, 98.7, 96.5, 98.6
     plot_candles(a, o, h, l, c)
-    a.text(10, l[10] - 1.2, "Hammer\n(no context)", ha="center", color=RED, fontsize=9, fontweight="bold")
-    arrow(a, (10, c[10]), (19, l[19] - 1), color=RED, label="Fails")
-    a.set_title("Without support/OB context", fontsize=10, color=NAVY)
+    a.text(10, l[10] - 1.2, "مطرقة\n(بدون سياق)", ha="center", color=RED, fontsize=9, fontweight="bold")
+    arrow(a, (10, c[10]), (19, l[19] - 1), color=RED, label="تفشل")
+    a.set_title("بدون سياق دعم/OB", fontsize=10, color=NAVY)
     # panel B: hammer at OB, succeeds
     b = axes[1]
     closes2 = synth_walk(20, drift=-0.4, vol=0.5, start=105, seed=253)
@@ -556,8 +556,8 @@ def fig_25_02():
     o2[15], h2[15], l2[15], c2[15] = 96.5, 96.7, 94.3, 96.6
     plot_candles(b, o2, h2, l2, c2)
     box(b, 14.4, 15.6, l2[15] - 0.3, o2[15] + 0.5, color=GOLD_LIGHT, edge=GOLD, label="Order Block")
-    arrow(b, (15, c2[15]), (19, c2[15] + 2.5), color=GREEN, label="Succeeds")
-    b.set_title("At an Order Block", fontsize=10, color=NAVY)
+    arrow(b, (15, c2[15]), (19, c2[15] + 2.5), color=GREEN, label="تنجح")
+    b.set_title("عند كتلة طلب (Order Block)", fontsize=10, color=NAVY)
     for ax in axes:
         for s in ["top", "right"]: ax.spines[s].set_visible(False)
         ax.set_xticks([])
@@ -576,9 +576,9 @@ def fig_26_01():
     closes = np.concatenate([approach, breakout, cont, retest, bounce])
     o, h, l, c = to_ohlc(closes, seed=261)
     plot_candles(ax, o, h, l, c)
-    hline(ax, level, 0, len(closes) - 1, color=GOLD, label="Old resistance → new support")
-    arrow(ax, (14, c[14]), (17, c[17] + 1.5), color=GREEN, label="Breakout")
-    arrow(ax, (23, l[23] + 0.2), (28, l[28] + 0.2), color=GOLD, ls="dashed", label="Retest holds")
+    hline(ax, level, 0, len(closes) - 1, color=GOLD, label="مقاومة سابقة ← دعم جديد")
+    arrow(ax, (14, c[14]), (17, c[17] + 1.5), color=GREEN, label="اختراق")
+    arrow(ax, (23, l[23] + 0.2), (28, l[28] + 0.2), color=GOLD, ls="dashed", label="إعادة اختبار ناجحة")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-26-01")
 
@@ -596,8 +596,8 @@ def fig_26_02():
     upper = base + 2.2
     ax.plot(x, lower, color=NAVY, linewidth=2)
     ax.plot(x, upper, color=NAVY, linewidth=2, linestyle="--")
-    ax.text(n - 1.5, lower[-1] - 0.5, "Trendline (support)", color=NAVY, fontsize=9, ha="right", fontweight="bold")
-    ax.text(n - 1.5, upper[-1] + 0.8, "Channel (resistance)", color=NAVY, fontsize=9, ha="right", fontweight="bold")
+    ax.text(n - 1.5, lower[-1] - 0.5, "خط الاتجاه (دعم)", color=NAVY, fontsize=9, ha="right", fontweight="bold")
+    ax.text(n - 1.5, upper[-1] + 0.8, "القناة (مقاومة)", color=NAVY, fontsize=9, ha="right", fontweight="bold")
     set_ylim_pad(ax, list(l) + list(h) + [lower.min() - 1, upper.max() + 1])
     save(fig, "fig-26-02")
 
@@ -628,7 +628,7 @@ def fig_27_01():
     o, h, l, c = to_ohlc(closes, seed=271)
     plot_candles(ax1, o, h, l, c)
     for s in ["top", "right"]: ax1.spines[s].set_visible(False)
-    ax1.set_xticks([]); ax1.set_ylabel("Price")
+    ax1.set_xticks([]); ax1.set_ylabel("السعر")
     ax1.grid(axis="y", color=GRID)
     r = rsi(closes)
     r[20:26] -= np.linspace(0, 6, 6)
@@ -637,11 +637,11 @@ def fig_27_01():
     ax2.axhline(70, color=GREY, linestyle=":", linewidth=1)
     ax2.axhline(30, color=GREY, linestyle=":", linewidth=1)
     ax2.set_ylabel("RSI")
-    ax2.set_xlabel("Time →")
+    ax2.set_xlabel("الزمن")
     for s in ["top", "right"]: ax2.spines[s].set_visible(False)
     ax1.plot([22, n - 3], [h[22] + 0.3, h[n - 3] + 0.3], color=RED, linewidth=1.6, linestyle="--")
     ax2.plot([22, n - 3], [r[22] + 1, r[n - 3] + 1], color=RED, linewidth=1.6, linestyle="--")
-    ax1.text((22 + n - 3) / 2, h.max() + 1, "Bearish divergence", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    ax1.text((22 + n - 3) / 2, h.max() + 1, "تباعد هبوطي", color=RED, fontsize=9.5, ha="center", fontweight="bold")
     fig.tight_layout(pad=0.6)
     save(fig, "fig-27-01")
 
@@ -658,14 +658,14 @@ def fig_28_01():
         y += np.linspace(0, -0.3, 100)
         ax.plot(x, y, color=NAVY, linewidth=2)
         ax.axhline(0.15, color=GOLD, linestyle="--", linewidth=1.4)
-        ax.set_title("Head & Shoulders", fontsize=10, fontweight="bold", color=NAVY)
+        ax.set_title("الرأس والكتفين (Head & Shoulders)", fontsize=10, fontweight="bold", color=NAVY)
 
     def dt(ax):
         x = np.linspace(0, 10, 100)
         y = 1.8 * np.exp(-((x - 2.5) ** 2) / 0.5) + 1.8 * np.exp(-((x - 7) ** 2) / 0.5) + 0.2
         ax.plot(x, y, color=NAVY, linewidth=2)
         ax.axhline(0.5, color=GOLD, linestyle="--", linewidth=1.4)
-        ax.set_title("Double Top", fontsize=10, fontweight="bold", color=NAVY)
+        ax.set_title("القمة المزدوجة (Double Top)", fontsize=10, fontweight="bold", color=NAVY)
 
     def tri(ax):
         x_apex = (2 - 0.3) / (0.12 + 0.08)
@@ -677,7 +677,7 @@ def fig_28_01():
         zig_x = np.array([0.5, 1.8, 2.6, 3.9, 4.7, 5.9])
         zig_y = np.array([1.55, 0.85, 1.35, 1.0, 1.2, 1.05])
         ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.6)
-        ax.set_title("Symmetrical Triangle", fontsize=10, fontweight="bold", color=NAVY)
+        ax.set_title("المثلث المتماثل (Symmetrical Triangle)", fontsize=10, fontweight="bold", color=NAVY)
 
     def wedge(ax):
         x = np.linspace(0, 10, 100)
@@ -685,7 +685,7 @@ def fig_28_01():
         lower = 0.2 + x * 0.22
         ax.plot(x, upper, color=NAVY, linewidth=2)
         ax.plot(x, lower, color=NAVY, linewidth=2)
-        ax.set_title("Rising Wedge", fontsize=10, fontweight="bold", color=NAVY)
+        ax.set_title("الوتد الصاعد (Rising Wedge)", fontsize=10, fontweight="bold", color=NAVY)
 
     def flag(ax):
         x1 = np.linspace(0, 4, 40)
@@ -697,7 +697,7 @@ def fig_28_01():
         ax.plot(x1, y1, color=NAVY, linewidth=2)
         ax.plot(x2, y2, color=GOLD, linewidth=2)
         ax.plot(x3, y3, color=NAVY, linewidth=2)
-        ax.set_title("Bull Flag", fontsize=10, fontweight="bold", color=NAVY)
+        ax.set_title("العلم الصعودي (Bull Flag)", fontsize=10, fontweight="bold", color=NAVY)
 
     def rect(ax):
         x = np.linspace(0, 10, 100)
@@ -705,7 +705,7 @@ def fig_28_01():
         ax.plot(x, y, color=NAVY, linewidth=2)
         ax.axhline(1.35, color=GOLD, linestyle="--", linewidth=1.2)
         ax.axhline(0.65, color=GOLD, linestyle="--", linewidth=1.2)
-        ax.set_title("Rectangle", fontsize=10, fontweight="bold", color=NAVY)
+        ax.set_title("المستطيل (Rectangle)", fontsize=10, fontweight="bold", color=NAVY)
 
     for ax, fn in zip(axes.flat, [hs, dt, tri, wedge, flag, rect]):
         fn(ax)
@@ -731,11 +731,11 @@ def fig_28_02():
     o, h, l, c = to_ohlc(closes, seed=282)
     plot_candles(ax, o, h, l, c)
     neckline = 101.3
-    hline(ax, neckline, 0, 45, color=GOLD, label="Neckline")
+    hline(ax, neckline, 0, 45, color=GOLD, label="خط العنق (Neckline)")
     head_top = max(h[16:24])
-    arrow(ax, (20, head_top), (20, neckline), color=NAVY, style="<->", label="Head height")
+    arrow(ax, (20, head_top), (20, neckline), color=NAVY, style="<->", label="ارتفاع الرأس")
     target = neckline - (head_top - neckline)
-    hline(ax, target, 38, 45, color=RED, label="Measured target")
+    hline(ax, target, 38, 45, color=RED, label="الهدف المُقاس")
     set_ylim_pad(ax, list(l) + list(h) + [target - 1])
     save(fig, "fig-28-02")
 
@@ -750,7 +750,7 @@ def fig_29_01():
     plot_candles(ax1, o, h, l, c)
     ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
     for s in ["top", "right"]: ax1.spines[s].set_visible(False)
-    ax1.set_ylabel("Price")
+    ax1.set_ylabel("السعر")
 
     r = rsi(closes)
     r[-6:] -= np.linspace(3, 9, 6)
@@ -769,7 +769,7 @@ def fig_29_01():
     ax3.plot(macd, color=NAVY, linewidth=1.5)
     ax3.plot(signal, color=RED, linewidth=1.3, linestyle="--")
     ax3.set_ylabel("MACD")
-    ax3.set_xlabel("Time →")
+    ax3.set_xlabel("الزمن")
     for s in ["top", "right"]: ax3.spines[s].set_visible(False)
     fig.tight_layout(pad=0.6)
     save(fig, "fig-29-01")
@@ -786,7 +786,7 @@ def fig_29_02():
     ax.plot(ma_fast, color=GOLD, linewidth=2, label="MA 5")
     ax.plot(ma_slow, color=NAVY, linewidth=2, label="MA 20")
     cross_x = 18
-    marker_point(ax, cross_x, ma_fast[cross_x], color=GREEN, label="Golden Cross", va="top", dy=1.2)
+    marker_point(ax, cross_x, ma_fast[cross_x], color=GREEN, label="التقاطع الذهبي (Golden Cross)", va="top", dy=1.2)
     ax.legend(frameon=False, fontsize=9, loc="upper left")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-29-02")
@@ -808,8 +808,8 @@ def fig_29_03():
     ax.plot(lower, color=GOLD, linewidth=1.6, linestyle="--")
     ax.fill_between(np.arange(n), lower, upper, color=GOLD_LIGHT, alpha=0.15)
     ax.axvspan(10, 20, color=GREY, alpha=0.12)
-    ax.text(15, ax.get_ylim()[1] if False else h.max(), "Squeeze", color=GREY, fontsize=9, ha="center", fontweight="bold")
-    ax.text(35, h.max(), "Expansion", color=GOLD, fontsize=9, ha="center", fontweight="bold")
+    ax.text(15, ax.get_ylim()[1] if False else h.max(), "انضغاط (Squeeze)", color=GREY, fontsize=9, ha="center", fontweight="bold")
+    ax.text(35, h.max(), "توسّع (Expansion)", color=GOLD, fontsize=9, ha="center", fontweight="bold")
     set_ylim_pad(ax, list(lower) + list(upper))
     save(fig, "fig-29-03")
 
@@ -823,14 +823,14 @@ def fig_30_01():
     closes = np.concatenate([pre, brk, fail])
     o, h, l, c = to_ohlc(closes, seed=301)
     plot_candles(ax1, o, h, l, c)
-    hline(ax1, level, 0, len(closes) - 1, color=GOLD, label="Resistance")
+    hline(ax1, level, 0, len(closes) - 1, color=GOLD, label="مقاومة")
     for s in ["top", "right"]: ax1.spines[s].set_visible(False)
     ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
     vols = np.random.default_rng(304).uniform(0.5, 1.0, len(closes))
     vols[14:17] = np.random.default_rng(305).uniform(0.25, 0.4, 3)
     ax2.bar(np.arange(len(closes)), vols, color=[RED if i in (14, 15, 16) else NAVY for i in range(len(closes))], width=0.6)
-    ax2.set_ylabel("Volume")
-    ax2.set_xlabel("Time →")
+    ax2.set_ylabel("الحجم")
+    ax2.set_xlabel("الزمن")
     ax2.text(15, vols.max(), "Weak volume\non breakout", color=RED, fontsize=8.5, ha="center", fontweight="bold")
     for s in ["top", "right"]: ax2.spines[s].set_visible(False)
     fig.tight_layout(pad=0.6)
@@ -844,8 +844,8 @@ def fig_31_01():
     closes = np.concatenate([accum, markup])
     o, h, l, c = to_ohlc(closes, seed=311)
     plot_candles(ax, o, h, l, c)
-    box(ax, 0, 23, l[:24].min() - 0.2, h[:24].max() + 0.2, color="#DDE7EE", edge=NAVY, alpha=0.3, label="Accumulation (Wyckoff)")
-    arrow(ax, (23, c[23]), (37, c[-1]), color=GREEN, label="Markup")
+    box(ax, 0, 23, l[:24].min() - 0.2, h[:24].max() + 0.2, color="#DDE7EE", edge=NAVY, alpha=0.3, label="التجميع (Wyckoff)")
+    arrow(ax, (23, c[23]), (37, c[-1]), color=GREEN, label="مرحلة الصعود (Markup)")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-31-01")
 
@@ -860,11 +860,11 @@ def fig_32_01():
     plot_candles(ax, o, h, l, c)
     swing_low, swing_high = l[:26].min(), h[:26].max()
     rng = swing_high - swing_low
-    box(ax, 24, 40, swing_low + rng * 0.15, swing_low + rng * 0.30, color="#DDEBDD", edge=GREEN, alpha=0.3, label="SMC: Discount + OB")
+    box(ax, 24, 40, swing_low + rng * 0.15, swing_low + rng * 0.30, color="#DDEBDD", edge=GREEN, alpha=0.3, label="SMC: خصم + OB")
     box(ax, 35, 37, min(o[36], c[36]) - 0.2, max(o[36], c[36]) + 0.2, color=GOLD_LIGHT, edge=GOLD)
-    ax.text(4, h.max() + 2.0, "1: Fundamental bias = bullish", color=NAVY, fontsize=9, fontweight="bold")
-    ax.text(4, h.max() + 1.2, "2: SMC zone = discount + OB", color=GREEN, fontsize=9, fontweight="bold")
-    ax.text(4, h.max() + 0.4, "3: Technical trigger = bullish engulfing", color=GOLD, fontsize=9, fontweight="bold")
+    ax.text(4, h.max() + 2.0, "1: الانحياز الأساسي = صعودي", color=NAVY, fontsize=9, fontweight="bold")
+    ax.text(4, h.max() + 1.2, "2: منطقة SMC = خصم + OB", color=GREEN, fontsize=9, fontweight="bold")
+    ax.text(4, h.max() + 0.4, "3: المحفز الفني = ابتلاع صعودي", color=GOLD, fontsize=9, fontweight="bold")
     set_ylim_pad(ax, list(l) + list(h) + [h.max() + 2.6])
     save(fig, "fig-32-01")
 
@@ -878,14 +878,14 @@ def fig_33_01():
     ax.plot(trades, equity, color=NAVY, linewidth=2.2, marker="o", markersize=5)
     peak = np.maximum.accumulate(equity)
     ax.fill_between(trades, equity, peak, color=RED, alpha=0.15)
-    ax.set_xlabel("Trade #")
-    ax.set_ylabel("Equity")
+    ax.set_xlabel("رقم الصفقة")
+    ax.set_ylabel("رأس المال (Equity)")
     ax.grid(axis="y", color=GRID)
     for s in ["top", "right"]: ax.spines[s].set_visible(False)
-    ax.annotate("5 losing trades\n(1% risk each)", xy=(4, equity[4]), xytext=(1, equity[4] - 4),
+    ax.annotate("5 صفقات خاسرة\n(مخاطرة 1% لكل صفقة)", xy=(4, equity[4]), xytext=(1, equity[4] - 4),
                 fontsize=9, color=RED, fontweight="bold",
                 arrowprops=dict(arrowstyle="->", color=RED))
-    ax.annotate("High RRR winner\nrecovers drawdown", xy=(11, equity[11]), xytext=(7.5, equity[11] + 1.5),
+    ax.annotate("صفقة رابحة بعائد مخاطرة مرتفع\nتعوّض التراجع", xy=(11, equity[11]), xytext=(7.5, equity[11] + 1.5),
                 fontsize=9, color=GREEN, fontweight="bold",
                 arrowprops=dict(arrowstyle="->", color=GREEN))
     save(fig, "fig-33-01")
@@ -899,13 +899,13 @@ def fig_02_02():
     box_ict = Rectangle((3.3, 4.3), 3.4, 1.1, facecolor=NAVY, edgecolor=NAVY)
     ax.add_patch(box_ict)
     ax.text(5, 4.85, "ICT (Inner Circle Trader)", color="white", ha="center", va="center", fontsize=11, fontweight="bold")
-    ax.text(5, 3.85, "Original source of the terms & concepts", color=GREY, ha="center", fontsize=9)
+    ax.text(5, 3.85, "المصدر الأصلي للمصطلحات والمفاهيم", color=GREY, ha="center", fontsize=9)
     box_smc = Rectangle((3.3, 2.5), 3.4, 1.1, facecolor=GOLD, edgecolor=GOLD)
     ax.add_patch(box_smc)
     ax.text(5, 3.05, "Smart Money Concepts (SMC)", color="white", ha="center", va="center", fontsize=11, fontweight="bold")
     arrow(ax, (5, 4.3), (5, 3.6), color=NAVY)
-    ax.text(5, 2.05, "Educational organization & simplification of ICT concepts", color=GREY, ha="center", fontsize=9)
-    labels = ["BOS / CHOCH", "Order Blocks", "FVG", "Liquidity", "Premium/Discount"]
+    ax.text(5, 2.05, "تنظيم تعليمي وتبسيط لمفاهيم ICT", color=GREY, ha="center", fontsize=9)
+    labels = ["BOS / CHOCH", "Order Blocks", "FVG", "السيولة", "علاوة/خصم"]
     xs = np.linspace(1.0, 9.0, len(labels))
     for x, lab in zip(xs, labels):
         ax.add_patch(Rectangle((x - 0.75, 0.3), 1.5, 0.8, facecolor="#F7F4EE", edgecolor=GOLD, linewidth=1.2))
@@ -925,7 +925,7 @@ def fig_03_02():
     marker_point(axes[0], 4, l[4] - 0.2, color=NAVY, label="HL", va="top", dy=0.5)
     marker_point(axes[0], 5, h[5] + 0.2, color=NAVY, label="HH", va="bottom", dy=0.5)
     marker_point(axes[0], 6, l[6] - 0.2, color=NAVY, label="HL", va="top", dy=0.5)
-    axes[0].set_title("Uptrend: Higher Highs / Higher Lows", fontsize=10, color=NAVY, fontweight="bold")
+    axes[0].set_title("الاتجاه الصاعد: قمم أعلى / قيعان أعلى (HH/HL)", fontsize=10, color=NAVY, fontweight="bold")
 
     down = np.array([108, 106, 106.8, 104, 104.7, 102, 102.6, 100])
     o2, h2, l2, c2 = to_ohlc(down, seed=303)
@@ -936,7 +936,7 @@ def fig_03_02():
     marker_point(axes[1], 4, h2[4] + 0.2, color=RED, label="LH", va="bottom", dy=0.5)
     marker_point(axes[1], 5, l2[5] - 0.2, color=RED, label="LL", va="top", dy=0.5)
     marker_point(axes[1], 6, h2[6] + 0.2, color=RED, label="LH", va="bottom", dy=0.5)
-    axes[1].set_title("Downtrend: Lower Highs / Lower Lows", fontsize=10, color=NAVY, fontweight="bold")
+    axes[1].set_title("الاتجاه الهابط: قمم أدنى / قيعان أدنى (LH/LL)", fontsize=10, color=NAVY, fontweight="bold")
     for ax in axes:
         for s in ["top", "right"]: ax.spines[s].set_visible(False)
         ax.set_xticks([])
@@ -954,9 +954,9 @@ def fig_05_03():
     o, h, l, c = to_ohlc(closes, seed=531)
     plot_candles(ax, o, h, l, c)
     box(ax, -0.5, 9.5, min(o[:10].min(), c[:10].min()) - 0.2, max(o[:10].max(), c[:10].max()) + 0.2,
-        color="#DDEBDD", edge=GREEN, alpha=0.35, label="Demand Zone")
+        color="#DDEBDD", edge=GREEN, alpha=0.35, label="منطقة الطلب (Demand Zone)")
     box(ax, 17.5, 25.5, min(o[18:26].min(), c[18:26].min()) - 0.2, max(o[18:26].max(), c[18:26].max()) + 0.2,
-        color="#F4D9D9", edge=RED, alpha=0.35, label="Supply Zone")
+        color="#F4D9D9", edge=RED, alpha=0.35, label="منطقة العرض (Supply Zone)")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-05-03")
 
@@ -970,7 +970,7 @@ def fig_24_02():
         ax.plot([x, x], [ll, hh], color=color, linewidth=1.6)
         ax.plot([x - 0.18, x], [oo, oo], color=color, linewidth=1.6)
         ax.plot([x, x + 0.18], [cc, cc], color=color, linewidth=1.6)
-    ax.set_title("Bar Chart (OHLC)", fontsize=11, color=NAVY, fontweight="bold")
+    ax.set_title("المخطط الشريطي (OHLC)", fontsize=11, color=NAVY, fontweight="bold")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-24-02")
 
@@ -980,7 +980,7 @@ def fig_24_03():
     closes = synth_walk(30, drift=0.25, vol=0.6, start=100, seed=243)
     ax.plot(closes, color=NAVY, linewidth=2)
     ax.fill_between(np.arange(30), closes, closes.min() - 1, color=GOLD_LIGHT, alpha=0.15)
-    ax.set_title("Line Chart (Closing Prices Only)", fontsize=11, color=NAVY, fontweight="bold")
+    ax.set_title("المخطط الخطي (أسعار الإغلاق فقط)", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-24-03")
 
 # ============================================================ 24.4 Arithmetic vs logarithmic scale
@@ -991,12 +991,12 @@ def fig_24_04():
     closes = np.clip(closes, 8, None)
     axes[0].plot(closes, color=NAVY, linewidth=2)
     axes[0].set_yscale("linear")
-    axes[0].set_title("Arithmetic Scale", fontsize=10.5, color=NAVY, fontweight="bold")
-    axes[0].set_ylabel("Price")
+    axes[0].set_title("المقياس الحسابي", fontsize=10.5, color=NAVY, fontweight="bold")
+    axes[0].set_ylabel("السعر")
     axes[1].plot(closes, color=GOLD, linewidth=2)
     axes[1].set_yscale("log")
-    axes[1].set_title("Logarithmic Scale", fontsize=10.5, color=NAVY, fontweight="bold")
-    axes[1].set_ylabel("Price (log)")
+    axes[1].set_title("المقياس اللوغاريتمي", fontsize=10.5, color=NAVY, fontweight="bold")
+    axes[1].set_ylabel("السعر (لوغاريتمي)")
     for ax in axes:
         for s in ["top", "right"]: ax.spines[s].set_visible(False)
         ax.set_xticks([])
@@ -1024,9 +1024,9 @@ def fig_26_03():
                      color=NAVY, linewidth=2, linestyle="--")
         for s in ["top", "right"]: ax.spines[s].set_visible(False)
         ax.set_xticks([])
-    axes[0].set_title("1. Identify two swing lows", fontsize=9.5, color=NAVY, fontweight="bold")
-    axes[1].set_title("2. Connect them with a line", fontsize=9.5, color=NAVY, fontweight="bold")
-    axes[2].set_title("3. Extend it forward", fontsize=9.5, color=NAVY, fontweight="bold")
+    axes[0].set_title("1. تحديد قاعين تأرجحيين", fontsize=9.5, color=NAVY, fontweight="bold")
+    axes[1].set_title("2. وصلهما بخط", fontsize=9.5, color=NAVY, fontweight="bold")
+    axes[2].set_title("3. تمديده للأمام", fontsize=9.5, color=NAVY, fontweight="bold")
     fig.tight_layout(pad=0.8)
     save(fig, "fig-26-03")
 
@@ -1038,8 +1038,8 @@ def fig_26_04():
     closes = 100 + 3 * np.sin(x / 3.2) + np.random.default_rng(264).normal(0, 0.25, n)
     o, h, l, c = to_ohlc(closes, seed=264)
     plot_candles(ax, o, h, l, c, width=0.55)
-    hline(ax, closes.max() - 0.3, 0, n - 1, color=RED, label="Resistance")
-    hline(ax, closes.min() + 0.3, 0, n - 1, color=GREEN, label="Support")
+    hline(ax, closes.max() - 0.3, 0, n - 1, color=RED, label="مقاومة")
+    hline(ax, closes.min() + 0.3, 0, n - 1, color=GREEN, label="دعم")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-26-04")
 
@@ -1054,9 +1054,9 @@ def fig_26_05():
     closes = np.concatenate([pre, brk, back, cont])
     o, h, l, c = to_ohlc(closes, seed=265)
     plot_candles(ax, o, h, l, c)
-    hline(ax, level, 0, len(closes) - 1, color=GOLD, label="Broken level")
-    arrow(ax, (15, c[15]), (19, level + 0.1), color=NAVY, ls="dashed", label="Retest")
-    arrow(ax, (19, level), (29, c[-1]), color=GREEN, label="Continuation")
+    hline(ax, level, 0, len(closes) - 1, color=GOLD, label="مستوى مكسور")
+    arrow(ax, (15, c[15]), (19, level + 0.1), color=NAVY, ls="dashed", label="إعادة اختبار")
+    arrow(ax, (19, level), (29, c[-1]), color=GREEN, label="استمرار")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-26-05")
 
@@ -1071,7 +1071,7 @@ def fig_26_06():
     o1, h1, l1, c1 = to_ohlc(closes1, seed=269)
     plot_candles(axes[0], o1, h1, l1, c1, width=0.55)
     axes[0].axhline(level, color=GOLD, linestyle="--", linewidth=1.4)
-    axes[0].set_title("Real Breakout", fontsize=10.5, color=GREEN, fontweight="bold")
+    axes[0].set_title("اختراق حقيقي", fontsize=10.5, color=GREEN, fontweight="bold")
 
     fake_up = synth_walk(3, drift=1.0, vol=0.3, start=pre[-1], seed=271)
     fake_down = synth_walk(9, drift=-0.6, vol=0.4, start=fake_up[-1], seed=272)
@@ -1079,7 +1079,7 @@ def fig_26_06():
     o2, h2, l2, c2 = to_ohlc(closes2, seed=269)
     plot_candles(axes[1], o2, h2, l2, c2, width=0.55)
     axes[1].axhline(level, color=GOLD, linestyle="--", linewidth=1.4)
-    axes[1].set_title("False Breakout", fontsize=10.5, color=RED, fontweight="bold")
+    axes[1].set_title("اختراق كاذب", fontsize=10.5, color=RED, fontweight="bold")
     for ax in axes:
         for s in ["top", "right"]: ax.spines[s].set_visible(False)
         ax.set_xticks([])
@@ -1100,10 +1100,10 @@ def fig_28_03():
     ax.plot(x2, handle, color=GOLD, linewidth=2.2)
     ax.plot(x3, breakout, color=GREEN, linewidth=2.2)
     ax.axhline(3.0, color=GREY, linestyle=":", linewidth=1.2)
-    ax.text(3, 3.15, "Rim (Resistance)", color=GREY, fontsize=9, ha="center")
-    ax.text(3, 0.2, "Cup", color=NAVY, fontsize=10, ha="center", fontweight="bold")
-    ax.text(6.7, cup[-1] - 0.9, "Handle", color=GOLD, fontsize=10, ha="center", fontweight="bold")
-    ax.set_title("Cup and Handle", fontsize=11, color=NAVY, fontweight="bold")
+    ax.text(3, 3.15, "الحافة (مقاومة)", color=GREY, fontsize=9, ha="center")
+    ax.text(3, 0.2, "الكوب (Cup)", color=NAVY, fontsize=10, ha="center", fontweight="bold")
+    ax.text(6.7, cup[-1] - 0.9, "المقبض (Handle)", color=GOLD, fontsize=10, ha="center", fontweight="bold")
+    ax.set_title("الكوب والمقبض (Cup and Handle)", fontsize=11, color=NAVY, fontweight="bold")
     ax.set_xticks([]); ax.set_yticks([])
     for s in ax.spines.values(): s.set_visible(False)
     save(fig, "fig-28-03")
@@ -1116,10 +1116,10 @@ def fig_28_04():
     y = 2.2 - 1.8 * np.exp(-((x - 2.5) ** 2) / 0.5) - 1.8 * np.exp(-((x - 7) ** 2) / 0.5)
     ax.plot(x, y, color=NAVY, linewidth=2.2)
     ax.axhline(1.9, color=GOLD, linestyle="--", linewidth=1.4)
-    ax.text(4.75, 2.0, "Neckline (Resistance)", color=GOLD, fontsize=9, ha="center")
-    ax.text(2.5, 0.15, "Bottom 1", color=RED, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(7, 0.15, "Bottom 2", color=RED, fontsize=9.5, ha="center", fontweight="bold")
-    ax.set_title("Double Bottom", fontsize=11, color=NAVY, fontweight="bold")
+    ax.text(4.75, 2.0, "خط العنق (مقاومة)", color=GOLD, fontsize=9, ha="center")
+    ax.text(2.5, 0.15, "القاع 1", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(7, 0.15, "القاع 2", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("القاع المزدوج (Double Bottom)", fontsize=11, color=NAVY, fontweight="bold")
     ax.set_xticks([]); ax.set_yticks([])
     for s in ax.spines.values(): s.set_visible(False)
     save(fig, "fig-28-04")
@@ -1153,8 +1153,8 @@ def fig_29_05():
         ax.text(pts_x[i + 1], pts_y[i + 1] + 0.25, lab, fontsize=10, color=GOLD, fontweight="bold", ha="center")
     ax.axvspan(0, 5, color=GREEN, alpha=0.05)
     ax.axvspan(5, 8, color=RED, alpha=0.05)
-    ax.text(2.5, -0.6, "Impulse Waves (1-5)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(6.5, -0.6, "Corrective Waves (A-B-C)", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(2.5, -0.6, "الموجات الدافعة (1-5)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(6.5, -0.6, "الموجات التصحيحية (A-B-C)", color=RED, fontsize=9.5, ha="center", fontweight="bold")
     ax.set_xticks([]); ax.set_yticks([])
     for s in ax.spines.values(): s.set_visible(False)
     save(fig, "fig-29-05")
@@ -1171,11 +1171,120 @@ def fig_30_02():
     oi = 1000 + np.cumsum(np.random.default_rng(303).normal(35, 15, n))
     ax2.plot(oi, color=GOLD, linewidth=2)
     ax2.fill_between(np.arange(n), oi.min() - 50, oi, color=GOLD_LIGHT, alpha=0.2)
-    ax2.set_ylabel("Open Interest")
-    ax2.set_xlabel("Time →")
+    ax2.set_ylabel("الفائدة المفتوحة (Open Interest)")
+    ax2.set_xlabel("الزمن")
     for s in ["top", "right"]: ax2.spines[s].set_visible(False)
     fig.tight_layout(pad=0.6)
     save(fig, "fig-30-02")
+
+
+# ============================================================ 3.3 Swing High (dedicated single concept)
+def fig_03_03():
+    fig, ax = new_ax(w=7.2, h=4.0)
+    closes = np.array([100, 101.2, 102.6, 104.3, 103.0, 101.5, 100.4])
+    o, h, l, c = to_ohlc(closes, seed=333, wick=0.5)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    marker_point(ax, 3, h[3] + 0.15, color=NAVY, label="قمة تأرجحية (Swing High)", va="bottom", dy=0.6)
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    save(fig, "fig-03-03")
+
+# ============================================================ 3.4 Swing Low (dedicated single concept)
+def fig_03_04():
+    fig, ax = new_ax(w=7.2, h=4.0)
+    closes = np.array([104, 102.8, 101.4, 99.7, 101.0, 102.5, 103.6])
+    o, h, l, c = to_ohlc(closes, seed=334, wick=0.5)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    marker_point(ax, 3, l[3] - 0.15, color=NAVY, label="قاع تأرجحي (Swing Low)", va="top", dy=0.6)
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    save(fig, "fig-03-04")
+
+# ============================================================ 3.5 HH (dedicated single concept)
+def fig_03_05():
+    fig, ax = new_ax(w=7.2, h=4.0)
+    closes = np.array([100, 102.6, 101.4, 105.2])
+    o, h, l, c = to_ohlc(closes, seed=335, wick=0.5)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    ax.plot([1, 3], [h[1], h[3]], color=GREY, linestyle=":", linewidth=1.3)
+    marker_point(ax, 1, h[1] + 0.15, color=GREY, label=None, va="bottom", dy=0.6)
+    marker_point(ax, 3, h[3] + 0.15, color=NAVY, label="قمة أعلى (HH)", va="bottom", dy=0.6)
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    save(fig, "fig-03-05")
+
+# ============================================================ 3.6 HL (dedicated single concept)
+def fig_03_06():
+    fig, ax = new_ax(w=7.2, h=4.0)
+    closes = np.array([104, 100.8, 103.2, 102.0, 105.5])
+    o, h, l, c = to_ohlc(closes, seed=336, wick=0.5)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    ax.plot([1, 3], [l[1], l[3]], color=GREY, linestyle=":", linewidth=1.3)
+    marker_point(ax, 1, l[1] - 0.15, color=GREY, label=None, va="top", dy=0.6)
+    marker_point(ax, 3, l[3] - 0.15, color=NAVY, label="قاع أعلى (HL)", va="top", dy=0.6)
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    save(fig, "fig-03-06")
+
+# ============================================================ 3.7 LH (dedicated single concept)
+def fig_03_07():
+    fig, ax = new_ax(w=7.2, h=4.0)
+    closes = np.array([100, 105.2, 101.4, 102.6])
+    o, h, l, c = to_ohlc(closes, seed=337, wick=0.5)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    ax.plot([1, 3], [h[1], h[3]], color=GREY, linestyle=":", linewidth=1.3)
+    marker_point(ax, 1, h[1] + 0.15, color=GREY, label=None, va="bottom", dy=0.6)
+    marker_point(ax, 3, h[3] + 0.15, color=RED, label="قمة أدنى (LH)", va="bottom", dy=0.6)
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    save(fig, "fig-03-07")
+
+# ============================================================ 3.8 LL (dedicated single concept)
+def fig_03_08():
+    fig, ax = new_ax(w=7.2, h=4.0)
+    closes = np.array([105.5, 102.0, 103.2, 100.8, 104])
+    o, h, l, c = to_ohlc(closes, seed=338, wick=0.5)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    ax.plot([1, 3], [l[1], l[3]], color=GREY, linestyle=":", linewidth=1.3)
+    marker_point(ax, 1, l[1] - 0.15, color=GREY, label=None, va="top", dy=0.6)
+    marker_point(ax, 3, l[3] - 0.15, color=RED, label="قاع أدنى (LL)", va="top", dy=0.6)
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    save(fig, "fig-03-08")
+
+# ============================================================ 27.2a Uptrend (dedicated single concept)
+def fig_27_02():
+    fig, ax = new_ax(w=7.4, h=4.0)
+    closes = synth_walk(24, drift=0.55, vol=0.5, start=100, seed=2702)
+    o, h, l, c = to_ohlc(closes, seed=2702)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    lo_xs = [2, 10, 18]
+    ax.plot(lo_xs, [l[x] - 0.2 for x in lo_xs], color=GREEN, linewidth=2)
+    ax.text(12, ax.get_ylim()[0], "اتجاه صاعد (Uptrend)", color=GREEN, fontsize=10.5,
+            ha="center", va="bottom", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-27-02")
+
+# ============================================================ 27.2b Downtrend (dedicated single concept)
+def fig_27_03():
+    fig, ax = new_ax(w=7.4, h=4.0)
+    closes = synth_walk(24, drift=-0.55, vol=0.5, start=100, seed=2703)
+    o, h, l, c = to_ohlc(closes, seed=2703)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hi_xs = [2, 10, 18]
+    ax.plot(hi_xs, [h[x] + 0.2 for x in hi_xs], color=RED, linewidth=2)
+    ax.text(12, ax.get_ylim()[1], "اتجاه هابط (Downtrend)", color=RED, fontsize=10.5,
+            ha="center", va="top", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-27-03")
+
+# ============================================================ 27.2c Sideways trend (dedicated single concept)
+def fig_27_04():
+    fig, ax = new_ax(w=7.4, h=4.0)
+    n = 24
+    closes = 100 + 1.6 * np.sin(np.arange(n) / 2.6) + np.random.default_rng(2704).normal(0, 0.25, n)
+    o, h, l, c = to_ohlc(closes, seed=2704)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, closes.max() + 0.2, 0, n - 1, color=GOLD, ls="--")
+    hline(ax, closes.min() - 0.2, 0, n - 1, color=GOLD, ls="--")
+    ax.text(n / 2, closes.max() + 1.1, "اتجاه عرضي (Sideways / Range)", color=GOLD, fontsize=10.5,
+            ha="center", va="bottom", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [closes.max() + 1.4])
+    save(fig, "fig-27-04")
 
 
 if __name__ == "__main__":

@@ -70,19 +70,37 @@ body_html = re.sub(
     body_html,
 )
 
-# Insert page-break-before on h1/h2 tags (skip the very first tag in the doc)
+# Force a fresh page only before a new Part/Chapter title (h1), and only when
+# real body content separates it from whatever came before (so a Part title
+# immediately followed by its Chapter title stacks on one page instead of
+# each claiming an almost-empty page). Subsections (h2) never force a page
+# break -- they flow continuously within the chapter like a normal book, so
+# a short section doesn't leave the rest of the page empty.
 def add_page_breaks(html):
-    parts = re.split(r'(<h[12] id="[^"]+">)', html)
+    heading_re = re.compile(r'<h([12]) id="[^"]+">.*?</h\1>', re.DOTALL)
+    # A chapter that ends with a lone figure (very common: "case study" sections
+    # close with "the figure illustrates this example" + image) often has that
+    # figure overflow onto a fresh page by itself, since nothing else fits
+    # after the preceding dense text. Forcing the next chapter onto yet another
+    # new page in that situation leaves the figure's page mostly blank -- so we
+    # skip the forced break here and let the next chapter flow right after the
+    # figure, filling the remaining space on that page instead.
+    trailing_figure_re = re.compile(r'(<img[^>]*>\s*</p>|fig-caption[^>]*>.*?</p>)\s*$', re.DOTALL)
+    matches = list(heading_re.finditer(html))
     out = []
-    first_heading_seen = False
-    for chunk in parts:
-        m = re.match(r'<h([12]) id="([^"]+)">', chunk)
-        if m:
-            if first_heading_seen:
-                cls = "part-break" if m.group(1) == "1" else "chapter-break"
-                chunk = f'<div class="{cls}"></div>' + chunk
-            first_heading_seen = True
-        out.append(chunk)
+    last_end = 0
+    first = True
+    for m in matches:
+        gap = html[last_end:m.start()]
+        gap_text = re.sub(r'<[^>]+>', '', gap).strip()
+        ends_with_figure = bool(trailing_figure_re.search(gap.rstrip()))
+        out.append(gap)
+        if not first and gap_text and m.group(1) == "1" and not ends_with_figure:
+            out.append('<div class="chapter-break"></div>')
+        out.append(m.group(0))
+        last_end = m.end()
+        first = False
+    out.append(html[last_end:])
     return "".join(out)
 
 body_html = add_page_breaks(body_html)
@@ -107,104 +125,96 @@ toc_html = render_toc(toc_tokens)
 
 COPYRIGHT_HTML = """
 <div class="en-page">
-  <h1>Copyright</h1>
-  <p><strong>THE TRIPLE ANALYSIS</strong><br>
-  A Complete Guide to Smart Money Concepts, Fundamental Analysis, and Technical Analysis</p>
-  <p>First Edition &mdash; 2026</p>
-  <p>Copyright &copy; 2026 by Ahmed Abdelhafez and Ahmed Abu Omran. All rights reserved.</p>
-  <p>No part of this publication may be reproduced, distributed, or transmitted in any form or by any
-  means &mdash; including photocopying, recording, or other electronic or mechanical methods, or by any
-  information storage and retrieval system &mdash; without the prior written permission of the authors,
-  except in the case of brief quotations embodied in critical reviews and certain other noncommercial
-  uses permitted by copyright law.</p>
-  <p>The Triple Analysis, and all associated diagrams, figures, charts, and illustrations contained
-  within this book, are original works created by the authors and are protected under applicable
-  intellectual property and copyright laws. Unauthorized reproduction or distribution of this work, or
-  any portion of it, may result in civil and criminal penalties, and will be prosecuted to the maximum
-  extent possible under the law.</p>
-  <h2>Disclaimer</h2>
-  <p>This book is intended for educational and informational purposes only. Trading and investing in
-  financial markets involve substantial risk of loss and are not suitable for every individual. Nothing
-  contained in this book should be construed as financial, investment, legal, or tax advice, nor as a
-  recommendation or solicitation to buy or sell any financial instrument.</p>
-  <p>All charts, figures, and price examples presented throughout this book are illustrative and based
-  on synthetic or simulated data created solely to demonstrate the concepts discussed; they do not
-  represent the performance of any real financial instrument, strategy, product, or account, whether
-  past or future.</p>
-  <p>The authors and publisher make no representations or warranties with respect to the accuracy or
-  completeness of the contents of this book and specifically disclaim any implied warranties. Trading
-  decisions are the sole responsibility of the reader. The authors and publisher shall not be held liable
-  for any loss or damage, financial or otherwise, arising directly or indirectly from the use or
-  application of any information contained in this book.</p>
-  <p>Readers should conduct their own due diligence and consult a licensed financial professional before
-  making any investment or trading decision.</p>
-  <h2>Publication Information</h2>
-  <p>Title: The Triple Analysis<br>
-  Authors: Ahmed Abdelhafez, Ahmed Abu Omran<br>
-  Edition: First Edition, 2026<br>
-  Language: Arabic (with English terminology)</p>
+  <h1>حقوق النشر</h1>
+  <p><strong>التحليل الثلاثي (THE TRIPLE ANALYSIS)</strong><br>
+  الدليل الشامل لمفاهيم الأموال الذكية، والتحليل الأساسي، والتحليل الفني</p>
+  <p>الطبعة الأولى — 2026</p>
+  <p>جميع الحقوق محفوظة © 2026 لـ Ahmed Abdelhafez وAhmed Abu Omran.</p>
+  <p>لا يجوز إعادة إنتاج أي جزء من هذا الكتاب أو توزيعه أو نقله بأي شكل من الأشكال أو بأي وسيلة —
+  سواء بالتصوير، أو التسجيل، أو أي وسيلة إلكترونية أو ميكانيكية أخرى، أو عبر أي نظام لتخزين المعلومات
+  واسترجاعها — دون إذن كتابي مسبق من المؤلفَين، باستثناء الاقتباسات القصيرة المستخدمة في المراجعات
+  النقدية وبعض الاستخدامات غير التجارية الأخرى التي يسمح بها قانون حقوق النشر.</p>
+  <p>يُعد كتاب "التحليل الثلاثي"، وجميع ما يتضمنه من رسوم توضيحية وأشكال ومخططات، عملًا أصليًا أنتجه
+  المؤلفان، ويخضع لحماية قوانين الملكية الفكرية وحقوق النشر المعمول بها. أي إعادة إنتاج أو توزيع غير
+  مصرح به لهذا العمل، أو أي جزء منه، قد يُعرّض صاحبه لعقوبات مدنية وجنائية، وستُتخذ الإجراءات القانونية
+  اللازمة إلى أقصى حد يسمح به القانون.</p>
+  <h2>إخلاء المسؤولية</h2>
+  <p>هذا الكتاب مُعَدّ لأغراض تعليمية وتثقيفية فقط. ينطوي التداول والاستثمار في الأسواق المالية على
+  مخاطر جوهرية لخسارة رأس المال، وقد لا يكون مناسبًا لكل شخص. لا ينبغي اعتبار أي محتوى وارد في هذا
+  الكتاب استشارة مالية أو استثمارية أو قانونية أو ضريبية، ولا توصية أو دعوة لشراء أو بيع أي أداة مالية.</p>
+  <p>محتوى هذا الكتاب، وجميع الأطر والمفاهيم والقواعد الواردة فيه، مستمدّ من تجربة تداول حقيقية وشخصية
+  خاضها المؤلفان على مدار سنوات، بما فيها من نجاحات وإخفاقات شكّلت فهمهما العملي للأسواق. أما المخططات
+  والأشكال التوضيحية المرسومة داخل هذا الكتاب تحديدًا، فهي رسوم توضيحية أُعدّت خصيصًا لتجسيد وتبسيط تلك
+  المفاهيم بأوضح صورة ممكنة للقارئ، وليست نسخة حرفية عن صفقة أو حساب أو أداة مالية بعينها؛ فأداء الأسواق
+  الفعلي، ماضيًا أو مستقبلًا، لا يتكرر بالشكل نفسه ولا يمكن ضمانه.</p>
+  <p>لا يقدّم المؤلفان أي إقرار أو ضمان بخصوص دقة أو اكتمال محتوى هذا الكتاب، ويُخليان مسؤوليتهما صراحةً
+  عن أي ضمانات ضمنية. تقع مسؤولية أي قرار تداولي بالكامل على عاتق القارئ. لن يتحمّل المؤلفان أي مسؤولية
+  عن أي خسارة أو ضرر، مالي أو غير مالي، ينشأ بشكل مباشر أو غير مباشر عن استخدام أو تطبيق أي معلومة
+  واردة في هذا الكتاب.</p>
+  <p>يُنصح القراء بإجراء أبحاثهم الخاصة واستشارة مختص مالي مرخّص قبل اتخاذ أي قرار استثماري أو تداولي.</p>
+  <h2>معلومات الإصدار</h2>
+  <p>عنوان الكتاب: التحليل الثلاثي<br>
+  المؤلفان: Ahmed Abdelhafez، Ahmed Abu Omran<br>
+  الطبعة: الأولى، 2026<br>
+  اللغة: العربية (مع بعض المصطلحات الإنجليزية المتخصصة)</p>
 </div>
 """
 
 AUTHORS_HTML = """
 <div class="en-page authors-page">
-  <h1>Authors</h1>
+  <h1>المؤلفـان</h1>
   <div class="author-name">Ahmed Abdelhafez</div>
-  <div class="author-role">Co-Author</div>
+  <div class="author-role">مؤلف مشارك</div>
   <div class="author-name" style="margin-top:52px;">Ahmed Abu Omran</div>
-  <div class="author-role">Co-Author</div>
+  <div class="author-role">مؤلف مشارك</div>
 </div>
 """
 
 MESSAGE_HTML = """
 <div class="en-page">
-  <h1>A Message from the Authors</h1>
-  <p>This book is the product of a long road &mdash; years spent inside the charts, inside our own
-  losing trades as much as our winning ones, and inside the slow, often humbling process of turning
-  scattered experience into something that could actually be taught.</p>
-  <p>We did not set out to write a book of shortcuts. What follows is closer to a working record: the
-  frameworks we kept coming back to, the mistakes that cost us before they taught us anything, and the
-  slow refinement of a process that finally held together under real market conditions. If you study it
-  seriously and apply it with patience, it will give you a genuine foundation &mdash; one built for the
-  long run, not for the next trade.</p>
-  <p>But we want to be honest with you about something before you turn the next page: none of this
-  &mdash; not the market structure, not the smart money concepts, not the indicators &mdash; is the real
-  lesson. The real lesson is quieter than that. It is composure. It is discipline. It is the ability to
-  sit with a losing trade without letting it dictate your next decision.</p>
-  <p>You will go through stretches where your strategy feels unstoppable, where every setup seems to
-  work and every instinct seems right. Do not mistake that for mastery. Without risk management and
-  psychological discipline behind it, no edge survives contact with enough trades. We have watched it
-  happen to others, and early in our own journeys, we watched it happen to us.</p>
-  <p>So take the frameworks in this book seriously &mdash; they work, and we built them to last. But
-  take the discipline more seriously still. Real professionalism in this business does not begin with
-  controlling the market. It begins with controlling yourself.</p>
-  <p class="message-signoff">&mdash; Ahmed Abdelhafez &amp; Ahmed Abu Omran</p>
+  <h1>رسالة من المؤلفَين</h1>
+  <p>وُلد هذا الكتاب بعد رحلة طويلة — سنوات قضيناها بين المخططات، وبين صفقاتنا الخاسرة بقدر ما بين
+  رابحاتها، وفي ذلك المسار البطيء، والمُحبِط أحيانًا، الذي حوّل خبرة متناثرة إلى شيء يمكن تعليمه فعلًا
+  لغيرنا.</p>
+  <p>لم نكتب هذا الكتاب بحثًا عن اختصارات سهلة. ما بين يديك أقرب إلى سجلٍّ عملي: الأطر التي عدنا إليها
+  مرارًا، والأخطاء التي كلّفتنا قبل أن تُعلّمنا شيئًا، والتنقيح البطيء لمنهج استقرّ أخيرًا تحت ضغط ظروف
+  السوق الحقيقية. إن درست هذا الكتاب بجدّية وطبّقته بصبر، فسيمنحك أساسًا حقيقيًا — أساسًا بُني ليدوم
+  طويلًا، لا ليخدم صفقتك القادمة فقط.</p>
+  <p>لكننا نريد أن نكون صادقَين معك قبل أن تقلب الصفحة التالية: لا شيء مما ستقرأه — لا هيكل السوق، ولا
+  مفاهيم الأموال الذكية، ولا المؤشرات — هو الدرس الحقيقي. الدرس الحقيقي أهدأ من كل ذلك بكثير. إنه
+  الهدوء. إنه الانضباط. إنه القدرة على الجلوس مع صفقة خاسرة دون أن تدعها تُملي عليك قرارك التالي.</p>
+  <p>ستمر بفترات تشعر فيها أن استراتيجيتك لا تُقهر، حين يبدو كل إعداد صحيحًا وكل حدس مصيبًا. لا تخلط
+  بين ذلك وبين الاحتراف الحقيقي. فبدون إدارة مخاطر وانضباط نفسي خلف أي ميزة تداولية، لن تصمد هذه الميزة
+  أمام عدد كافٍ من الصفقات. رأينا ذلك يحدث لغيرنا، ورأيناه يحدث لنا في بدايات مشوارنا أيضًا.</p>
+  <p>لذا خذ الأطر الواردة في هذا الكتاب على محمل الجد — فهي تعمل فعلًا، وقد بنيناها لتدوم. لكن خذ
+  الانضباط على محمل جدٍّ أكبر. فالاحتراف الحقيقي في هذا المجال لا يبدأ بالسيطرة على السوق، بل يبدأ
+  بالسيطرة على النفس.</p>
+  <p class="message-signoff">— Ahmed Abdelhafez وAhmed Abu Omran</p>
 </div>
 """
 
 LEGAL_HTML = """
 <div class="en-page legal-page">
   <div class="part-break"></div>
-  <h1>Legal Notice</h1>
-  <p>This book, <strong>The Triple Analysis</strong>, including its text, structure, and all original
-  diagrams, figures, and illustrations, is the intellectual property of its authors, Ahmed Abdelhafez
-  and Ahmed Abu Omran, and is protected under national and international copyright law.</p>
-  <p>The following actions are strictly prohibited without prior written consent from the authors:</p>
+  <h1>تنبيه قانوني</h1>
+  <p>يُعد هذا الكتاب، <strong>التحليل الثلاثي</strong>، بنصّه وهيكله وجميع ما يتضمنه من رسوم وأشكال
+  توضيحية أصلية، ملكية فكرية لمؤلفَيه، Ahmed Abdelhafez وAhmed Abu Omran، ويخضع لحماية قوانين حقوق
+  النشر المحلية والدولية.</p>
+  <p>يُمنع منعًا باتًا القيام بأي من الإجراءات التالية دون إذن كتابي مسبق من المؤلفَين:</p>
   <ul>
-    <li>Reselling this book, in whole or in part, in any format.</li>
-    <li>Republishing this book, or any portion of it, under any name.</li>
-    <li>Copying, duplicating, or uploading this book to any website, file-sharing service, forum, or
-    social media platform.</li>
-    <li>Using any text, diagram, figure, or illustration from this book for commercial purposes.</li>
-    <li>Translating, adapting, or creating derivative works based on this book without authorization.</li>
+    <li>إعادة بيع هذا الكتاب، كليًا أو جزئيًا، بأي صيغة.</li>
+    <li>إعادة نشر هذا الكتاب، أو أي جزء منه، تحت أي اسم.</li>
+    <li>نسخ هذا الكتاب أو تكراره أو رفعه على أي موقع إلكتروني، أو خدمة مشاركة ملفات، أو منتدى، أو
+    منصة تواصل اجتماعي.</li>
+    <li>استخدام أي نص أو رسم أو شكل توضيحي من هذا الكتاب لأغراض تجارية.</li>
+    <li>ترجمة هذا الكتاب أو تعديله أو إنتاج أي عمل مشتق منه دون تصريح.</li>
   </ul>
-  <p>All rights not expressly granted herein are reserved by the authors. Any violation of these terms
-  may expose the responsible party to civil and criminal liability under applicable copyright laws, and
-  the authors reserve the right to pursue all available legal remedies against any individual or entity
-  found to be in breach of this notice.</p>
-  <p>For permissions, licensing inquiries, or authorized use of any material from this book, please
-  contact the authors directly.</p>
-  <p style="margin-top:2em;">&copy; 2026 Ahmed Abdelhafez &amp; Ahmed Abu Omran. All Rights Reserved.</p>
+  <p>تبقى جميع الحقوق غير الممنوحة صراحةً هنا محفوظة للمؤلفَين. أي انتهاك لهذه الشروط قد يُعرّض
+  المخالف للمساءلة المدنية والجنائية وفق قوانين حقوق النشر المعمول بها، ويحتفظ المؤلفان بحقهما في
+  اتخاذ كل الإجراءات القانونية المتاحة ضد أي فرد أو جهة يثبت انتهاكها لهذا التنبيه.</p>
+  <p>للاستفسار عن التصاريح أو التراخيص أو الاستخدام المصرح به لأي مادة من هذا الكتاب، يُرجى التواصل
+  مع المؤلفَين مباشرة.</p>
+  <p style="margin-top:2em;">© 2026 Ahmed Abdelhafez وAhmed Abu Omran. جميع الحقوق محفوظة.</p>
 </div>
 """
 
@@ -226,13 +236,10 @@ html_doc = f"""<!DOCTYPE html>
       color: #8a7a55;
     }}
     @bottom-left {{
-      content: "\\00a9 2026 Ahmed Abdelhafez & Ahmed Abu Omran. All Rights Reserved.";
-      font-family: "Noto Sans Arabic", sans-serif;
-      font-size: 6.7pt;
+      content: "\\00a9 2026 Ahmed Abdelhafez وAhmed Abu Omran - جميع الحقوق محفوظة";
+      font-family: "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif;
+      font-size: 7pt;
       color: #aaaaaa;
-      direction: ltr;
-      unicode-bidi: bidi-override;
-      text-align: left;
     }}
     @bottom-center {{
       content: counter(page);
@@ -251,13 +258,10 @@ html_doc = f"""<!DOCTYPE html>
     margin: 2.4cm 2cm;
     @top-center {{ content: none; }}
     @bottom-left {{
-      content: "\\00a9 2026 Ahmed Abdelhafez & Ahmed Abu Omran. All Rights Reserved.";
-      font-family: "Noto Sans Arabic", sans-serif;
-      font-size: 6.7pt;
+      content: "\\00a9 2026 Ahmed Abdelhafez وAhmed Abu Omran - جميع الحقوق محفوظة";
+      font-family: "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif;
+      font-size: 7pt;
       color: #aaaaaa;
-      direction: ltr;
-      unicode-bidi: bidi-override;
-      text-align: left;
     }}
     @bottom-center {{
       content: counter(page, lower-roman);
@@ -409,11 +413,27 @@ html_doc = f"""<!DOCTYPE html>
     padding-bottom: 14px;
     margin: 0 0 26px;
   }}
+  /* A Part title stacked directly above a Chapter title (no body text
+     between them): shrink the Part title into a small kicker line instead
+     of a second full-size heading, so the page doesn't look duplicated. */
+  h1:has(+ h1) {{
+    border-bottom: none;
+    padding-bottom: 0;
+    margin: 0 0 6px;
+    font-size: 12pt;
+    color: #B7791F;
+    letter-spacing: 1px;
+  }}
   h2 {{
     font-size: 16.5pt;
     color: #1F2937;
     margin-top: 0.3em;
     margin-bottom: 0.6em;
+  }}
+  /* A Chapter title stacked directly above its first subsection (no body
+     text between them yet): tighten the gap. */
+  h1 + h2 {{
+    margin-top: 4px;
   }}
   h3 {{
     font-size: 13.5pt;
@@ -489,43 +509,46 @@ html_doc = f"""<!DOCTYPE html>
     font-weight: 700;
   }}
 
-  /* ---------- ENGLISH FRONT/BACK MATTER ---------- */
+  /* ---------- FRONT/BACK MATTER (Copyright, Authors, Message, Legal) ---------- */
   .en-page {{
     page: toc;
     page-break-after: always;
-    direction: ltr;
-    text-align: left;
-    font-family: Georgia, "Times New Roman", serif;
-    padding-top: 1.5cm;
+    direction: rtl;
+    text-align: right;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
   }}
   .en-page.legal-page {{
     page: auto;
   }}
   .en-page h1 {{
-    font-family: Georgia, "Times New Roman", serif;
+    margin-top: 0.4cm;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
     font-size: 20pt;
     color: #1F2937;
-    text-align: left;
+    text-align: right;
     border-bottom: 3px solid #B7791F;
-    padding-bottom: 12px;
-    margin: 0 0 22px;
+    padding-bottom: 10px;
+    margin: 0 0 16px;
   }}
   .en-page h2 {{
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
     font-size: 14pt;
     color: #B7791F;
-    margin: 1.6em 0 0.5em;
+    margin: 1em 0 0.4em;
+    page-break-after: avoid;
   }}
   .en-page p {{
     font-size: 10.5pt;
-    line-height: 1.75;
+    line-height: 1.55;
     color: #2A2420;
-    margin: 0 0 0.9em;
+    margin: 0 0 0.55em;
+    page-break-inside: avoid;
   }}
   .en-page ul {{
-    padding-left: 1.4em;
+    padding-right: 1.4em;
+    padding-left: 0;
     font-size: 10.5pt;
-    line-height: 1.75;
+    line-height: 1.55;
     color: #2A2420;
   }}
   .en-page li {{
@@ -538,10 +561,8 @@ html_doc = f"""<!DOCTYPE html>
   .authors-page h1 {{
     text-align: center;
     border-bottom: none;
-    font-size: 13pt;
-    letter-spacing: 3px;
+    font-size: 14pt;
     color: #B7791F;
-    text-transform: uppercase;
     margin-bottom: 40px;
   }}
   .authors-page .author-name {{

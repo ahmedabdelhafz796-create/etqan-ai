@@ -3,12 +3,16 @@ for The Triple Analysis. All chart data below is synthetic (randomly
 generated to look like realistic market behaviour) — nothing is traced,
 copied, or extracted from any reference image.
 """
+import re
 import numpy as np
 import matplotlib
 matplotlib.use("svg")
 import matplotlib.pyplot as plt
+import matplotlib.text
 import matplotlib.patches as mpatches
 from matplotlib.patches import FancyArrowPatch, Rectangle
+import arabic_reshaper
+from bidi.algorithm import get_display
 import os
 
 # ---- Brand palette (consistent with the book / etqan-ai brand) ----
@@ -23,7 +27,8 @@ GREY = "#8a8f98"
 GRID = "#E6E1D6"
 
 plt.rcParams.update({
-    "font.family": "DejaVu Sans",
+    "font.family": ["Noto Naskh Arabic", "DejaVu Sans"],
+    "font.sans-serif": ["Noto Naskh Arabic", "DejaVu Sans"],
     "font.size": 10.5,
     "axes.edgecolor": NAVY,
     "axes.labelcolor": NAVY,
@@ -31,7 +36,33 @@ plt.rcParams.update({
     "xtick.color": "#555555",
     "ytick.color": "#555555",
     "svg.fonttype": "path",
+    "axes.unicode_minus": False,
 })
+
+
+# ---- Arabic text shaping/bidi so labels typed in the book's language
+# render correctly inside matplotlib figures (which does no shaping or
+# bidi reordering on its own). Standard trading abbreviations (BOS, RSI,
+# FVG...) are typically embedded inside Arabic strings and are handled
+# correctly by the bidi algorithm automatically -- no special-casing needed.
+_ARABIC_RE = re.compile(r'[؀-ۿ]')
+
+
+def ar(text):
+    text = str(text)
+    if not _ARABIC_RE.search(text):
+        return text
+    return get_display(arabic_reshaper.reshape(text))
+
+
+_orig_set_text = matplotlib.text.Text.set_text
+
+
+def _patched_set_text(self, s):
+    return _orig_set_text(self, ar(s) if s else s)
+
+
+matplotlib.text.Text.set_text = _patched_set_text
 
 FIG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "figures")
 os.makedirs(FIG_DIR, exist_ok=True)
@@ -48,8 +79,8 @@ def new_ax(w=8.6, h=4.6, price_axis=True):
     ax.grid(axis="y", color=GRID, linewidth=0.8, zorder=0)
     ax.set_axisbelow(True)
     if price_axis:
-        ax.set_ylabel("Price", fontsize=10, labelpad=8)
-    ax.set_xlabel("Time →", fontsize=10, labelpad=8)
+        ax.set_ylabel("السعر", fontsize=10, labelpad=8)
+    ax.set_xlabel("الزمن", fontsize=10, labelpad=8)
     ax.set_xticks([])
     return fig, ax
 

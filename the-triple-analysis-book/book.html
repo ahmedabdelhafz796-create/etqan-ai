@@ -14,13 +14,10 @@
       color: #8a7a55;
     }
     @bottom-left {
-      content: "\00a9 2026 Ahmed Abdelhafez & Ahmed Abu Omran. All Rights Reserved.";
-      font-family: "Noto Sans Arabic", sans-serif;
-      font-size: 6.7pt;
+      content: "\00a9 2026 Ahmed Abdelhafez وAhmed Abu Omran - جميع الحقوق محفوظة";
+      font-family: "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif;
+      font-size: 7pt;
       color: #aaaaaa;
-      direction: ltr;
-      unicode-bidi: bidi-override;
-      text-align: left;
     }
     @bottom-center {
       content: counter(page);
@@ -39,13 +36,10 @@
     margin: 2.4cm 2cm;
     @top-center { content: none; }
     @bottom-left {
-      content: "\00a9 2026 Ahmed Abdelhafez & Ahmed Abu Omran. All Rights Reserved.";
-      font-family: "Noto Sans Arabic", sans-serif;
-      font-size: 6.7pt;
+      content: "\00a9 2026 Ahmed Abdelhafez وAhmed Abu Omran - جميع الحقوق محفوظة";
+      font-family: "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif;
+      font-size: 7pt;
       color: #aaaaaa;
-      direction: ltr;
-      unicode-bidi: bidi-override;
-      text-align: left;
     }
     @bottom-center {
       content: counter(page, lower-roman);
@@ -197,11 +191,27 @@
     padding-bottom: 14px;
     margin: 0 0 26px;
   }
+  /* A Part title stacked directly above a Chapter title (no body text
+     between them): shrink the Part title into a small kicker line instead
+     of a second full-size heading, so the page doesn't look duplicated. */
+  h1:has(+ h1) {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin: 0 0 6px;
+    font-size: 12pt;
+    color: #B7791F;
+    letter-spacing: 1px;
+  }
   h2 {
     font-size: 16.5pt;
     color: #1F2937;
     margin-top: 0.3em;
     margin-bottom: 0.6em;
+  }
+  /* A Chapter title stacked directly above its first subsection (no body
+     text between them yet): tighten the gap. */
+  h1 + h2 {
+    margin-top: 4px;
   }
   h3 {
     font-size: 13.5pt;
@@ -277,43 +287,46 @@
     font-weight: 700;
   }
 
-  /* ---------- ENGLISH FRONT/BACK MATTER ---------- */
+  /* ---------- FRONT/BACK MATTER (Copyright, Authors, Message, Legal) ---------- */
   .en-page {
     page: toc;
     page-break-after: always;
-    direction: ltr;
-    text-align: left;
-    font-family: Georgia, "Times New Roman", serif;
-    padding-top: 1.5cm;
+    direction: rtl;
+    text-align: right;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
   }
   .en-page.legal-page {
     page: auto;
   }
   .en-page h1 {
-    font-family: Georgia, "Times New Roman", serif;
+    margin-top: 0.4cm;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
     font-size: 20pt;
     color: #1F2937;
-    text-align: left;
+    text-align: right;
     border-bottom: 3px solid #B7791F;
-    padding-bottom: 12px;
-    margin: 0 0 22px;
+    padding-bottom: 10px;
+    margin: 0 0 16px;
   }
   .en-page h2 {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
     font-size: 14pt;
     color: #B7791F;
-    margin: 1.6em 0 0.5em;
+    margin: 1em 0 0.4em;
+    page-break-after: avoid;
   }
   .en-page p {
     font-size: 10.5pt;
-    line-height: 1.75;
+    line-height: 1.55;
     color: #2A2420;
-    margin: 0 0 0.9em;
+    margin: 0 0 0.55em;
+    page-break-inside: avoid;
   }
   .en-page ul {
-    padding-left: 1.4em;
+    padding-right: 1.4em;
+    padding-left: 0;
     font-size: 10.5pt;
-    line-height: 1.75;
+    line-height: 1.55;
     color: #2A2420;
   }
   .en-page li {
@@ -326,10 +339,8 @@
   .authors-page h1 {
     text-align: center;
     border-bottom: none;
-    font-size: 13pt;
-    letter-spacing: 3px;
+    font-size: 14pt;
     color: #B7791F;
-    text-transform: uppercase;
     margin-bottom: 40px;
   }
   .authors-page .author-name {
@@ -368,76 +379,69 @@
 
 
 <div class="en-page">
-  <h1>Copyright</h1>
-  <p><strong>THE TRIPLE ANALYSIS</strong><br>
-  A Complete Guide to Smart Money Concepts, Fundamental Analysis, and Technical Analysis</p>
-  <p>First Edition &mdash; 2026</p>
-  <p>Copyright &copy; 2026 by Ahmed Abdelhafez and Ahmed Abu Omran. All rights reserved.</p>
-  <p>No part of this publication may be reproduced, distributed, or transmitted in any form or by any
-  means &mdash; including photocopying, recording, or other electronic or mechanical methods, or by any
-  information storage and retrieval system &mdash; without the prior written permission of the authors,
-  except in the case of brief quotations embodied in critical reviews and certain other noncommercial
-  uses permitted by copyright law.</p>
-  <p>The Triple Analysis, and all associated diagrams, figures, charts, and illustrations contained
-  within this book, are original works created by the authors and are protected under applicable
-  intellectual property and copyright laws. Unauthorized reproduction or distribution of this work, or
-  any portion of it, may result in civil and criminal penalties, and will be prosecuted to the maximum
-  extent possible under the law.</p>
-  <h2>Disclaimer</h2>
-  <p>This book is intended for educational and informational purposes only. Trading and investing in
-  financial markets involve substantial risk of loss and are not suitable for every individual. Nothing
-  contained in this book should be construed as financial, investment, legal, or tax advice, nor as a
-  recommendation or solicitation to buy or sell any financial instrument.</p>
-  <p>All charts, figures, and price examples presented throughout this book are illustrative and based
-  on synthetic or simulated data created solely to demonstrate the concepts discussed; they do not
-  represent the performance of any real financial instrument, strategy, product, or account, whether
-  past or future.</p>
-  <p>The authors and publisher make no representations or warranties with respect to the accuracy or
-  completeness of the contents of this book and specifically disclaim any implied warranties. Trading
-  decisions are the sole responsibility of the reader. The authors and publisher shall not be held liable
-  for any loss or damage, financial or otherwise, arising directly or indirectly from the use or
-  application of any information contained in this book.</p>
-  <p>Readers should conduct their own due diligence and consult a licensed financial professional before
-  making any investment or trading decision.</p>
-  <h2>Publication Information</h2>
-  <p>Title: The Triple Analysis<br>
-  Authors: Ahmed Abdelhafez, Ahmed Abu Omran<br>
-  Edition: First Edition, 2026<br>
-  Language: Arabic (with English terminology)</p>
+  <h1>حقوق النشر</h1>
+  <p><strong>التحليل الثلاثي (THE TRIPLE ANALYSIS)</strong><br>
+  الدليل الشامل لمفاهيم الأموال الذكية، والتحليل الأساسي، والتحليل الفني</p>
+  <p>الطبعة الأولى — 2026</p>
+  <p>جميع الحقوق محفوظة © 2026 لـ Ahmed Abdelhafez وAhmed Abu Omran.</p>
+  <p>لا يجوز إعادة إنتاج أي جزء من هذا الكتاب أو توزيعه أو نقله بأي شكل من الأشكال أو بأي وسيلة —
+  سواء بالتصوير، أو التسجيل، أو أي وسيلة إلكترونية أو ميكانيكية أخرى، أو عبر أي نظام لتخزين المعلومات
+  واسترجاعها — دون إذن كتابي مسبق من المؤلفَين، باستثناء الاقتباسات القصيرة المستخدمة في المراجعات
+  النقدية وبعض الاستخدامات غير التجارية الأخرى التي يسمح بها قانون حقوق النشر.</p>
+  <p>يُعد كتاب "التحليل الثلاثي"، وجميع ما يتضمنه من رسوم توضيحية وأشكال ومخططات، عملًا أصليًا أنتجه
+  المؤلفان، ويخضع لحماية قوانين الملكية الفكرية وحقوق النشر المعمول بها. أي إعادة إنتاج أو توزيع غير
+  مصرح به لهذا العمل، أو أي جزء منه، قد يُعرّض صاحبه لعقوبات مدنية وجنائية، وستُتخذ الإجراءات القانونية
+  اللازمة إلى أقصى حد يسمح به القانون.</p>
+  <h2>إخلاء المسؤولية</h2>
+  <p>هذا الكتاب مُعَدّ لأغراض تعليمية وتثقيفية فقط. ينطوي التداول والاستثمار في الأسواق المالية على
+  مخاطر جوهرية لخسارة رأس المال، وقد لا يكون مناسبًا لكل شخص. لا ينبغي اعتبار أي محتوى وارد في هذا
+  الكتاب استشارة مالية أو استثمارية أو قانونية أو ضريبية، ولا توصية أو دعوة لشراء أو بيع أي أداة مالية.</p>
+  <p>محتوى هذا الكتاب، وجميع الأطر والمفاهيم والقواعد الواردة فيه، مستمدّ من تجربة تداول حقيقية وشخصية
+  خاضها المؤلفان على مدار سنوات، بما فيها من نجاحات وإخفاقات شكّلت فهمهما العملي للأسواق. أما المخططات
+  والأشكال التوضيحية المرسومة داخل هذا الكتاب تحديدًا، فهي رسوم توضيحية أُعدّت خصيصًا لتجسيد وتبسيط تلك
+  المفاهيم بأوضح صورة ممكنة للقارئ، وليست نسخة حرفية عن صفقة أو حساب أو أداة مالية بعينها؛ فأداء الأسواق
+  الفعلي، ماضيًا أو مستقبلًا، لا يتكرر بالشكل نفسه ولا يمكن ضمانه.</p>
+  <p>لا يقدّم المؤلفان أي إقرار أو ضمان بخصوص دقة أو اكتمال محتوى هذا الكتاب، ويُخليان مسؤوليتهما صراحةً
+  عن أي ضمانات ضمنية. تقع مسؤولية أي قرار تداولي بالكامل على عاتق القارئ. لن يتحمّل المؤلفان أي مسؤولية
+  عن أي خسارة أو ضرر، مالي أو غير مالي، ينشأ بشكل مباشر أو غير مباشر عن استخدام أو تطبيق أي معلومة
+  واردة في هذا الكتاب.</p>
+  <p>يُنصح القراء بإجراء أبحاثهم الخاصة واستشارة مختص مالي مرخّص قبل اتخاذ أي قرار استثماري أو تداولي.</p>
+  <h2>معلومات الإصدار</h2>
+  <p>عنوان الكتاب: التحليل الثلاثي<br>
+  المؤلفان: Ahmed Abdelhafez، Ahmed Abu Omran<br>
+  الطبعة: الأولى، 2026<br>
+  اللغة: العربية (مع بعض المصطلحات الإنجليزية المتخصصة)</p>
 </div>
 
 
 <div class="en-page authors-page">
-  <h1>Authors</h1>
+  <h1>المؤلفـان</h1>
   <div class="author-name">Ahmed Abdelhafez</div>
-  <div class="author-role">Co-Author</div>
+  <div class="author-role">مؤلف مشارك</div>
   <div class="author-name" style="margin-top:52px;">Ahmed Abu Omran</div>
-  <div class="author-role">Co-Author</div>
+  <div class="author-role">مؤلف مشارك</div>
 </div>
 
 
 <div class="en-page">
-  <h1>A Message from the Authors</h1>
-  <p>This book is the product of a long road &mdash; years spent inside the charts, inside our own
-  losing trades as much as our winning ones, and inside the slow, often humbling process of turning
-  scattered experience into something that could actually be taught.</p>
-  <p>We did not set out to write a book of shortcuts. What follows is closer to a working record: the
-  frameworks we kept coming back to, the mistakes that cost us before they taught us anything, and the
-  slow refinement of a process that finally held together under real market conditions. If you study it
-  seriously and apply it with patience, it will give you a genuine foundation &mdash; one built for the
-  long run, not for the next trade.</p>
-  <p>But we want to be honest with you about something before you turn the next page: none of this
-  &mdash; not the market structure, not the smart money concepts, not the indicators &mdash; is the real
-  lesson. The real lesson is quieter than that. It is composure. It is discipline. It is the ability to
-  sit with a losing trade without letting it dictate your next decision.</p>
-  <p>You will go through stretches where your strategy feels unstoppable, where every setup seems to
-  work and every instinct seems right. Do not mistake that for mastery. Without risk management and
-  psychological discipline behind it, no edge survives contact with enough trades. We have watched it
-  happen to others, and early in our own journeys, we watched it happen to us.</p>
-  <p>So take the frameworks in this book seriously &mdash; they work, and we built them to last. But
-  take the discipline more seriously still. Real professionalism in this business does not begin with
-  controlling the market. It begins with controlling yourself.</p>
-  <p class="message-signoff">&mdash; Ahmed Abdelhafez &amp; Ahmed Abu Omran</p>
+  <h1>رسالة من المؤلفَين</h1>
+  <p>وُلد هذا الكتاب بعد رحلة طويلة — سنوات قضيناها بين المخططات، وبين صفقاتنا الخاسرة بقدر ما بين
+  رابحاتها، وفي ذلك المسار البطيء، والمُحبِط أحيانًا، الذي حوّل خبرة متناثرة إلى شيء يمكن تعليمه فعلًا
+  لغيرنا.</p>
+  <p>لم نكتب هذا الكتاب بحثًا عن اختصارات سهلة. ما بين يديك أقرب إلى سجلٍّ عملي: الأطر التي عدنا إليها
+  مرارًا، والأخطاء التي كلّفتنا قبل أن تُعلّمنا شيئًا، والتنقيح البطيء لمنهج استقرّ أخيرًا تحت ضغط ظروف
+  السوق الحقيقية. إن درست هذا الكتاب بجدّية وطبّقته بصبر، فسيمنحك أساسًا حقيقيًا — أساسًا بُني ليدوم
+  طويلًا، لا ليخدم صفقتك القادمة فقط.</p>
+  <p>لكننا نريد أن نكون صادقَين معك قبل أن تقلب الصفحة التالية: لا شيء مما ستقرأه — لا هيكل السوق، ولا
+  مفاهيم الأموال الذكية، ولا المؤشرات — هو الدرس الحقيقي. الدرس الحقيقي أهدأ من كل ذلك بكثير. إنه
+  الهدوء. إنه الانضباط. إنه القدرة على الجلوس مع صفقة خاسرة دون أن تدعها تُملي عليك قرارك التالي.</p>
+  <p>ستمر بفترات تشعر فيها أن استراتيجيتك لا تُقهر، حين يبدو كل إعداد صحيحًا وكل حدس مصيبًا. لا تخلط
+  بين ذلك وبين الاحتراف الحقيقي. فبدون إدارة مخاطر وانضباط نفسي خلف أي ميزة تداولية، لن تصمد هذه الميزة
+  أمام عدد كافٍ من الصفقات. رأينا ذلك يحدث لغيرنا، ورأيناه يحدث لنا في بدايات مشوارنا أيضًا.</p>
+  <p>لذا خذ الأطر الواردة في هذا الكتاب على محمل الجد — فهي تعمل فعلًا، وقد بنيناها لتدوم. لكن خذ
+  الانضباط على محمل جدٍّ أكبر. فالاحتراف الحقيقي في هذا المجال لا يبدأ بالسيطرة على السوق، بل يبدأ
+  بالسيطرة على النفس.</p>
+  <p class="message-signoff">— Ahmed Abdelhafez وAhmed Abu Omran</p>
 </div>
 
 
@@ -847,7 +851,7 @@
 </div>
 
 <h1 id="_1">المقدمة</h1>
-<div class="chapter-break"></div><h2 id="_2">عن هذا الكتاب</h2>
+<h2 id="_2">عن هذا الكتاب</h2>
 <p>"التحليل الثلاثي" ليس مجرد كتاب آخر عن التداول، بل مرجع شامل يدمج ثلاث مدارس فكرية رئيسية في عالم الأسواق المالية ضمن إطار واحد متماسك:</p>
 <ol>
 <li><strong>مفاهيم الأموال الذكية (Smart Money Concepts – SMC):</strong> فهم كيف تتحرك المؤسسات والبنوك الكبرى في السوق، وكيف تترك بصماتها على المخططات السعرية.</li>
@@ -861,7 +865,7 @@
 <li>وفئة ثالثة تتقن مفاهيم الأموال الذكية نظريًا، لكنها لا تعرف كيف تدمجها مع الأدوات الأخرى ضمن خطة تداول واحدة متكاملة.</li>
 </ul>
 <p>هذا الكتاب يهدف إلى سد هذه الفجوة، من خلال تقديم الأدوات الثلاث بشكل متدرج، تعليمي، وقابل للتطبيق الفوري.</p>
-<div class="chapter-break"></div><h2 id="_3">كيف تستخدم هذا الكتاب</h2>
+<h2 id="_3">كيف تستخدم هذا الكتاب</h2>
 <p>تم تصميم هذا الكتاب ليخدم ثلاثة أغراض:</p>
 <ol>
 <li><strong>مرجعًا تعليميًا متكاملًا:</strong> يُقرأ من البداية إلى النهاية لبناء أساس معرفي متدرج من المبتدئ إلى المحترف.</li>
@@ -875,7 +879,7 @@
 <li>احتفظ بدفتر ملاحظات أو "دفتر تداول" لتسجيل أفكارك وملاحظاتك أثناء القراءة.</li>
 <li>لا تتردد في العودة إلى الفصول التي تجدها صعبة أكثر من مرة — فهم الأموال الذكية والتحليل الأساسي يحتاج تكرارًا حتى يترسخ.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_4">فلسفة التحليل الثلاثي</h2>
+<h2 id="_4">فلسفة التحليل الثلاثي</h2>
 <p>تقوم فلسفة هذا الكتاب على مبدأ بسيط:</p>
 <blockquote>
 <p><strong>الأسواق المالية مدفوعة بعوامل متعددة ومتداخلة، والنجاح المستدام في التداول يأتي من فهم هذه العوامل مجتمعة، لا من إتقان أداة واحدة فقط.</strong></p>
@@ -905,10 +909,10 @@
 </table>
 <p>عندما يجمع المتداول بين هذه العناصر الثلاثة ضمن عملية تحليل واحدة متسلسلة — بدءًا من الصورة الكبرى (الأساسي)، مرورًا بفهم نية المؤسسات (SMC)، وانتهاءً بتوقيت التنفيذ الدقيق (الفني) — فإنه يحصل على ميزة تنافسية حقيقية لا يمتلكها المتداول الذي يعتمد على أداة واحدة فقط.</p>
 <p>هذا هو جوهر "التحليل الثلاثي"، وهو الإطار الذي سيرافق القارئ عبر فصول هذا الكتاب كاملة.</p>
-<div class="part-break"></div><h1 id="_5">الجزء الأول: المسرد والفهرس</h1>
-<div class="part-break"></div><h1 id="1">الفصل 1: المصطلحات والرموز والاختصارات</h1>
+<div class="chapter-break"></div><h1 id="_5">الجزء الأول: المسرد والفهرس</h1>
+<h1 id="1">الفصل 1: المصطلحات والرموز والاختصارات</h1>
 <p>يقدم هذا الفصل مرجعًا موحدًا لكل المصطلحات والاختصارات والرموز المستخدمة في هذا الكتاب. الهدف منه ليس الحفظ الفوري، بل توفير نقطة رجوع سريعة كلما واجه القارئ مصطلحًا غير مألوف أثناء قراءة الفصول اللاحقة. يُنصح بتصفح هذا الفصل مرة أولى بشكل عام، ثم العودة إليه عند الحاجة أثناء التقدم في الكتاب.</p>
-<div class="chapter-break"></div><h2 id="11">1.1 مصطلحات هيكل السوق</h2>
+<h2 id="11">1.1 مصطلحات هيكل السوق</h2>
 <table>
 <thead>
 <tr>
@@ -983,7 +987,7 @@
 <blockquote>
 <p><strong>ملاحظة على الاختصارات المتشابهة:</strong> يُستخدم الاختصار <strong>SL</strong> في هذا الكتاب بمعنيين مختلفين حسب السياق: "قاع تأرجح" (Swing Low) في فصول SMC، و"وقف الخسارة" (Stop Loss) في فصول إدارة المخاطر. سيوضَّح المقصود دائمًا من السياق المباشر للجملة.</p>
 </blockquote>
-<div class="chapter-break"></div><h2 id="12-smart-money-concepts">1.2 مصطلحات الأموال الذكية (Smart Money Concepts)</h2>
+<h2 id="12-smart-money-concepts">1.2 مصطلحات الأموال الذكية (Smart Money Concepts)</h2>
 <table>
 <thead>
 <tr>
@@ -1063,7 +1067,7 @@
 <blockquote>
 <p><strong>ملاحظة:</strong> الاختصار <strong>BB</strong> يُستخدم هنا بمعنى "البلوك المكسور" (Breaker Block)، بينما يُستخدم لاحقًا في فصول التحليل الفني (الفصل 29) بمعنى "بولينجر باند" (Bollinger Bands). السياق يحدد المقصود في كل مرة.</p>
 </blockquote>
-<div class="chapter-break"></div><h2 id="13">1.3 مصطلحات التحليل الأساسي</h2>
+<h2 id="13">1.3 مصطلحات التحليل الأساسي</h2>
 <table>
 <thead>
 <tr>
@@ -1145,7 +1149,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="14">1.4 مصطلحات التحليل الفني</h2>
+<h2 id="14">1.4 مصطلحات التحليل الفني</h2>
 <table>
 <thead>
 <tr>
@@ -1225,7 +1229,7 @@
 <blockquote>
 <p><strong>ملاحظة:</strong> الاختصار <strong>BB</strong> هنا يعني "بولينجر باند"، بينما استُخدم في القسم 1.2 بمعنى "البلوك المكسور". دائمًا يوضّح السياق المقصود.</p>
 </blockquote>
-<div class="chapter-break"></div><h2 id="15">1.5 مصطلحات إدارة المخاطر</h2>
+<h2 id="15">1.5 مصطلحات إدارة المخاطر</h2>
 <table>
 <thead>
 <tr>
@@ -1272,7 +1276,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="16">1.6 مصطلحات علم نفس التداول</h2>
+<h2 id="16">1.6 مصطلحات علم نفس التداول</h2>
 <table>
 <thead>
 <tr>
@@ -1323,7 +1327,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="17">1.7 الاختصارات الشائعة (فهرس مجمّع)</h2>
+<h2 id="17">1.7 الاختصارات الشائعة (فهرس مجمّع)</h2>
 <table>
 <thead>
 <tr>
@@ -1460,7 +1464,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="18">1.8 الرموز المستخدمة في المخططات التوضيحية</h2>
+<h2 id="18">1.8 الرموز المستخدمة في المخططات التوضيحية</h2>
 <p>للحفاظ على الاتساق البصري عبر جميع فصول الكتاب، تُستخدم القواعد التالية في كل شكل توضيحي:</p>
 <table>
 <thead>
@@ -1520,19 +1524,19 @@
 <p><img alt="الشكل 1.1" src="figures/fig-01-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 1.1 — مفتاح الرموز البصرية المستخدمة في أشكال الكتاب</strong></p>
 <hr />
-<div class="chapter-break"></div><h2 id="_6">ملخص الفصل</h2>
+<h2 id="_6">ملخص الفصل</h2>
 <ul>
 <li>هذا الفصل مرجع دائم يمكن العودة إليه من أي فصل لاحق في الكتاب عند مواجهة مصطلح أو اختصار غير مألوف.</li>
 <li>بعض الاختصارات (مثل <strong>SL</strong> و <strong>BB</strong>) تحمل أكثر من معنى حسب السياق (هيكل السوق مقابل إدارة المخاطر، أو الأموال الذكية مقابل التحليل الفني) — يجب دائمًا مراعاة السياق المباشر.</li>
 <li>الرموز البصرية الموضحة في القسم 1.8 ستُستخدم بشكل موحّد في كل الأشكال التوضيحية عبر الكتاب.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_7">نقاط رئيسية</h2>
+<h2 id="_7">نقاط رئيسية</h2>
 <ol>
 <li>المسرد مقسم حسب المجال: هيكل السوق، الأموال الذكية، التحليل الأساسي، التحليل الفني، إدارة المخاطر، وعلم النفس.</li>
 <li>الفهم الصحيح للمصطلحات شرط أساسي لفهم الفصول التالية، خاصة في الجزء الثاني (SMC) حيث تتكرر مصطلحات مثل OB وFVG وBOS وCHOCH بكثافة.</li>
 <li>الرموز البصرية الموحدة تسهّل قراءة الأشكال التوضيحية بسرعة بمجرد التعرف عليها مرة واحدة.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_8">تمرين عملي</h2>
+<h2 id="_8">تمرين عملي</h2>
 <p>قبل الانتقال إلى الفصل التالي، حاول الإجابة عن الأسئلة التالية من الذاكرة، ثم راجع الجدول للتأكد:</p>
 <ol>
 <li>ما الفرق بين BOS وCHOCH؟</li>
@@ -1541,12 +1545,12 @@
 <li>ما الفرق بين منطقة العلاوة ومنطقة الخصم؟</li>
 </ol>
 <p><em>(لا توجد "دراسة حالة" لهذا الفصل كونه فصلًا مرجعيًا؛ ستبدأ دراسات الحالة العملية من الفصل 2.)</em></p>
-<div class="part-break"></div><h1 id="smart-money-concepts">الجزء الثاني: مفاهيم الأموال الذكية (Smart Money Concepts)</h1>
-<div class="part-break"></div><h1 id="2">الفصل 2: مقدمة إلى مفاهيم الأموال الذكية</h1>
-<div class="chapter-break"></div><h2 id="21">2.1 ما هي الأموال الذكية؟</h2>
+<div class="chapter-break"></div><h1 id="smart-money-concepts">الجزء الثاني: مفاهيم الأموال الذكية (Smart Money Concepts)</h1>
+<h1 id="2">الفصل 2: مقدمة إلى مفاهيم الأموال الذكية</h1>
+<h2 id="21">2.1 ما هي الأموال الذكية؟</h2>
 <p>مصطلح "الأموال الذكية" (Smart Money) يشير إلى رأس المال الذي تديره الجهات الأكثر معرفة وموارد وتأثيرًا في السوق: البنوك المركزية والتجارية، صناديق التحوط، صناديق التقاعد، شركات إدارة الأصول، وكبار صناع السوق (Market Makers). هذه الجهات تتداول بأحجام ضخمة، ولا تستطيع الدخول أو الخروج من صفقاتها دفعة واحدة دون التأثير الحاد على السعر، لذا فهي تنفذ أوامرها تدريجيًا وبطريقة مدروسة تترك آثارًا يمكن قراءتها على المخطط السعري.</p>
 <p>في المقابل، يشير مصطلح "الأموال البطيئة" أو "أموال التجزئة" (Retail Money / Dumb Money) إلى المتداولين الأفراد، الذين غالبًا ما يتخذون قراراتهم بناءً على مؤشرات فنية تقليدية، أو ردود فعل عاطفية، أو أخبار متأخرة. مفاهيم الأموال الذكية (SMC) هي محاولة منهجية لقراءة أثر الفئة الأولى على المخطط، بدلًا من الاعتماد فقط على أدوات مصممة أساسًا لتحليل سلوك الفئة الثانية.</p>
-<div class="chapter-break"></div><h2 id="22">2.2 من هم لاعبو الأموال الذكية؟</h2>
+<h2 id="22">2.2 من هم لاعبو الأموال الذكية؟</h2>
 <table>
 <thead>
 <tr>
@@ -1577,59 +1581,72 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="23-smc">2.3 فلسفة SMC</h2>
+<h2 id="23-smc">2.3 فلسفة SMC</h2>
 <p>الفكرة المحورية في SMC هي أن السعر لا يتحرك عشوائيًا، بل يتحرك لتحقيق هدفين متكررين: <strong>تجميع السيولة</strong> ثم <strong>إعادة التوزيع بكفاءة</strong> باتجاه المصلحة الحقيقية للاعبين الكبار. بما أن أوامر هذه الجهات ضخمة جدًا مقارنة بحجم السوق اللحظي، فإنها تحتاج إلى طرف مقابل كافٍ لتنفيذ صفقاتها؛ وأفضل مصدر لهذا الطرف المقابل هو تجمعات أوامر وقف الخسارة والأوامر المعلقة لمتداولي التجزئة. من هنا تنبع معظم مفاهيم هذا الجزء من الكتاب: السيولة، كتل الطلب، الحافز، والفخاخ.</p>
-<div class="chapter-break"></div><h2 id="24">2.4 لماذا تفشل المؤشرات التقليدية أحيانًا؟</h2>
+<h2 id="24">2.4 لماذا تفشل المؤشرات التقليدية أحيانًا؟</h2>
 <p>معظم المؤشرات الفنية التقليدية (مثل المتوسطات المتحركة أو RSI) هي أدوات <strong>متأخرة</strong> (Lagging)، أي أنها تُبنى على بيانات سعرية تاريخية وتعطي إشارتها بعد أن يكون جزء من الحركة قد وقع بالفعل. كما أن هذه المؤشرات لا تفرّق بين حركة سعرية ناتجة عن تدفق أوامر مؤسسي حقيقي، وحركة ناتجة عن تذبذب عشوائي قصير الأمد. هذا لا يعني أن المؤشرات عديمة الفائدة، لكنه يفسر لماذا يبحث كثير من المتداولين المتقدمين عن أطر تحليلية إضافية — مثل SMC — تحاول قراءة <em>نية</em> السوق بدلًا من الاكتفاء بردة الفعل على حركته.</p>
-<div class="chapter-break"></div><h2 id="25">2.5 عقلية المؤسسات</h2>
+<h2 id="25">2.5 عقلية المؤسسات</h2>
 <p>المؤسسات لا "تتنبأ" بالسعر بالمعنى الذي يفهمه متداول التجزئة، بل تخطط لتنفيذ كميات ضخمة من الأوامر بأفضل متوسط سعر ممكن. هذا يعني أنها:</p>
 <ul>
 <li>تفضّل الدخول في مناطق سيولة عالية (حيث تتوفر أوامر مقابلة كافية).</li>
 <li>تتحمّل ظهور حركات "خادعة" قصيرة المدى ما دامت تخدم هدف تحسين متوسط سعر الدخول أو الخروج.</li>
 <li>تخطط عبر أطر زمنية أكبر (يومي/أسبوعي) بينما ينفّذ متداول التجزئة قراراته على أطر صغيرة دون سياق أكبر.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="26">2.6 التلاعب بالسوق: حقيقة أم خيال؟</h2>
+<h2 id="26">2.6 التلاعب بالسوق: حقيقة أم خيال؟</h2>
 <p>من المهم التمييز هنا بدقة: SMC لا يفترض وجود "مؤامرة" منظمة تستهدف متداولي التجزئة تحديدًا، بل يفترض أن كبار المتداولين — بحكم حجم أوامرهم — يبحثون بشكل طبيعي وقانوني عن السيولة الأكثر توفرًا لتنفيذ صفقاتهم، وهذا يتسبب أحيانًا في حركات سعرية تبدو "مفاجئة" لمن لا يفهم آلية تكوّنها. فهم هذه الآلية لا يعني اتهام السوق بالفساد، بل يعني ببساطة قراءة القواعد الحقيقية للعبة بدلًا من الاعتماد فقط على افتراضات مبسطة.</p>
-<div class="chapter-break"></div><h2 id="27">2.7 دور السيولة في الأسواق</h2>
+<h2 id="27">2.7 دور السيولة في الأسواق</h2>
 <p>السيولة هي المحرك الأساسي الذي يفسر معظم سلوك السعر في إطار SMC، وسيُخصَّص لها الفصل الرابع كاملًا. لكن كمقدمة: كل أمر وقف خسارة، وكل أمر معلق (Pending Order)، يمثل سيولة كامنة. وكلما تجمعت هذه الأوامر عند مستوى سعري واحد (مثل قمة أو قاع واضح تكرر اختباره)، أصبح ذلك المستوى هدفًا جاذبًا لحركة سعرية تسعى لتفعيل تلك الأوامر قبل الانعكاس أو الاستمرار.</p>
-<div class="chapter-break"></div><h2 id="28-smc-ict">2.8 SMC وعلاقتها بمصطلح ICT</h2>
+<h2 id="28-smc-ict">2.8 SMC وعلاقتها بمصطلح ICT</h2>
 <p>كثيرًا ما يصادف القارئ مصطلح <strong>ICT</strong> (اختصار Inner Circle Trader) أثناء بحثه عن مفاهيم الأموال الذكية على الإنترنت. ICT هو الاسم الذي اشتهرت به المدرسة التي صاغت أصلًا معظم المصطلحات المستخدمة في هذا الجزء من الكتاب (كتلة الطلب، FVG، السيولة، الحافز...). أما "Smart Money Concepts" فهو الاسم الذي شاع لاحقًا لوصف التنظيم والتبسيط التعليمي لهذه المفاهيم نفسها، بهدف تقديمها بشكل أكثر منهجية للمتداولين الجدد. بعبارة أخرى: ICT وSMC يتحدثان عن نفس الأفكار الجوهرية تقريبًا، والفرق بينهما أقرب إلى فرق التسمية والتقديم منه إلى فرق جوهري في المحتوى.</p>
 <p><img alt="الشكل 2.2" src="figures/fig-02-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 2.2 — العلاقة بين ICT وSMC والمفاهيم الفرعية التي يغطيها هذا الجزء من الكتاب</strong></p>
 <hr />
-<div class="chapter-break"></div><h2 id="_9">ملخص الفصل</h2>
+<h2 id="_9">ملخص الفصل</h2>
 <ul>
 <li>الأموال الذكية تمثل رؤوس الأموال المؤسسية الكبرى التي تترك بصمات يمكن قراءتها على المخطط بسبب حجم أوامرها.</li>
 <li>فلسفة SMC تقوم على مبدأ تجميع السيولة ثم إعادة التوزيع، وليس على افتراض مؤامرة.</li>
 <li>المؤشرات التقليدية متأخرة بطبيعتها؛ SMC يحاول قراءة النية بدلًا من رد الفعل فقط.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_10">نقاط رئيسية</h2>
+<h2 id="_10">نقاط رئيسية</h2>
 <ol>
 <li>SMC إطار تحليلي وليس نظام تداول ميكانيكي جاهز.</li>
 <li>فهم لاعبي السوق الرئيسيين يساعد على فهم سبب تشكل حركات معينة.</li>
 <li>السيولة هي المفهوم المحوري الذي تُبنى عليه بقية مفاهيم هذا الجزء من الكتاب.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_11">تمرين عملي</h2>
+<h2 id="_11">تمرين عملي</h2>
 <p>افتح مخططًا يوميًا لأي زوج عملات رئيسي، وحدد ثلاث مناطق ترى أنها قد تحتوي على "سيولة متجمعة" (مثل قمم أو قيعان واضحة تكرر اختبارها). لا تتداول بعد — الهدف فقط تدريب العين على ملاحظة هذه المناطق قبل دراسة الفصول التالية بالتفصيل.</p>
-<div class="chapter-break"></div><h2 id="_12">دراسة حالة تمهيدية</h2>
+<h2 id="_12">دراسة حالة تمهيدية</h2>
 <p>في أسواق الفوركس الكبرى، يلاحظ كثيرًا أن حركة سعرية قوية تحدث خلال الدقائق الأولى من افتتاح جلسة لندن أو نيويورك، غالبًا في اتجاه يخالف حركة الجلسة الآسيوية الهادئة السابقة لها. هذا النمط يفسَّر جزئيًا في SMC على أنه سحب لسيولة تجمعت عند قمم/قيعان الجلسة الهادئة، قبل أن يبدأ الاتجاه الحقيقي لليوم. سنعود لتحليل هذا النمط بتفصيل أكبر في الفصل 4 (السيولة) والفصل 9 (تدفق أوامر المؤسسات).</p>
 <p>يوضّح الشكل 2.1 هذا المثال:</p>
 <p><img alt="الشكل 2.1" src="figures/fig-02-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 2.1 — سحب سيولة الجلسة الآسيوية عند افتتاح جلسة لندن</strong></p>
-<div class="part-break"></div><h1 id="3-smc">الفصل 3: هيكل السوق – أساس SMC</h1>
-<div class="chapter-break"></div><h2 id="31">3.1 فهم هيكل السوق</h2>
+<h1 id="3-smc">الفصل 3: هيكل السوق – أساس SMC</h1>
+<h2 id="31">3.1 فهم هيكل السوق</h2>
 <p>هيكل السوق (Market Structure) هو الخريطة التي تصف كيف يتحرك السعر عبر الزمن من خلال سلسلة من القمم والقيعان. كل تحليل SMC يبدأ من هنا، لأن باقي المفاهيم (كتل الطلب، السيولة، الحافز) لا معنى لها دون تحديد الاتجاه العام أولًا. هيكل السوق يُقرأ بثلاث حالات رئيسية: صاعد، هابط، وعرضي.</p>
-<div class="chapter-break"></div><h2 id="32">3.2 هيكل السوق الصاعد</h2>
+<p>قبل الخوض في تفاصيل كل حالة، لا بد من تعريف اللبنتين الأساسيتين اللتين يُبنى عليهما أي تحليل هيكلي: القمة التأرجحية والقاع التأرجحي.</p>
+<p><img alt="الشكل 3.3" src="figures/fig-03-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.3 — تعريف القمة التأرجحية (Swing High): أعلى نقطة يتشكل حولها انعكاس مؤقت للسعر</strong></p>
+<p><img alt="الشكل 3.4" src="figures/fig-03-04.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.4 — تعريف القاع التأرجحي (Swing Low): أدنى نقطة يتشكل حولها انعكاس مؤقت للسعر</strong></p>
+<h2 id="32">3.2 هيكل السوق الصاعد</h2>
 <p>يتكون الهيكل الصاعد من تتابع منتظم لقمم أعلى (HH) وقيعان أعلى (HL). طالما استمر هذا النمط، يُعتبر الانحياز العام صاعدًا، وتكون استراتيجية SMC الافتراضية هي البحث عن فرص شراء عند العودة لمناطق اهتمام (كتل الطلب) بدلًا من محاولة توقع القمة.</p>
-<div class="chapter-break"></div><h2 id="33">3.3 هيكل السوق الهابط</h2>
+<p><img alt="الشكل 3.5" src="figures/fig-03-05.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.5 — تعريف القمة الأعلى (HH): قمة تأرجحية جديدة أعلى من القمة التي سبقتها</strong></p>
+<p><img alt="الشكل 3.6" src="figures/fig-03-06.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.6 — تعريف القاع الأعلى (HL): قاع تأرجحي جديد أعلى من القاع الذي سبقه</strong></p>
+<h2 id="33">3.3 هيكل السوق الهابط</h2>
 <p>على النقيض، يتكون الهيكل الهابط من تتابع قمم أدنى (LH) وقيعان أدنى (LL). الانحياز هنا هابط، والاستراتيجية الافتراضية هي البحث عن فرص بيع عند الارتدادات نحو مناطق العرض.</p>
+<p><img alt="الشكل 3.7" src="figures/fig-03-07.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.7 — تعريف القمة الأدنى (LH): قمة تأرجحية جديدة أدنى من القمة التي سبقتها</strong></p>
+<p><img alt="الشكل 3.8" src="figures/fig-03-08.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.8 — تعريف القاع الأدنى (LL): قاع تأرجحي جديد أدنى من القاع الذي سبقه</strong></p>
 <p><img alt="الشكل 3.2" src="figures/fig-03-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 3.2 — التعريف البصري الواضح لكل من HH وHL في الاتجاه الصاعد، وLH وLL في الاتجاه الهابط</strong></p>
-<div class="chapter-break"></div><h2 id="34">3.4 هيكل السوق العرضي</h2>
+<h2 id="34">3.4 هيكل السوق العرضي</h2>
 <p>يحدث عندما يتوقف السعر عن تكوين قمم/قيعان متتابعة بوضوح، ويتحرك بين مستويي دعم ومقاومة أفقيين تقريبًا. هذه المرحلة غالبًا ما تمثل تجميعًا (Accumulation) أو توزيعًا (Distribution) تستعد فيه المؤسسات لحركة الاتجاه القادمة، وهي من أخطر المراحل على متداولي التجزئة لكثرة الإشارات الكاذبة فيها.</p>
-<div class="chapter-break"></div><h2 id="35-break-of-structure-bos">3.5 كسر الهيكل (Break of Structure – BOS)</h2>
+<h2 id="35-break-of-structure-bos">3.5 كسر الهيكل (Break of Structure – BOS)</h2>
 <p>يحدث BOS عندما يخترق السعر نقطة تأرجح سابقة <strong>في اتجاه الترند الحالي</strong>. مثال: في اتجاه صاعد، عندما يكسر السعر آخر قمة تأرجح (Swing High) بإغلاق واضح، هذا يُعد BOS صاعدًا يؤكد استمرار الاتجاه. الـ BOS هو إشارة استمرار، وليس إشارة انعكاس.</p>
-<div class="chapter-break"></div><h2 id="36-change-of-character-choch">3.6 تغيّر الشخصية (Change of Character – CHOCH)</h2>
+<h2 id="36-change-of-character-choch">3.6 تغيّر الشخصية (Change of Character – CHOCH)</h2>
 <p>على عكس BOS، يحدث CHOCH عندما يكسر السعر نقطة هيكلية <strong>بعكس</strong> اتجاه الترند الحالي. مثال: في اتجاه صاعد، عندما يفشل السعر في تكوين قاع أعلى ويكسر آخر قاع تأرجح هابطًا، هذا CHOCH يشير إلى احتمال انعكاس الاتجاه أو على الأقل بداية مرحلة تصحيحية جادة. يُعد التمييز بين BOS وCHOCH من أهم المهارات الأساسية في SMC.</p>
 <table>
 <thead>
@@ -1657,41 +1674,41 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="37">3.7 أنواع كسر الهيكل</h2>
+<h2 id="37">3.7 أنواع كسر الهيكل</h2>
 <ul>
 <li><strong>كسر داخلي (Internal BOS):</strong> يحدث على أطر زمنية صغيرة داخل حركة تصحيحية أكبر.</li>
 <li><strong>كسر خارجي/هيكلي (Swing/External BOS):</strong> يحدث على مستوى الاتجاه الرئيسي ويحمل وزنًا أكبر في التحليل.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="38">3.8 الاختراقات الحقيقية مقابل الاختراقات الوهمية</h2>
+<h2 id="38">3.8 الاختراقات الحقيقية مقابل الاختراقات الوهمية</h2>
 <p>الاختراق الحقيقي يتميز عادة بإغلاق شمعة واضح خارج المستوى المكسور مصحوبًا بزخم وحجم تداول متزايد، بينما الاختراق الوهمي (False Breakout) يخترق المستوى بفتيل فقط ثم يعود السعر بسرعة إلى داخل النطاق السابق. الاختراقات الوهمية غالبًا ما تكون في الواقع عمليات سحب سيولة (سيُشرح بالتفصيل في الفصل 4)، وليست أخطاء عشوائية.</p>
-<div class="chapter-break"></div><h2 id="39-310">3.9 و3.10 القمم والقيعان: القراءة الدقيقة</h2>
+<h2 id="39-310">3.9 و3.10 القمم والقيعان: القراءة الدقيقة</h2>
 <p>يجب التمييز دومًا بين "القمة/القاع الهيكلي" (الذي يُستخدم لتحديد BOS/CHOCH) و"القمة/القاع الداخلي" (الذي يتشكل أثناء التصحيحات الصغيرة). القاعدة العملية: كلما ارتفع الإطار الزمني، أصبحت القمم والقيعان المحددة عليه أكثر أهمية وموثوقية للتحليل.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_13">ملخص الفصل</h2>
+<h2 id="_13">ملخص الفصل</h2>
 <ul>
 <li>هيكل السوق هو الأساس الذي تُبنى عليه كل مفاهيم SMC اللاحقة.</li>
 <li>BOS يؤكد استمرار الاتجاه، بينما CHOCH ينذر باحتمال انعكاسه.</li>
 <li>الاختراقات الوهمية جزء طبيعي من آلية سحب السيولة، وليست عشوائية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_14">نقاط رئيسية</h2>
+<h2 id="_14">نقاط رئيسية</h2>
 <ol>
 <li>حدد دائمًا الإطار الزمني الذي تقرأ عليه الهيكل قبل الحكم على أي كسر.</li>
 <li>لا تتعامل مع كل اختراق كإشارة تداول فورية — تحقق من قوة الإغلاق والحجم.</li>
 <li>تغيّر الشخصية (CHOCH) يستوجب مراجعة الانحياز العام قبل فتح أي صفقة جديدة.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_15">تمرين عملي</h2>
+<h2 id="_15">تمرين عملي</h2>
 <p>على مخطط الساعة لأي أصل، حدد آخر خمس نقاط تأرجح (قمم وقيعان)، وصنّف كل كسر لاحق للسعر إلى BOS أو CHOCH بناءً على القواعد أعلاه.</p>
-<div class="chapter-break"></div><h2 id="_16">دراسة حالة</h2>
+<h2 id="_16">دراسة حالة</h2>
 <p>لنفترض أن أصلًا يتداول في اتجاه صاعد واضح مكوّن من ثلاث قمم أعلى وثلاثة قيعان أعلى متتالية. عند الاختبار الرابع، يفشل السعر في تجاوز القمة السابقة، ثم يكسر هبوطًا آخر قاع تأرجح مسجّلاً CHOCH واضحًا. المتداول الذي يعرف الفرق بين BOS وCHOCH سيتوقف عن البحث عن صفقات شراء جديدة عند هذه النقطة، وسيبدأ بمراقبة تشكّل هيكل هابط جديد بدلاً من ذلك — بينما سيستمر متداول التجزئة التقليدي في محاولة "الشراء عند كل انخفاض" لأنه لم يلاحظ تغيّر الشخصية.</p>
 <p>يوضّح الشكل 3.1 هذا المثال:</p>
 <p><img alt="الشكل 3.1" src="figures/fig-03-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 3.1 — تسلسل HH-HL في اتجاه صاعد يتبعه CHOCH وتكوّن هيكل هابط جديد</strong></p>
-<div class="part-break"></div><h1 id="4">الفصل 4: السيولة – وقود الأسواق</h1>
-<div class="chapter-break"></div><h2 id="41">4.1 ما هي السيولة؟</h2>
+<h1 id="4">الفصل 4: السيولة – وقود الأسواق</h1>
+<h2 id="41">4.1 ما هي السيولة؟</h2>
 <p>في سياق SMC، لا تعني "السيولة" فقط سهولة تنفيذ الصفقات، بل تشير تحديدًا إلى <strong>تجمعات أوامر معلقة عند مستويات سعرية محددة</strong>: أوامر وقف خسارة لصفقات شراء وبيع قائمة، وأوامر دخول معلقة (Buy Stop / Sell Stop) لمتداولين ينتظرون كسر مستوى معين. هذه التجمعات تمثل "وقودًا" يمكن للمؤسسات استخدامه لتنفيذ أوامرها الضخمة دون التأثير الكبير على متوسط سعر الدخول أو الخروج.</p>
-<div class="chapter-break"></div><h2 id="42">4.2 لماذا تستهدف المؤسسات السيولة؟</h2>
+<h2 id="42">4.2 لماذا تستهدف المؤسسات السيولة؟</h2>
 <p>عندما تريد مؤسسة كبيرة بيع كمية ضخمة من أصل ما، فإنها تحتاج إلى مشترين كافين لاستيعاب هذا العرض. أفضل نقطة لوجود مشترين بكثافة هي المناطق التي توجد فيها أوامر شراء معلقة أو أوامر وقف خسارة لمراكز بيع سابقة (والتي تتحول إلى أوامر شراء عند تفعيلها). لذلك، من الشائع أن يتحرك السعر أولًا نحو هذه المناطق "لسحب" هذه السيولة، قبل التحرك في الاتجاه الحقيقي المقصود.</p>
-<div class="chapter-break"></div><h2 id="43">4.3 أنواع السيولة</h2>
+<h2 id="43">4.3 أنواع السيولة</h2>
 <table>
 <thead>
 <tr>
@@ -1718,19 +1735,19 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="44-45">4.4 و4.5 القمم/القيعان المتساوية وغير المتساوية</h2>
+<h2 id="44-45">4.4 و4.5 القمم/القيعان المتساوية وغير المتساوية</h2>
 <p>عندما يفشل السعر مرتين أو أكثر في تجاوز نفس مستوى القمة تقريبًا (Equal Highs)، فهذا يعني أن متداولين كثيرين وضعوا أوامر وقف خسارة أو أوامر شراء معلقة فوق ذلك المستوى تقريبًا بنفس السعر — مما يخلق "بركة سيولة" مكثفة وجاذبة جدًا لحركة سحب سريعة. نفس المنطق ينطبق على القيعان المتساوية (Equal Lows) من ناحية البيع.</p>
-<div class="chapter-break"></div><h2 id="4648">4.6–4.8 السيولة الصاعدة، الهابطة، وسيولة الاتجاه</h2>
+<h2 id="4648">4.6–4.8 السيولة الصاعدة، الهابطة، وسيولة الاتجاه</h2>
 <ul>
 <li><strong>السيولة الصاعدة:</strong> تُستهدف عادة قبل هبوط قوي (سحب السيولة فوق القمم ثم الانعكاس هبوطًا).</li>
 <li><strong>السيولة الهابطة:</strong> تُستهدف عادة قبل صعود قوي (سحب السيولة أسفل القيعان ثم الانعكاس صعودًا).</li>
 <li><strong>سيولة الاتجاه:</strong> تتشكل بشكل متكرر عند كل تصحيح بسيط أثناء اتجاه قوي، وتُستخدم للدخول المتكرر مع الاتجاه (وليس بالضرورة كإشارة انعكاس).</li>
 </ul>
-<div class="chapter-break"></div><h2 id="49-geometric-liquidity">4.9 السيولة الهندسية (Geometric Liquidity)</h2>
+<h2 id="49-geometric-liquidity">4.9 السيولة الهندسية (Geometric Liquidity)</h2>
 <p>تشير إلى الأنماط الهندسية الواضحة للعين مثل القمم/القيعان المزدوجة أو الثلاثية التي تبدو "أنماطًا فنية كلاسيكية"، لكنها تُقرأ في SMC كمصائد سيولة أولًا، قبل أن تُقرأ كنموذج انعكاس تقليدي.</p>
-<div class="chapter-break"></div><h2 id="410-liquidity-sweep">4.10 عمليات سحب السيولة (Liquidity Sweep)</h2>
+<h2 id="410-liquidity-sweep">4.10 عمليات سحب السيولة (Liquidity Sweep)</h2>
 <p>سحب السيولة هو الحركة السعرية التي تخترق مستوى القمة/القاع المستهدف بشكل سريع (غالبًا بفتيل شمعة طويل) ثم ترتد بسرعة في الاتجاه المعاكس. هذا النمط يُعد من أقوى إشارات SMC عند اقترانه بتغيّر الشخصية (CHOCH) على إطار زمني أصغر مباشرة بعد السحب.</p>
-<div class="chapter-break"></div><h2 id="411">4.11 تحديد مناطق السيولة عمليًا</h2>
+<h2 id="411">4.11 تحديد مناطق السيولة عمليًا</h2>
 <p>خطوات عملية لتحديد السيولة على أي مخطط:</p>
 <ol>
 <li>حدد أوضح القمم والقيعان على الإطار الزمني الأكبر (يومي/4 ساعات).</li>
@@ -1738,49 +1755,49 @@
 <li>راقب سلوك السعر عند اقترابه من هذه المناطق: هل يخترقها بقوة ويغلق خارجها (احتمال استمرار)، أم يخترقها بفتيل ثم يرتد (احتمال سحب سيولة وانعكاس)؟</li>
 </ol>
 <hr />
-<div class="chapter-break"></div><h2 id="_17">ملخص الفصل</h2>
+<h2 id="_17">ملخص الفصل</h2>
 <ul>
 <li>السيولة هي تجمعات أوامر وقف خسارة وأوامر معلقة، وتمثل الوقود الذي تستخدمه المؤسسات لتنفيذ أوامرها الضخمة.</li>
 <li>القمم والقيعان المتساوية من أوضح إشارات تجمع السيولة.</li>
 <li>سحب السيولة (Liquidity Sweep) غالبًا ما يسبق انعكاسات سعرية حادة، خصوصًا عند اقترانه بـ CHOCH.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_18">نقاط رئيسية</h2>
+<h2 id="_18">نقاط رئيسية</h2>
 <ol>
 <li>لا تتفاجأ من الاختراقات القصيرة للمستويات — كثير منها سحب سيولة وليس اختراقًا حقيقيًا.</li>
 <li>القمم/القيعان المتساوية ليست مصادفة، بل غالبًا ما تكون "فخًا" مقصودًا لجذب أوامر متشابهة.</li>
 <li>تحديد مناطق السيولة قبل الدخول في الصفقة يساعد على توقع أين قد يتحرك السعر أولًا قبل اتجاهه الحقيقي.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_19">تمرين عملي</h2>
+<h2 id="_19">تمرين عملي</h2>
 <p>على مخطط يومي، ابحث عن ثلاث حالات لقمم أو قيعان متساوية تقريبًا، وتتبع ماذا حدث للسعر خلال الأيام التالية لأول مرة لامس فيها ذلك المستوى للمرة الثانية أو الثالثة.</p>
-<div class="chapter-break"></div><h2 id="_20">دراسة حالة</h2>
+<h2 id="_20">دراسة حالة</h2>
 <p>في نمط متكرر على أزواج الفوركس الرئيسية، يتشكل قاعان متقاربان جدًا في السعر خلال أسبوعين، مما يخلق انطباعًا لدى متداولي التجزئة بوجود "دعم قوي مزدوج". يقترب السعر من هذا المستوى للمرة الثالثة، يخترقه بفتيل حاد لبضع ساعات فقط (مما يفعّل أوامر وقف الخسارة لكل من اشترى عند القاعين السابقين)، ثم يرتد بقوة صعودًا مسجّلاً CHOCH على فريم الساعة. من قرأ هذا كسحب سيولة بدلاً من "كسر دعم مزدوج" كان بإمكانه الدخول شراءً في منطقة ممتازة، بينما أُغلقت صفقات من باعوا عند الكسر بخسارة سريعة.</p>
 <p>يوضّح الشكل 4.1 هذا المثال:</p>
 <p><img alt="الشكل 4.1" src="figures/fig-04-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 4.1 — قاعان متساويان تقريبًا، سحب سيولة سريع، ثم CHOCH وارتداد صعودي</strong></p>
-<div class="part-break"></div><h1 id="5">الفصل 5: كتل الطلب – بصمات المؤسسات</h1>
-<div class="chapter-break"></div><h2 id="51-order-block">5.1 ما هي كتلة الطلب (Order Block)؟</h2>
+<h1 id="5">الفصل 5: كتل الطلب – بصمات المؤسسات</h1>
+<h2 id="51-order-block">5.1 ما هي كتلة الطلب (Order Block)؟</h2>
 <p>كتلة الطلب هي آخر شمعة (أو مجموعة شموع متتالية) معاكسة الاتجاه، قبل حدوث حركة اندفاعية قوية في الاتجاه المعاكس تكسر هيكل السوق (BOS). تعبّر هذه المنطقة عن آخر نقطة قام فيها اللاعبون الكبار بتجميع أو تصريف مراكزهم قبل دفع السعر بقوة، وبالتالي فإنها تمثل منطقة مرشحة لعودة السعر إليها مستقبلًا كدعم أو مقاومة.</p>
-<div class="chapter-break"></div><h2 id="52-53">5.2 و5.3 كتل الطلب الصاعدة والهابطة</h2>
+<h2 id="52-53">5.2 و5.3 كتل الطلب الصاعدة والهابطة</h2>
 <ul>
 <li><strong>كتلة طلب صاعدة (Bullish OB):</strong> آخر شمعة هابطة قبل اندفاعة صعودية قوية تكسر الهيكل. تُستخدم كمنطقة شراء عند عودة السعر إليها.</li>
 <li><strong>كتلة طلب هابطة (Bearish OB):</strong> آخر شمعة صاعدة قبل اندفاعة هبوطية قوية تكسر الهيكل. تُستخدم كمنطقة بيع عند عودة السعر إليها.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="54">5.4 كتل الطلب الحقيقية مقابل غير الصالحة</h2>
+<h2 id="54">5.4 كتل الطلب الحقيقية مقابل غير الصالحة</h2>
 <p>ليست كل شمعة معاكسة قبل حركة قوية تُعتبر كتلة طلب صالحة. المعايير الأساسية للصلاحية:</p>
 <ol>
 <li>أن تسبق الحركة الاندفاعية كسرًا واضحًا لهيكل السوق (BOS) وليس مجرد تصحيحًا بسيطًا.</li>
 <li>أن تكون الحركة الاندفاعية التالية للكتلة قوية نسبيًا (شموع بأجسام كبيرة، وفتائل قصيرة نسبيًا).</li>
 <li>ألا تكون الكتلة قد تعرضت لاختبارات متكررة أضعفت "طزاجتها" (Freshness) قبل الاستخدام الحالي.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="55-breaker-block">5.5 البلوك المكسور الصاعد (Breaker Block)</h2>
+<h2 id="55-breaker-block">5.5 البلوك المكسور الصاعد (Breaker Block)</h2>
 <p>عندما تُخترق كتلة طلب صالحة (أي يفشل السعر في الارتداد منها ويكسرها)، فإنها لا "تختفي" بل تتحول إلى ما يُعرف بـ Breaker Block: منطقة تتبدل فيها الوظيفة — كتلة طلب هابطة تُكسر تتحول إلى دعم محتمل عند إعادة اختبارها من الأسفل، والعكس صحيح لكتلة الطلب الصاعدة المكسورة.</p>
 <p><img alt="الشكل 5.2" src="figures/fig-05-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 5.2 — كتلة الطلب بعد كسرها وتحوّلها إلى بلوك مكسور (Breaker Block)</strong></p>
-<div class="chapter-break"></div><h2 id="56-mitigation-block">5.6 بلوك التخفيف (Mitigation Block)</h2>
+<h2 id="56-mitigation-block">5.6 بلوك التخفيف (Mitigation Block)</h2>
 <p>مصطلح قريب من الـ Breaker لكنه يصف تحديدًا المنطقة التي "تُخفَّف" فيها أوامر المؤسسات غير المنفذة بالكامل من كتلة سابقة، عندما يعاود السعر زيارتها قبل استئناف الاتجاه الأصلي (بعكس الـ Breaker الذي يرتبط بانعكاس اتجاه الوظيفة).</p>
-<div class="chapter-break"></div><h2 id="57-rejection-block">5.7 بلوك الرفض (Rejection Block)</h2>
+<h2 id="57-rejection-block">5.7 بلوك الرفض (Rejection Block)</h2>
 <p>منطقة تتشكل من عدة فتائل شموع طويلة عند نفس المستوى تقريبًا، تدل على أن جهة كبيرة تدافع بقوة عن ذلك المستوى (سواء لمنع الاختراق أو للدفاع عن مركز قائم)، دون أن يشترط وجود جسم شمعة كبير كما في كتلة الطلب التقليدية.</p>
-<div class="chapter-break"></div><h2 id="58">5.8 معايير صلاحية كتلة الطلب — جدول مرجعي</h2>
+<h2 id="58">5.8 معايير صلاحية كتلة الطلب — جدول مرجعي</h2>
 <table>
 <thead>
 <tr>
@@ -1812,13 +1829,13 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="59">5.9 كتلة الطلب مقابل مناطق العرض والطلب التقليدية</h2>
+<h2 id="59">5.9 كتلة الطلب مقابل مناطق العرض والطلب التقليدية</h2>
 <p>يتشابه مفهوم كتلة الطلب مع "مناطق العرض والطلب" في التحليل الفني الكلاسيكي، لكن الفرق الجوهري أن كتلة الطلب في SMC تُحدَّد بدقة أكبر (شمعة أو شمعتان محددتان مرتبطتان مباشرة بكسر هيكلي)، بينما تُرسم مناطق العرض/الطلب التقليدية غالبًا كنطاق أوسع وأقل دقة.</p>
 <p><img alt="الشكل 5.3" src="figures/fig-05-03.svg" /></p>
 <p class="fig-caption"><strong>الشكل 5.3 — مناطق العرض والطلب الكلاسيكية: نطاق أوسع مقارنة بدقة كتلة الطلب في SMC</strong></p>
-<div class="chapter-break"></div><h2 id="510">5.10 قاعدة اللمسات الثلاث</h2>
+<h2 id="510">5.10 قاعدة اللمسات الثلاث</h2>
 <p>قاعدة إرشادية شائعة (وليست مطلقة): كلما زاد عدد مرات اختبار كتلة الطلب لنفس المنطقة، ضعفت احتمالية نجاحها في المرة التالية، لأن جزءًا من الأوامر الكامنة فيها يكون قد نُفِّذ بالفعل. بعد نحو ثلاث لمسات، يُنصح غالبًا بالبحث عن كتلة أحدث بدلًا من الاعتماد المتكرر على نفس المنطقة.</p>
-<div class="chapter-break"></div><h2 id="511">5.11 استراتيجيات تداول كتل الطلب</h2>
+<h2 id="511">5.11 استراتيجيات تداول كتل الطلب</h2>
 <ol>
 <li>تحديد الانحياز العام عبر هيكل السوق (الفصل 3).</li>
 <li>تحديد آخر كتلة طلب صالحة وطازجة في اتجاه الانحياز.</li>
@@ -1826,29 +1843,29 @@
 <li>وضع وقف الخسارة خلف حافة الكتلة البعيدة، وجني الأرباح عند أقرب منطقة سيولة أو كتلة معاكسة تالية.</li>
 </ol>
 <hr />
-<div class="chapter-break"></div><h2 id="_21">ملخص الفصل</h2>
+<h2 id="_21">ملخص الفصل</h2>
 <ul>
 <li>كتلة الطلب هي آخر شمعة معاكسة قبل اندفاعة قوية تكسر الهيكل، وتمثل بصمة مؤسسية يمكن العودة إليها.</li>
 <li>عند كسرها، تتحول الكتلة إلى Breaker Block بوظيفة معكوسة، لا تختفي كليًا.</li>
 <li>ليست كل الكتل متساوية في الجودة؛ الطزاجة، قوة الحركة التالية، وارتباطها بالسيولة عوامل حاسمة في التقييم.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_22">نقاط رئيسية</h2>
+<h2 id="_22">نقاط رئيسية</h2>
 <ol>
 <li>ابحث دائمًا عن كسر هيكلي واضح قبل الشمعة المرشحة لتكون كتلة طلب.</li>
 <li>فضّل الكتل التي لم تُختبر بعد على الكتل التي اختُبرت مرات متعددة.</li>
 <li>الجمع بين كتلة الطلب وإشارة سيولة أو FVG يرفع جودة نقطة الدخول بشكل ملحوظ.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_23">تمرين عملي</h2>
+<h2 id="_23">تمرين عملي</h2>
 <p>حدد على مخطط 4 ساعات آخر ثلاث كتل طلب صاعدة صالحة (حسب معايير القسم 5.4)، وسجّل: هل عاد السعر لاختبارها؟ وإن عاد، هل احترمها أم اخترقها؟</p>
-<div class="chapter-break"></div><h2 id="_24">دراسة حالة</h2>
+<h2 id="_24">دراسة حالة</h2>
 <p>في اتجاه صاعد واضح، تتشكل شمعة هابطة صغيرة، يليها مباشرة اندفاع صعودي قوي يكسر آخر قمة تأرجح بوضوح (BOS مؤكد). هذه الشمعة الهابطة تُعتبر كتلة طلب صاعدة طازجة. بعد عدة أيام، يتصحح السعر ليعاود زيارة هذه المنطقة تحديدًا، مكوّنًا فجوة قيمة عادلة (FVG) داخل نفس النطاق تقريبًا. المتداول الذي يرصد هذا التطابق (كتلة طلب + FVG) يحصل على نقطة دخول عالية الاحتمالية، بعكس من يشتري عشوائيًا عند أي انخفاض بسيط في الاتجاه الصاعد.</p>
 <p>يوضّح الشكل 5.1 هذا المثال:</p>
 <p><img alt="الشكل 5.1" src="figures/fig-05-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 5.1 — تكوّن كتلة طلب صاعدة (آخر شمعة هابطة قبل BOS) وإعادة اختبارها لاحقًا</strong></p>
-<div class="part-break"></div><h1 id="6">الفصل 6: فجوات القيمة العادلة والاختلالات</h1>
-<div class="chapter-break"></div><h2 id="61">6.1 ما هو الاختلال؟</h2>
+<h1 id="6">الفصل 6: فجوات القيمة العادلة والاختلالات</h1>
+<h2 id="61">6.1 ما هو الاختلال؟</h2>
 <p>الاختلال (Imbalance) هو أي منطقة سعرية تحرك فيها السعر بسرعة أكبر من قدرة السوق على "التداول العادل" فيها، بحيث تتشكل فجوة بين العرض والطلب لم تُنفَّذ فيها أوامر كافية من كلا الطرفين. هذه المناطق تُعتبر "غير مكتملة" احصائيًا، ويميل السعر لإعادة زيارتها لاحقًا لموازنة ما فاته.</p>
-<div class="chapter-break"></div><h2 id="62-fair-value-gap-fvg">6.2 فجوات القيمة العادلة (Fair Value Gap – FVG)</h2>
+<h2 id="62-fair-value-gap-fvg">6.2 فجوات القيمة العادلة (Fair Value Gap – FVG)</h2>
 <p>تُحدَّد الـ FVG عمليًا عبر ثلاث شموع متتالية: عندما لا يتداخل الفتيل العلوي للشمعة الأولى مع الفتيل السفلي للشمعة الثالثة (في حالة اندفاعة صعودية)، فإن الفراغ بينهما يمثل FVG صاعدة. والعكس تمامًا في الاندفاعة الهابطة.</p>
 <table>
 <thead>
@@ -1868,16 +1885,16 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="63">6.3 أنواع الاختلالات</h2>
+<h2 id="63">6.3 أنواع الاختلالات</h2>
 <ul>
 <li><strong>اختلال بسيط (Single FVG):</strong> يتشكل من ثلاث شموع فقط كما هو موضح أعلاه.</li>
 <li><strong>اختلال مركّب (Compound Imbalance):</strong> سلسلة من عدة فجوات متتالية أثناء اندفاعة قوية جدًا وممتدة، تُعامل غالبًا ككتلة اهتمام واحدة أكبر.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="64">6.4 كيف تتشكل الاختلالات</h2>
+<h2 id="64">6.4 كيف تتشكل الاختلالات</h2>
 <p>تتشكل الاختلالات عادة عند صدور خبر اقتصادي مفاجئ، أو عند سحب سيولة كبيرة يليه اندفاع قوي بلا تردد، أو عند دخول مؤسسي مفاجئ (كما في شمعة IFC التي سنناقشها في الفصل 9). كلما كانت الاندفاعة أقوى وأسرع، كانت الفجوة أوسع وأكثر أهمية على المخطط.</p>
-<div class="chapter-break"></div><h2 id="65">6.5 ارتداد السعر إلى الاختلالات</h2>
+<h2 id="65">6.5 ارتداد السعر إلى الاختلالات</h2>
 <p>من الملاحظ تكرارًا أن السعر يميل للعودة لملء جزء من الفجوة (وليس بالضرورة كلها) قبل استئناف اتجاهه الأصلي. هذا لا يعني أن الفجوة تُملأ دائمًا بالكامل، بل يكفي غالبًا اختبار حافتها القريبة من اتجاه الحركة الأصلية لاعتبارها "خدمت غرضها".</p>
-<div class="chapter-break"></div><h2 id="66-67-fvg">6.6 و6.7 تداول الاختلالات واستراتيجيات الدخول من FVG</h2>
+<h2 id="66-67-fvg">6.6 و6.7 تداول الاختلالات واستراتيجيات الدخول من FVG</h2>
 <p>استراتيجية الدخول النموذجية:</p>
 <ol>
 <li>تحديد الانحياز العام (صاعد/هابط) عبر هيكل السوق.</li>
@@ -1885,74 +1902,74 @@
 <li>انتظار عودة السعر لملامسة حافة الـ FVG القريبة (وليس الدخول عشوائيًا وسط الفجوة).</li>
 <li>وضع وقف الخسارة خلف الحافة البعيدة للفجوة، مع هدف عند أقرب منطقة سيولة تالية.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="68">6.8 دمج الاختلالات مع كتل الطلب</h2>
+<h2 id="68">6.8 دمج الاختلالات مع كتل الطلب</h2>
 <p>من أقوى إعدادات SMC هو تطابق منطقة FVG مع كتلة طلب على نفس المستوى تقريبًا (كما ورد في دراسة حالة الفصل 5). هذا التطابق (Confluence) يرفع احتمالية نجاح الصفقة لأنه يجمع بين إشارتين مستقلتين تشيران لنفس المنطقة.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_25">ملخص الفصل</h2>
+<h2 id="_25">ملخص الفصل</h2>
 <ul>
 <li>الاختلال هو فجوة بين العرض والطلب ناتجة عن حركة سعرية سريعة، وFVG هي أوضح صورها القابلة للقياس.</li>
 <li>السعر يميل للعودة الجزئية لهذه الفجوات قبل استئناف اتجاهه.</li>
 <li>تطابق FVG مع كتلة طلب يُعد من أقوى إشارات الدخول في SMC.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_26">نقاط رئيسية</h2>
+<h2 id="_26">نقاط رئيسية</h2>
 <ol>
 <li>حدد الـ FVG بدقة باستخدام قاعدة الشموع الثلاث، لا بالتقدير البصري وحده.</li>
 <li>لا تنتظر امتلاء الفجوة بالكامل دائمًا — غالبًا يكفي لمس الحافة القريبة.</li>
 <li>ابحث دومًا عن تطابق FVG مع كتلة طلب أو منطقة سيولة لرفع جودة الإشارة.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_27">تمرين عملي</h2>
+<h2 id="_27">تمرين عملي</h2>
 <p>على مخطط 15 دقيقة، حدد خمس حالات FVG واضحة وفقًا لقاعدة الشموع الثلاث، وسجّل نسبة الفجوات التي عاد إليها السعر خلال الجلسات التالية.</p>
-<div class="chapter-break"></div><h2 id="_28">دراسة حالة</h2>
+<h2 id="_28">دراسة حالة</h2>
 <p>بعد صدور بيان اقتصادي مؤثر، يندفع السعر صعودًا بثلاث شموع قوية متتالية تاركة فجوة قيمة عادلة واضحة. يستمر الاتجاه الصاعد ليوم كامل تقريبًا، ثم يتصحح تدريجيًا حتى يلامس الحافة السفلية للفجوة بالضبط، والتي تتطابق أيضًا مع كتلة طلب صاعدة سابقة. الارتداد من هذه المنطقة يكون حادًا وسريعًا، مؤكدًا قوة التطابق بين الإشارتين.</p>
 <p>يوضّح الشكل 6.1 هذا المثال:</p>
 <p><img alt="الشكل 6.1" src="figures/fig-06-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 6.1 — تشكّل FVG أثناء اندفاعة صعودية، ثم عودة السعر لتطابق الفجوة مع كتلة الطلب</strong></p>
-<div class="part-break"></div><h1 id="7">الفصل 7: الحافز والفخاخ</h1>
-<div class="chapter-break"></div><h2 id="71-inducement">7.1 ما هو الحافز (Inducement)؟</h2>
+<h1 id="7">الفصل 7: الحافز والفخاخ</h1>
+<h2 id="71-inducement">7.1 ما هو الحافز (Inducement)؟</h2>
 <p>الحافز هو حركة سعرية صغيرة مصممة (من منظور SMC) لجذب متداولي التجزئة إلى الدخول أو وضع أوامر معلقة عند مستوى معين، قبل أن يتحرك السعر بعكس توقعاتهم مباشرة نحو الهدف الحقيقي. غالبًا ما يظهر الحافز كقمة أو قاع صغير يتشكل قبل كتلة الطلب "الحقيقية" على الإطار الزمني الأكبر.</p>
-<div class="chapter-break"></div><h2 id="72">7.2 الحافز الصالح</h2>
+<h2 id="72">7.2 الحافز الصالح</h2>
 <p>يكون الحافز مفيدًا للتحليل عندما يتوضع بين نقطة السيولة الرئيسية وكتلة الطلب الأساسية؛ أي أن ترتيب الأحداث المتوقع هو: تكوّن كتلة طلب على فريم أكبر → حافز صغير يجذب متداولين للدخول المبكر أو غير الصحيح → سحب سيولة الحافز → استكمال الحركة نحو كتلة الطلب الأصلية أو الهدف الأبعد.</p>
-<div class="chapter-break"></div><h2 id="73-internal-trap">7.3 الفخ الداخلي (Internal Trap)</h2>
+<h2 id="73-internal-trap">7.3 الفخ الداخلي (Internal Trap)</h2>
 <p>نوع من الحافز يتشكل داخل نطاق تصحيحي صغير على فريم منخفض، ويصعب اكتشافه دون النظر إلى الفريم الأعلى أولًا لتحديد أين يُفترض أن ينتهي التصحيح فعليًا.</p>
-<div class="chapter-break"></div><h2 id="74">7.4 تحديد الحافز على المخططات</h2>
+<h2 id="74">7.4 تحديد الحافز على المخططات</h2>
 <p>علامات مساعدة لتمييز الحافز:</p>
 <ul>
 <li>يتشكل عادة على فريم زمني أصغر من الفريم المستخدم لتحديد الانحياز العام.</li>
 <li>غالبًا ما يكون حجمه (Range) صغيرًا نسبيًا مقارنة بالحركة اللاحقة.</li>
 <li>يقع بين نقطة سيولة واضحة ومنطقة اهتمام (كتلة طلب/FVG) أكبر منه على فريم أعلى.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="75">7.5 استراتيجيات تداول الحافز</h2>
+<h2 id="75">7.5 استراتيجيات تداول الحافز</h2>
 <p>المتداولون المتقدمون يستخدمون كسر الحافز (بعد سحب سيولته) كتأكيد إضافي قبل الدخول من كتلة الطلب أو منطقة الاهتمام الأساسية، بدلًا من الدخول الفوري عند أول لمسة للمنطقة الكبرى.</p>
-<div class="chapter-break"></div><h2 id="76">7.6 تجنب الفخاخ الشائعة</h2>
+<h2 id="76">7.6 تجنب الفخاخ الشائعة</h2>
 <p>القاعدة الذهبية: لا تدخل صفقة بمجرد رؤية كسر مستوى صغير على فريم منخفض دون التأكد من موقعه ضمن السياق الأكبر (الانحياز، السيولة الرئيسية، كتلة الطلب الأساسية). كثير من خسائر متداولي SMC المبتدئين تأتي من التعامل مع كل حافز على أنه إشارة دخول مستقلة.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_29">ملخص الفصل</h2>
+<h2 id="_29">ملخص الفصل</h2>
 <ul>
 <li>الحافز حركة صغيرة تجذب دخولًا مبكرًا أو خاطئًا قبل الحركة الحقيقية نحو منطقة الاهتمام الأساسية.</li>
 <li>يجب قراءة الحافز دائمًا ضمن سياق الفريم الزمني الأعلى، وليس بمعزل عنه.</li>
 <li>كسر الحافز يمكن استخدامه كتأكيد إضافي، لا كإشارة دخول مستقلة بحد ذاته.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_30">نقاط رئيسية</h2>
+<h2 id="_30">نقاط رئيسية</h2>
 <ol>
 <li>حدد الانحياز على الفريم الأعلى أولًا قبل البحث عن حوافز على الفريم الأصغر.</li>
 <li>لا تخلط بين الحافز وكتلة الطلب الأساسية — الحافز غالبًا أصغر حجمًا وأقرب زمنيًا.</li>
 <li>استخدم كسر الحافز كتأكيد، لا كسبب وحيد للدخول.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_31">تمرين عملي</h2>
+<h2 id="_31">تمرين عملي</h2>
 <p>على مخطط 5 دقائق ضمن اتجاه محدد على فريم الساعة، حدد حركة صغيرة تسبق مباشرة الوصول إلى كتلة طلب أكبر، وحلل ما إذا كانت تتوافق مع تعريف الحافز.</p>
-<div class="chapter-break"></div><h2 id="_32">دراسة حالة</h2>
+<h2 id="_32">دراسة حالة</h2>
 <p>ضمن اتجاه صاعد على فريم الساعة، يتشكل قاع صغير على فريم 5 دقائق يجذب عددًا من متداولي التجزئة للبيع عند كسره الأولي الوهمي. لكن هذا الكسر لا يعدو كونه حافزًا يسحب سيولة بسيطة، إذ يرتد السعر بسرعة صعودًا نحو كتلة الطلب الرئيسية على فريم الساعة، محققًا الحركة الصعودية المتوقعة أصلًا. من فهم موقع هذا الكسر الصغير ضمن السياق الأكبر تجنّب الدخول بيعًا في اللحظة الخاطئة.</p>
 <p>يوضّح الشكل 7.1 هذا المثال:</p>
 <p><img alt="الشكل 7.1" src="figures/fig-07-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 7.1 — حافز صغير يسحب سيولة قبل استكمال الاتجاه نحو منطقة الاهتمام الأساسية</strong></p>
-<div class="part-break"></div><h1 id="8">الفصل 8: مناطق الخصم والعلاوة</h1>
-<div class="chapter-break"></div><h2 id="81">8.1 فهم الخصم والعلاوة</h2>
+<h1 id="8">الفصل 8: مناطق الخصم والعلاوة</h1>
+<h2 id="81">8.1 فهم الخصم والعلاوة</h2>
 <p>بعد تحديد نطاق سعري واضح (بين قمة تأرجح وقاع تأرجح رئيسيين)، يمكن تقسيمه إلى نصفين: <strong>النصف السفلي</strong> يُعتبر "منطقة خصم" (Discount) — أي منطقة سعر رخيص نسبيًا يُفضَّل الشراء منها. <strong>النصف العلوي</strong> يُعتبر "منطقة علاوة" (Premium) — أي منطقة سعر مرتفع نسبيًا يُفضَّل البيع منها. الفكرة تشبه مبدأ "الشراء من الأسفل والبيع من الأعلى" لكن بتعريف رياضي دقيق للنطاق.</p>
-<div class="chapter-break"></div><h2 id="82-smc">8.2 مستويات فيبوناتشي في SMC</h2>
+<h2 id="82-smc">8.2 مستويات فيبوناتشي في SMC</h2>
 <p>يُستخدم أداة فيبوناتشي (بمد الأداة من القاع إلى القمة أو العكس حسب الاتجاه) لتقسيم النطاق بدقة، حيث يمثل مستوى 50% نقطة الفصل بين الخصم والعلاوة، بينما تُستخدم مستويات مثل 61.8% و70.5% كمناطق "خصم عميق" أو "علاوة عميقة" مفضّلة للدخول.</p>
-<div class="chapter-break"></div><h2 id="83-70-80-85">8.3 قاعدة 70-80-85</h2>
+<h2 id="83-70-80-85">8.3 قاعدة 70-80-85</h2>
 <p>قاعدة إرشادية شائعة بين متداولي SMC تنص على تفضيل الدخول شراءً فقط عندما يتصحح السعر إلى منطقة تقع بين 70% و85% من ارتداد فيبوناتشي للحركة الصاعدة الأخيرة (أي في أعمق مناطق الخصم)، بدلًا من الدخول عند أي تصحيح بسيط قريب من القمة.</p>
-<div class="chapter-break"></div><h2 id="84-85">8.4 و8.5 الدخول من منطقة العلاوة والخصم</h2>
+<h2 id="84-85">8.4 و8.5 الدخول من منطقة العلاوة والخصم</h2>
 <table>
 <thead>
 <tr>
@@ -1974,38 +1991,38 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="86">8.6 مناطق الدخول المثالية</h2>
+<h2 id="86">8.6 مناطق الدخول المثالية</h2>
 <p>أفضل نقاط الدخول تجمع بين ثلاثة عناصر متزامنة: (1) وجود السعر في منطقة الخصم أو العلاوة المناسبة للانحياز، (2) تطابق ذلك مع كتلة طلب/عرض أو FVG، (3) وجود سحب سيولة سابق مباشرة قبل الوصول للمنطقة. كلما تجمعت هذه العناصر الثلاثة معًا، ارتفعت جودة نقطة الدخول بشكل ملحوظ.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_33">ملخص الفصل</h2>
+<h2 id="_33">ملخص الفصل</h2>
 <ul>
 <li>تقسيم أي نطاق سعري إلى خصم وعلاوة يوفر إطارًا رياضيًا لتفضيل مناطق الشراء والبيع.</li>
 <li>قاعدة 70-80-85 تساعد على تجنب الدخول المبكر جدًا في التصحيحات الضحلة.</li>
 <li>أفضل الصفقات تجمع بين منطقة الخصم/العلاوة وكتلة الطلب/العرض والسيولة معًا.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_34">نقاط رئيسية</h2>
+<h2 id="_34">نقاط رئيسية</h2>
 <ol>
 <li>حدد النطاق بدقة (من قمة تأرجح رئيسية إلى قاع تأرجح رئيسي) قبل تطبيق فيبوناتشي.</li>
 <li>لا تشترِ من منطقة العلاوة أو تبع من منطقة الخصم إلا في حالات استثنائية مبررة بإشارات أخرى قوية جدًا.</li>
 <li>التطابق بين عدة عناصر (خصم/علاوة + كتلة طلب + سيولة) هو ما يصنع الفرصة عالية الاحتمالية، وليس أي عنصر بمفرده.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_35">تمرين عملي</h2>
+<h2 id="_35">تمرين عملي</h2>
 <p>على مخطط 4 ساعات، حدد آخر نطاق حركة صاعدة كبير، وارسم فيبوناتشي عليه، ثم حدد أين تقع منطقة الخصم العميقة (70%-85%) وتحقق إن كانت تتطابق مع كتلة طلب موجودة مسبقًا.</p>
-<div class="chapter-break"></div><h2 id="_36">دراسة حالة</h2>
+<h2 id="_36">دراسة حالة</h2>
 <p>بعد اندفاعة صعودية قوية، يتصحح السعر تدريجيًا. يتوقف كثير من المتداولين عن الشراء عند أول ارتداد بسيط (حوالي 20%-30% من الحركة)، بينما يستمر السعر في التصحح حتى يصل إلى منطقة 78% تقريبًا من ارتداد فيبوناتشي، وهي نفسها منطقة كتلة طلب صاعدة سابقة. الارتداد من هذه المنطقة تحديدًا يكون أقوى بكثير من أي ارتداد سابق أثناء التصحيح، لتطابق ثلاثة عوامل معًا: الخصم العميق، كتلة الطلب، وسحب سيولة بسيط سبق الوصول للمنطقة.</p>
 <p>يوضّح الشكل 8.1 هذا المثال:</p>
 <p><img alt="الشكل 8.1" src="figures/fig-08-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 8.1 — منطقة الخصم العميقة (70%–85% ارتدادًا) متطابقة مع كتلة طلب</strong></p>
-<div class="part-break"></div><h1 id="9">الفصل 9: تدفق أوامر المؤسسات</h1>
-<div class="chapter-break"></div><h2 id="91">9.1 أساسيات تدفق الأوامر</h2>
+<h1 id="9">الفصل 9: تدفق أوامر المؤسسات</h1>
+<h2 id="91">9.1 أساسيات تدفق الأوامر</h2>
 <p>تدفق الأوامر (Order Flow) يشير إلى دراسة كيفية دخول وخروج رأس المال الكبير من السوق عبر شموع أو مجموعات شموع معينة تحمل خصائص مميزة (حجم كبير، سرعة تنفيذ عالية، امتداد قوي). في SMC، يُستخدم هذا المفهوم لتحديد اللحظات التي "يدخل" فيها لاعب كبير فعليًا، بدلًا من مجرد ملاحظة نتيجة دخوله لاحقًا.</p>
-<div class="chapter-break"></div><h2 id="92-institutional-funding-candle-ifc">9.2 شمعة التمويل المؤسسي (Institutional Funding Candle – IFC)</h2>
+<h2 id="92-institutional-funding-candle-ifc">9.2 شمعة التمويل المؤسسي (Institutional Funding Candle – IFC)</h2>
 <p>شمعة (أو مجموعة شموع متتالية) ذات جسم كبير نسبيًا مقارنة بالشموع المحيطة، تظهر فجأة وسط حركة هادئة نسبيًا، وتسحب سيولة واضحة (قمة أو قاع قريب) في طريقها. تُفسَّر هذه الشمعة كدليل على دخول تمويل مؤسسي ضخم في اتجاه معين، وغالبًا ما تصبح منطقتها لاحقًا كتلة طلب أو عرض ذات أهمية عالية.</p>
-<div class="chapter-break"></div><h2 id="93-bank-candle-bcd">9.3 شمعة أخبار البنوك (Bank Candle / BCD)</h2>
+<h2 id="93-bank-candle-bcd">9.3 شمعة أخبار البنوك (Bank Candle / BCD)</h2>
 <p>نوع خاص من شموع الاندفاع يرتبط مباشرة بتوقيت حدث إخباري عالي التأثير (مثل قرار سعر فائدة أو تقرير توظيف رئيسي). يتميز بحجم استثنائي وسرعة تنفيذ عالية جدًا، وغالبًا ما يحدد اتجاه السوق للساعات أو الأيام التالية.</p>
-<div class="chapter-break"></div><h2 id="94-flip-zone">9.4 منطقة الفليب (Flip Zone)</h2>
+<h2 id="94-flip-zone">9.4 منطقة الفليب (Flip Zone)</h2>
 <p>منطقة سعرية كانت تعمل تاريخيًا كمقاومة، ثم أصبحت بعد اختراقها ونجاح إعادة اختبارها تعمل كدعم (أو العكس). تشبه مفهوم "انعكاس الأدوار" في التحليل الفني التقليدي، لكنها تُقرأ هنا ضمن سياق تدفق أوامر مؤسسي واضح بدلًا من مجرد ملاحظة بصرية للمستوى.</p>
-<div class="chapter-break"></div><h2 id="95">9.5 أنماط تدفق الأوامر الشائعة</h2>
+<h2 id="95">9.5 أنماط تدفق الأوامر الشائعة</h2>
 <table>
 <thead>
 <tr>
@@ -2029,37 +2046,37 @@
 </tbody>
 </table>
 <hr />
-<div class="chapter-break"></div><h2 id="_37">ملخص الفصل</h2>
+<h2 id="_37">ملخص الفصل</h2>
 <ul>
 <li>تدفق الأوامر يهتم برصد لحظة الدخول المؤسسي الفعلية عبر شموع مميزة الحجم والسرعة.</li>
 <li>شمعة IFC وشمعة الأخبار (BCD) من أوضح علامات الدخول المؤسسي المفاجئ.</li>
 <li>منطقة الفليب تمثل تبدل وظيفة مستوى سعري من مقاومة إلى دعم أو العكس، مدعومة بدليل تدفق أوامر واضح.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_38">نقاط رئيسية</h2>
+<h2 id="_38">نقاط رئيسية</h2>
 <ol>
 <li>ابحث عن شموع ذات حجم/امتداد استثنائي مقارنة بمحيطها كإشارة على دخول مؤسسي محتمل.</li>
 <li>اربط توقيت الشموع الكبيرة بالتقويم الاقتصادي (الفصل 22) لتفسيرها بشكل أدق.</li>
 <li>منطقة الفليب أكثر موثوقية عندما تكون مدعومة بشمعة تدفق أوامر واضحة عند نشوئها.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_39">تمرين عملي</h2>
+<h2 id="_39">تمرين عملي</h2>
 <p>راجع مخططًا يوميًا حول موعد أحد الأحداث الاقتصادية الكبرى (مثل قرار فائدة أو تقرير توظيف)، وحدد الشمعة أو الشموع التي تُظهر خصائص IFC أو BCD وفقًا للتعريفات أعلاه.</p>
-<div class="chapter-break"></div><h2 id="_40">دراسة حالة</h2>
+<h2 id="_40">دراسة حالة</h2>
 <p>في يوم صدور قرار سعر فائدة غير متوقع من بنك مركزي كبير، تتشكل شمعة واحدة ضخمة الحجم تتجاوز متوسط حجم الشموع المحيطة بعدة أضعاف، تسحب في طريقها سيولة قمة أو قاع بارز، وتترك خلفها اختلالًا واضحًا (FVG). خلال الأيام التالية، يتحرك السعر في اتجاه هذه الشمعة بثبات، بينما تتحول منطقتها إلى كتلة طلب/عرض رئيسية يعاد اختبارها بنجاح أكثر من مرة.</p>
 <p>يوضّح الشكل 9.1 هذا المثال:</p>
 <p><img alt="الشكل 9.1" src="figures/fig-09-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 9.1 — شمعة تمويل مؤسسي (IFC) تسحب السيولة وتترك FVG خلفها</strong></p>
-<div class="part-break"></div><h1 id="10-smc">الفصل 10: تحليل الأطر الزمنية في SMC</h1>
-<div class="chapter-break"></div><h2 id="101">10.1 ترابط الأطر الزمنية</h2>
+<h1 id="10-smc">الفصل 10: تحليل الأطر الزمنية في SMC</h1>
+<h2 id="101">10.1 ترابط الأطر الزمنية</h2>
 <p>لا يُقرأ أي مفهوم من مفاهيم SMC بمعزل عن الإطار الزمني الذي يظهر عليه. المبدأ الأساسي هو أن الأطر الزمنية الأكبر تحدد <strong>السياق</strong> (الانحياز العام، المناطق الرئيسية)، بينما تُستخدم الأطر الأصغر لتحسين <strong>التوقيت</strong> الدقيق للدخول والخروج ضمن ذلك السياق.</p>
-<div class="chapter-break"></div><h2 id="102-ltf">10.2 الأطر الزمنية الصغيرة (LTF)</h2>
+<h2 id="102-ltf">10.2 الأطر الزمنية الصغيرة (LTF)</h2>
 <p>مثل 1 و5 و15 دقيقة. تُستخدم لرصد تفاصيل دقيقة كالحوافز وتغيّر الشخصية الصغير عند الوصول إلى منطقة اهتمام محددة على فريم أعلى، لكنها غير موثوقة بمفردها لتحديد الانحياز العام لأنها مليئة بالتذبذب العشوائي قصير الأمد.</p>
-<div class="chapter-break"></div><h2 id="103-mtf">10.3 الأطر الزمنية المتوسطة (MTF)</h2>
+<h2 id="103-mtf">10.3 الأطر الزمنية المتوسطة (MTF)</h2>
 <p>مثل الساعة و4 ساعات. تُستخدم غالبًا كجسر بين الصورة الكبرى والتنفيذ الدقيق: تحديد كتل الطلب والمناطق التي سيُراقَب اقتراب السعر منها، ثم الانتقال للفريم الأصغر لتفاصيل الدخول.</p>
-<div class="chapter-break"></div><h2 id="104-htf">10.4 الأطر الزمنية الكبيرة (HTF)</h2>
+<h2 id="104-htf">10.4 الأطر الزمنية الكبيرة (HTF)</h2>
 <p>مثل اليومي والأسبوعي. تحدد الانحياز الاستراتيجي العام، ومناطق السيولة والكتل الأكثر أهمية التي تستحق المتابعة، وتُعتبر "الحكم الفصل" عند تعارض الإشارات بين الأطر المختلفة.</p>
-<div class="chapter-break"></div><h2 id="105">10.5 تأكيد الأطر الزمنية</h2>
+<h2 id="105">10.5 تأكيد الأطر الزمنية</h2>
 <p>القاعدة العملية: لا تفتح صفقة تخالف الانحياز الظاهر على الفريم الأعلى إلا بوجود مبرر استثنائي قوي جدًا (مثل CHOCH واضح جدًا يظهر أيضًا على ذلك الفريم الأعلى نفسه). التعارض الشائع بين الفريمات غالبًا ما يكون علامة على أن الفريم الأصغر يعرض تصحيحًا مؤقتًا فقط، وليس انعكاسًا حقيقيًا.</p>
-<div class="chapter-break"></div><h2 id="106">10.6 أطر الدخول</h2>
+<h2 id="106">10.6 أطر الدخول</h2>
 <p>نموذج عملي شائع يُطلق عليه أحيانًا "نموذج الثلاثية الزمنية":</p>
 <table>
 <thead>
@@ -2084,31 +2101,31 @@
 </tbody>
 </table>
 <hr />
-<div class="chapter-break"></div><h2 id="_41">ملخص الفصل</h2>
+<h2 id="_41">ملخص الفصل</h2>
 <ul>
 <li>الأطر الزمنية الأكبر تحدد السياق، والأصغر تحدد التوقيت — لا يجب الخلط بين الدورين.</li>
 <li>التعارض بين الفريمات يُحل عادة لصالح الفريم الأعلى، ما لم تظهر إشارة انعكاس قوية جدًا عليه أيضًا.</li>
 <li>نموذج الثلاثية الزمنية (سياق - رصد - تنفيذ) إطار عملي شائع لتنظيم عملية التحليل.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_42">نقاط رئيسية</h2>
+<h2 id="_42">نقاط رئيسية</h2>
 <ol>
 <li>ابدأ التحليل دائمًا من الفريم الأعلى، ثم انزل تدريجيًا.</li>
 <li>لا تدخل صفقة بناءً على فريم صغير فقط دون التحقق من توافقها مع الفريم الأعلى.</li>
 <li>استخدم الفريم الأصغر لتحسين نسبة المخاطرة إلى العائد عبر دخول أدق، لا لتغيير قرار الاتجاه نفسه.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_43">تمرين عملي</h2>
+<h2 id="_43">تمرين عملي</h2>
 <p>اختر أصلًا ماليًا، وحدد الانحياز على الفريم اليومي، ثم انزل إلى فريم الساعة لتحديد أقرب منطقة اهتمام، ثم إلى فريم 5 دقائق لرصد نقطة دخول محتملة ضمن تلك المنطقة.</p>
-<div class="chapter-break"></div><h2 id="_44">دراسة حالة</h2>
+<h2 id="_44">دراسة حالة</h2>
 <p>على الفريم اليومي، يظهر انحياز صاعد واضح مع كتلة طلب حديثة لم تُختبر بعد. عند اقتراب السعر من هذه المنطقة على فريم الساعة، يظهر تصحيح هابط بسيط. بدلًا من افتراض انعكاس الاتجاه، ينتقل المتداول إلى فريم 5 دقائق حيث يلاحظ سحب سيولة صغيرًا يليه CHOCH صعودي محلي — وهو التأكيد الذي يستخدمه للدخول شراءً بما يتوافق مع الانحياز اليومي الأصلي.</p>
 <p>يوضّح الشكل 10.1 هذا المثال:</p>
 <p><img alt="الشكل 10.1" src="figures/fig-10-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 10.1 — تدرّج التحليل عبر الأطر الزمنية الثلاثة: السياق، الرصد، والتنفيذ</strong></p>
-<div class="part-break"></div><h1 id="11-smc">الفصل 11: طرق الدخول في SMC</h1>
-<div class="chapter-break"></div><h2 id="111">11.1 الدخول مع الهيكل والاتجاه</h2>
+<h1 id="11-smc">الفصل 11: طرق الدخول في SMC</h1>
+<h2 id="111">11.1 الدخول مع الهيكل والاتجاه</h2>
 <p>القاعدة الأولى في أي طريقة دخول SMC: التداول مع اتجاه الهيكل السائد على الفريم الأعلى، إلا في حالات CHOCH واضحة ومؤكدة. الدخول عكس الهيكل بلا مبرر قوي هو السبب الأكثر شيوعًا لخسائر المتداولين الجدد في هذا المنهج.</p>
-<div class="chapter-break"></div><h2 id="112-choch">11.2 الدخول بعد تغيّر الشخصية (CHOCH)</h2>
+<h2 id="112-choch">11.2 الدخول بعد تغيّر الشخصية (CHOCH)</h2>
 <p>بعد تأكد CHOCH على الفريم المناسب، يُنتظر عادة تكوّن كتلة طلب/عرض جديدة تتماشى مع الاتجاه الجديد، بدلًا من الدخول الفوري عند لحظة الكسر نفسها.</p>
-<div class="chapter-break"></div><h2 id="1131110">11.3–11.10 ملخص طرق الدخول الرئيسية</h2>
+<h2 id="1131110">11.3–11.10 ملخص طرق الدخول الرئيسية</h2>
 <table>
 <thead>
 <tr>
@@ -2160,7 +2177,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="1111-checklist">11.11 الإطار الكامل للدخول (Checklist)</h2>
+<h2 id="1111-checklist">11.11 الإطار الكامل للدخول (Checklist)</h2>
 <p>قائمة تحقق عملية قبل أي دخول في منهج SMC:</p>
 <ol>
 <li>ما هو الانحياز على الفريم الأعلى؟ (صاعد/هابط/عرضي)</li>
@@ -2172,87 +2189,87 @@
 </ol>
 <p>كلما زادت الإجابات الإيجابية على هذه الأسئلة، ارتفعت جودة الصفقة المرشحة.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_45">ملخص الفصل</h2>
+<h2 id="_45">ملخص الفصل</h2>
 <ul>
 <li>طرق الدخول المختلفة في SMC ليست بدائل متنافسة، بل طبقات تأكيد يمكن دمجها معًا.</li>
 <li>الإطار الكامل للدخول (Checklist) يساعد على تجنب الدخول المتسرع بناءً على إشارة واحدة فقط.</li>
 <li>كلما تطابقت عدة طرق دخول عند نفس المنطقة السعرية تقريبًا، ارتفعت احتمالية نجاح الصفقة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_46">نقاط رئيسية</h2>
+<h2 id="_46">نقاط رئيسية</h2>
 <ol>
 <li>لا تعتمد على طريقة دخول واحدة بمعزل عن سياق الهيكل والانحياز العام.</li>
 <li>استخدم قائمة التحقق قبل كل صفقة كعادة ثابتة، وليس فقط في التعلم الأولي.</li>
 <li>تطابق عدة إشارات (Confluence) أهم من قوة أي إشارة منفردة.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_47">تمرين عملي</h2>
+<h2 id="_47">تمرين عملي</h2>
 <p>اختر صفقة تاريخية ناجحة أو خاسرة من سجلك الخاص (أو من مخطط تاريخي)، وطبّق عليها قائمة التحقق المكونة من ست نقاط أعلاه، وحدد أين كانت نقاط القوة والضعف في القرار الأصلي.</p>
-<div class="chapter-break"></div><h2 id="_48">دراسة حالة</h2>
+<h2 id="_48">دراسة حالة</h2>
 <p>يحدد متداول انحيازًا صاعدًا واضحًا على الفريم اليومي، مع كتلة طلب طازجة تتوافق مع منطقة خصم عميقة (78% ارتدادًا)، وقد سبقها سحب سيولة واضح أسفل قاع بارز. عند وصول السعر لهذه المنطقة، يظهر على فريم 15 دقيقة CHOCH صعودي محلي مؤكد. بتطابق خمسة عناصر مختلفة (الانحياز، كتلة الطلب، الخصم العميق، سحب السيولة، وتأكيد الفريم الأصغر)، تكون هذه الصفقة مرشحة قوية جدًا مقارنة بصفقة تعتمد على عنصر واحد فقط.</p>
 <p>يوضّح الشكل 11.1 هذا المثال:</p>
 <p><img alt="الشكل 11.1" src="figures/fig-11-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 11.1 — تطابق خمسة عناصر من SMC عند نفس منطقة الدخول</strong></p>
-<div class="part-break"></div><h1 id="12-smc">الفصل 12: أنظمة تداول SMC كاملة</h1>
+<h1 id="12-smc">الفصل 12: أنظمة تداول SMC كاملة</h1>
 <p>بعد استعراض المفاهيم الفردية في الفصول السابقة، يقدّم هذا الفصل خمسة أنظمة تداول متكاملة تجمع هذه المفاهيم في عمليات قرار واضحة وقابلة للتكرار.</p>
-<div class="chapter-break"></div><h2 id="121-1">12.1 النظام 1: الانحياز اليومي + الدخول من كتلة طلب</h2>
+<h2 id="121-1">12.1 النظام 1: الانحياز اليومي + الدخول من كتلة طلب</h2>
 <ol>
 <li>تحديد الانحياز على الفريم اليومي عبر آخر تسلسل HH-HL أو LH-LL.</li>
 <li>تحديد آخر كتلة طلب/عرض طازجة على فريم 4 ساعات متوافقة مع هذا الانحياز.</li>
 <li>انتظار عودة السعر للكتلة، والدخول عند أول بادرة رفض واضحة (فتيل رفض أو شمعة انعكاسية).</li>
 <li>وقف الخسارة خلف حافة الكتلة البعيدة، وهدف عند أقرب سيولة معاكسة.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="122-2-fvg">12.2 النظام 2: سحب السيولة + الدخول من FVG</h2>
+<h2 id="122-2-fvg">12.2 النظام 2: سحب السيولة + الدخول من FVG</h2>
 <ol>
 <li>تحديد قمم/قيعان متساوية بارزة (منطقة سيولة واضحة).</li>
 <li>انتظار سحب سريع لهذه السيولة (فتيل اختراق ثم ارتداد).</li>
 <li>البحث عن FVG تتشكل مباشرة أثناء حركة الارتداد.</li>
 <li>الدخول عند العودة للـ FVG، مع وقف خسارة خلف نقطة السحب.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="123-3-choch">12.3 النظام 3: CHOCH + الدخول من منطقة الفليب</h2>
+<h2 id="123-3-choch">12.3 النظام 3: CHOCH + الدخول من منطقة الفليب</h2>
 <ol>
 <li>رصد CHOCH واضح على الفريم المتوسط (ساعة/4 ساعات).</li>
 <li>تحديد أقرب منطقة فليب متوافقة مع الاتجاه الجديد.</li>
 <li>انتظار إعادة اختبار ناجحة لمنطقة الفليب (تحول من مقاومة إلى دعم أو العكس).</li>
 <li>الدخول عند التأكيد، مع وقف خسارة خلف منطقة الفليب.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="124-4">12.4 النظام 4: تطابق الأطر الزمنية المتعددة</h2>
+<h2 id="124-4">12.4 النظام 4: تطابق الأطر الزمنية المتعددة</h2>
 <ol>
 <li>تحديد الانحياز على اليومي، ومنطقة الاهتمام على 4 ساعات، ونقطة الدخول الدقيقة على 15 دقيقة (نموذج الثلاثية الزمنية من الفصل 10).</li>
 <li>الدخول فقط عند توافق الفريمات الثلاثة على نفس الاتجاه العام.</li>
 <li>استخدام وقف خسارة ضيق نسبيًا بفضل دقة التوقيت على الفريم الأصغر.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="125-5">12.5 النظام 5: الخصم/العلاوة + الحافز</h2>
+<h2 id="125-5">12.5 النظام 5: الخصم/العلاوة + الحافز</h2>
 <ol>
 <li>تحديد نطاق الحركة الرئيسي ورسم فيبوناتشي عليه.</li>
 <li>مراقبة تشكّل حافز صغير قبل الوصول لمنطقة الخصم العميقة (أو العلاوة العميقة للبيع).</li>
 <li>الدخول بعد سحب سيولة الحافز وتأكيد الاتجاه نحو منطقة الاهتمام الأساسية.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="126-smc">12.6 بناء نظام SMC خاص بك</h2>
+<h2 id="126-smc">12.6 بناء نظام SMC خاص بك</h2>
 <p>لا يوجد نظام "مثالي" واحد يناسب جميع المتداولين؛ الأنظمة الخمسة أعلاه نقاط انطلاق يمكن تعديلها حسب الأصل المتداول، الإطار الزمني المفضل، وشخصية المتداول (البعض يفضل صفقات أقل وأكثر تأكيدًا، والبعض يفضل تكرارًا أعلى بمخاطرة أصغر لكل صفقة). المهم أن يكون النظام المُختار <strong>مكتوبًا بوضوح وقابلًا للتكرار</strong>، وليس مجموعة انطباعات متغيرة من صفقة لأخرى.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_49">ملخص الفصل</h2>
+<h2 id="_49">ملخص الفصل</h2>
 <ul>
 <li>الأنظمة الخمسة المعروضة أمثلة عملية على دمج مفاهيم SMC الفردية في عملية قرار واحدة متسقة.</li>
 <li>لا يوجد نظام واحد "أفضل" مطلقًا؛ الاختيار يعتمد على شخصية المتداول والأصل المتداول.</li>
 <li>أي نظام تداول جاد يجب أن يكون مكتوبًا وقابلًا للاختبار والتكرار، لا مجرد انطباعات لحظية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_50">نقاط رئيسية</h2>
+<h2 id="_50">نقاط رئيسية</h2>
 <ol>
 <li>جرّب أكثر من نظام على حساب تجريبي (Demo) قبل التزامك برأس مال حقيقي.</li>
 <li>وثّق كل صفقة في دفتر تداول لمعرفة أي الأنظمة يناسب أسلوبك فعليًا.</li>
 <li>اتساق التطبيق أهم من "مثالية" النظام نفسه.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_51">تمرين عملي</h2>
+<h2 id="_51">تمرين عملي</h2>
 <p>اختر نظامًا واحدًا من الأنظمة الخمسة، وطبّقه بشكل موثّق (بدون تنفيذ فعلي إن أردت) على عشر فرص تاريخية مختلفة، ثم قيّم نسبة النجاح التقريبية.</p>
-<div class="chapter-break"></div><h2 id="_52">دراسة حالة: أسبوع تداول كامل</h2>
+<h2 id="_52">دراسة حالة: أسبوع تداول كامل</h2>
 <p>خلال أسبوع تداول واحد على زوج عملات رئيسي، يحدد متداول انحيازًا صاعدًا ثابتًا على الفريم اليومي طوال الأسبوع. يطبق النظام الأول (كتلة طلب) يوم الاثنين محققًا ربحًا، ثم النظام الثاني (سحب سيولة + FVG) يوم الأربعاء بعد حدث إخباري محقّقًا ربحًا إضافيًا، بينما يتجنب يوم الثلاثاء بسبب غياب أي تطابق واضح بين معايير أي من الأنظمة الخمسة. هذا المثال يوضح أن الانضباط في <strong>عدم</strong> الدخول عند غياب المعايير لا يقل أهمية عن الدخول عند توفرها.</p>
 <p>يوضّح الشكل 12.1 هذا المثال:</p>
 <p><img alt="الشكل 12.1" src="figures/fig-12-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 12.1 — تطبيق نظامين مختلفين من أنظمة SMC خلال أسبوع تداول واحد</strong></p>
-<div class="part-break"></div><h1 id="_53">الجزء الثالث: التحليل الأساسي</h1>
-<div class="part-break"></div><h1 id="13_1">الفصل 13: مقدمة إلى التحليل الأساسي</h1>
-<div class="chapter-break"></div><h2 id="131">13.1 ما هو التحليل الأساسي؟</h2>
+<h1 id="_53">الجزء الثالث: التحليل الأساسي</h1>
+<h1 id="13_1">الفصل 13: مقدمة إلى التحليل الأساسي</h1>
+<h2 id="131">13.1 ما هو التحليل الأساسي؟</h2>
 <p>التحليل الأساسي هو دراسة العوامل الاقتصادية والمالية والسياسية التي تحدد القيمة الحقيقية (Fair Value) لأصل مالي، سواء كان عملة، سهمًا، أو سلعة. بينما يهتم التحليل الفني بـ"كيف" يتحرك السعر، يهتم التحليل الأساسي بـ"لماذا" يجب أن يتحرك السعر في اتجاه معين على المدى المتوسط والطويل.</p>
-<div class="chapter-break"></div><h2 id="132">13.2 التحليل الأساسي مقابل التحليل الفني</h2>
+<h2 id="132">13.2 التحليل الأساسي مقابل التحليل الفني</h2>
 <table>
 <thead>
 <tr>
@@ -2279,38 +2296,38 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="133">13.3 دور التحليل الأساسي في التداول</h2>
+<h2 id="133">13.3 دور التحليل الأساسي في التداول</h2>
 <p>في إطار "التحليل الثلاثي" المعتمد في هذا الكتاب، يُستخدم التحليل الأساسي كطبقة أولى تحدد الانحياز الكلي (مثلًا: هل الدولار الأمريكي في مرحلة قوة أم ضعف عامة؟)، وهذا الانحياز يوجّه بعد ذلك كيفية تفسير هيكل السوق ومفاهيم SMC، بدلًا من التداول ضد التيار الاقتصادي الأكبر.</p>
-<div class="chapter-break"></div><h2 id="134">13.4 المفاهيم الاقتصادية الرئيسية</h2>
+<h2 id="134">13.4 المفاهيم الاقتصادية الرئيسية</h2>
 <p>قبل الخوض في تفاصيل كل مؤشر على حدة في الفصول التالية، من المهم فهم مبدأين جوهريين:</p>
 <ul>
 <li><strong>مبدأ التوقعات (Expectations):</strong> الأسواق لا تتفاعل مع الرقم المُعلن وحده، بل مع الفرق بين الرقم الفعلي والرقم المتوقع من الاقتصاديين (Consensus). مفاجأة إيجابية (رقم أفضل من المتوقع) قد تحرك السوق حتى لو كان الرقم نفسه ضعيفًا تاريخيًا.</li>
 <li><strong>مبدأ الترابط بين المؤشرات:</strong> لا يُقرأ أي مؤشر بمعزل عن غيره. التضخم المرتفع مثلًا يُفسَّر بشكل مختلف تمامًا حسب حالة سوق العمل والنمو الاقتصادي المصاحبة له.</li>
 </ul>
 <hr />
-<div class="chapter-break"></div><h2 id="_54">ملخص الفصل</h2>
+<h2 id="_54">ملخص الفصل</h2>
 <ul>
 <li>التحليل الأساسي يحدد "لماذا" يتحرك السعر على المدى الأبعد، ويكمل التحليل الفني ومفاهيم SMC بدلًا من منافستهما.</li>
 <li>الفرق بين الرقم الفعلي والمتوقع أهم غالبًا من الرقم المطلق نفسه.</li>
 <li>لا يُقرأ أي مؤشر اقتصادي بمعزل عن سياق بقية المؤشرات.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_55">نقاط رئيسية</h2>
+<h2 id="_55">نقاط رئيسية</h2>
 <ol>
 <li>استخدم التحليل الأساسي لتحديد الانحياز الكلي قبل الدخول في تفاصيل SMC والتحليل الفني.</li>
 <li>راقب دائمًا الفرق بين المتوقع والفعلي عند صدور أي بيان اقتصادي.</li>
 <li>اربط كل مؤشر بسياقه الاقتصادي الأوسع بدلًا من قراءته منفردًا.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_56">تمرين عملي</h2>
+<h2 id="_56">تمرين عملي</h2>
 <p>راجع التقويم الاقتصادي لأي أسبوع سابق، واختر ثلاثة بيانات صدرت خلاله، وسجّل: هل كانت النتيجة أعلى أم أقل من توقعات الاقتصاديين؟ وكيف تفاعل السعر بعدها؟</p>
-<div class="chapter-break"></div><h2 id="_57">دراسة حالة</h2>
+<h2 id="_57">دراسة حالة</h2>
 <p>عند صدور بيان تضخم أعلى بقليل من توقعات المحللين، يرتفع سعر عملة معينة بشكل حاد فور الإعلان، رغم أن الرقم المطلق نفسه ما يزال أقل من المستوى المستهدف من البنك المركزي. هذا يوضح كيف أن "المفاجأة" بالنسبة للتوقعات (وليس الرقم المطلق) هي ما يحرك السوق فور صدور البيانات.</p>
 <p>يوضّح الشكل 13.1 هذا المثال:</p>
 <p><img alt="الشكل 13.1" src="figures/fig-13-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 13.1 — الفرق بين المتوقع والفعلي، ورد فعل السعر بعد الإعلان</strong></p>
-<div class="part-break"></div><h1 id="14_1">الفصل 14: البنوك المركزية والسياسة النقدية</h1>
-<div class="chapter-break"></div><h2 id="141">14.1 دور البنوك المركزية</h2>
+<h1 id="14_1">الفصل 14: البنوك المركزية والسياسة النقدية</h1>
+<h2 id="141">14.1 دور البنوك المركزية</h2>
 <p>البنوك المركزية مسؤولة عن إدارة السياسة النقدية لدولها، وتشمل مهامها الرئيسية: الحفاظ على استقرار الأسعار (مكافحة التضخم المفرط)، دعم التوظيف الكامل، والحفاظ على استقرار النظام المالي. قراراتها من أكثر الأحداث تأثيرًا على أسواق العملات والسندات والأسهم عالميًا.</p>
-<div class="chapter-break"></div><h2 id="142">14.2 البنوك المركزية الرئيسية</h2>
+<h2 id="142">14.2 البنوك المركزية الرئيسية</h2>
 <table>
 <thead>
 <tr>
@@ -2357,48 +2374,48 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="143">14.3 أدوات السياسة النقدية</h2>
+<h2 id="143">14.3 أدوات السياسة النقدية</h2>
 <ul>
 <li><strong>سعر الفائدة الأساسي:</strong> الأداة الأكثر مباشرة وتأثيرًا.</li>
 <li><strong>عمليات السوق المفتوحة:</strong> شراء أو بيع السندات الحكومية للتأثير على السيولة.</li>
 <li><strong>نسبة الاحتياطي الإلزامي:</strong> الحد الأدنى من الودائع التي يجب على البنوك التجارية الاحتفاظ بها.</li>
 <li><strong>التوجيه المستقبلي (Forward Guidance):</strong> تصريحات رسمية توضح التوجه المستقبلي المتوقع للسياسة النقدية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="144">14.4 قرارات أسعار الفائدة</h2>
+<h2 id="144">14.4 قرارات أسعار الفائدة</h2>
 <p>عندما يرفع بنك مركزي أسعار الفائدة، فإنه عادة يجعل عملته أكثر جاذبية لرؤوس الأموال الباحثة عن عائد أعلى، مما يدعم قيمتها نسبيًا (مع مراعاة عوامل أخرى مصاحبة). خفض الفائدة يعمل بالاتجاه المعاكس عادة.</p>
-<div class="chapter-break"></div><h2 id="145">14.5 التيسير الكمي والتشديد الكمي</h2>
+<h2 id="145">14.5 التيسير الكمي والتشديد الكمي</h2>
 <ul>
 <li><strong>التيسير الكمي (QE):</strong> يضخ البنك المركزي سيولة في الاقتصاد عبر شراء سندات وأصول مالية، مما يزيد المعروض النقدي وقد يضعف العملة على المدى المتوسط.</li>
 <li><strong>التشديد الكمي (QT):</strong> عكس التيسير الكمي؛ يقلّص البنك المركزي ميزانيته العمومية، مما يقلل السيولة وقد يدعم العملة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="146">14.6 التوجيه المستقبلي</h2>
+<h2 id="146">14.6 التوجيه المستقبلي</h2>
 <p>كثير من تأثير قرارات البنوك المركزية على الأسواق لا يأتي من القرار الحالي نفسه (والذي يكون متوقعًا غالبًا)، بل من نبرة التصريحات المرافقة له بخصوص القرارات المستقبلية. تصريح "متشدد" (Hawkish) يشير لاحتمال رفع فائدة أو تشديد إضافي، بينما تصريح "متساهل" (Dovish) يشير لاحتمال تيسير إضافي.</p>
-<div class="chapter-break"></div><h2 id="147">14.7 استقلالية البنك المركزي</h2>
+<h2 id="147">14.7 استقلالية البنك المركزي</h2>
 <p>استقلالية البنك المركزي عن التدخل السياسي المباشر تُعتبر عاملًا مهمًا لثقة الأسواق في مصداقية سياسته النقدية؛ أي شك في هذه الاستقلالية قد يخلق تقلبات إضافية غير مرتبطة مباشرة بالبيانات الاقتصادية نفسها.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_58">ملخص الفصل</h2>
+<h2 id="_58">ملخص الفصل</h2>
 <ul>
 <li>البنوك المركزية تدير السياسة النقدية عبر أدوات رئيسية أهمها سعر الفائدة والتيسير/التشديد الكمي.</li>
 <li>نبرة التصريحات (متشددة/متساهلة) غالبًا ما تكون أهم من القرار المعلن نفسه.</li>
 <li>استقلالية البنك المركزي عامل ثقة مهم يؤثر على استقرار العملة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_59">نقاط رئيسية</h2>
+<h2 id="_59">نقاط رئيسية</h2>
 <ol>
 <li>تابع دائمًا الفرق بين القرار المتوقع والفعلي، وكذلك نبرة المؤتمر الصحفي المرافق.</li>
 <li>اربط بين قرارات الفائدة والتيسير/التشديد الكمي لفهم الصورة الكاملة للسياسة النقدية.</li>
 <li>راقب أي إشارات سياسية قد تهدد استقلالية البنك المركزي في أي دولة تتداول عملتها.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_60">تمرين عملي</h2>
+<h2 id="_60">تمرين عملي</h2>
 <p>راجع آخر قرار سعر فائدة صادر عن أحد البنوك المركزية الكبرى، وحدد: هل كان القرار متوقعًا؟ وما كانت نبرة التصريحات المرافقة (متشددة أم متساهلة)؟ وكيف تفاعلت العملة المرتبطة به؟</p>
-<div class="chapter-break"></div><h2 id="_61">دراسة حالة</h2>
+<h2 id="_61">دراسة حالة</h2>
 <p>يعلن بنك مركزي عن إبقاء سعر الفائدة دون تغيير كما كان متوقعًا تمامًا، لكن خلال المؤتمر الصحفي يستخدم المحافظ لغة أكثر تشددًا من المتوقع بخصوص القرارات القادمة، مشيرًا لاحتمال رفع الفائدة في الاجتماع التالي. رغم ثبات القرار الحالي، ترتفع العملة المرتبطة بشكل حاد بسبب التوجيه المستقبلي المتشدد وحده.</p>
 <p>يوضّح الشكل 14.1 هذا المثال:</p>
 <p><img alt="الشكل 14.1" src="figures/fig-14-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 14.1 — رد فعل العملة عند قرار الفائدة مقارنة بالمؤتمر الصحفي المتشدد</strong></p>
-<div class="part-break"></div><h1 id="15_1">الفصل 15: أسعار الفائدة وتأثيرها</h1>
-<div class="chapter-break"></div><h2 id="151">15.1 ما هي أسعار الفائدة؟</h2>
+<h1 id="15_1">الفصل 15: أسعار الفائدة وتأثيرها</h1>
+<h2 id="151">15.1 ما هي أسعار الفائدة؟</h2>
 <p>سعر الفائدة هو تكلفة اقتراض المال، ويُحدَّد أساسًا عبر "سعر الفائدة الأساسي" الذي يضعه البنك المركزي، والذي تُبنى عليه أسعار الفائدة الأخرى في الاقتصاد (قروض، ودائع، رهون عقارية).</p>
-<div class="chapter-break"></div><h2 id="152">15.2 أنواع أسعار الفائدة</h2>
+<h2 id="152">15.2 أنواع أسعار الفائدة</h2>
 <table>
 <thead>
 <tr>
@@ -2425,38 +2442,38 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="153">15.3 كيف تؤثر أسعار الفائدة على العملات</h2>
+<h2 id="153">15.3 كيف تؤثر أسعار الفائدة على العملات</h2>
 <p>ارتفاع سعر الفائدة النسبي لدولة ما (مقارنة بدول أخرى) يجذب عادة تدفقات رأسمالية باحثة عن عائد أعلى (تجارة الفارق – Carry Trade)، مما يدعم عملتها. لذلك يهتم متداولو الفوركس بشكل خاص بفروق أسعار الفائدة بين الدول (Interest Rate Differentials) وليس فقط بمستوى الفائدة المطلق في دولة واحدة.</p>
-<div class="chapter-break"></div><h2 id="154">15.4 كيف تؤثر أسعار الفائدة على الأسهم</h2>
+<h2 id="154">15.4 كيف تؤثر أسعار الفائدة على الأسهم</h2>
 <p>ارتفاع أسعار الفائدة يرفع تكلفة الاقتراض على الشركات، ويقلل القيمة الحالية للأرباح المستقبلية المخصومة (كما في نماذج DCF)، مما يضغط عادة على تقييمات الأسهم، خصوصًا أسهم النمو التي تعتمد أرباحها المتوقعة على المستقبل البعيد.</p>
-<div class="chapter-break"></div><h2 id="155">15.5 توقعات أسعار الفائدة</h2>
+<h2 id="155">15.5 توقعات أسعار الفائدة</h2>
 <p>تُسعِّر الأسواق (خصوصًا أسواق العقود الآجلة على الفائدة) توقعاتها لقرارات الفائدة القادمة قبل حدوثها بوقت طويل. لذلك، كما أُشير في الفصل 14، فإن رد فعل السوق يعتمد على مدى مطابقة القرار الفعلي لهذه التوقعات المسعّرة مسبقًا، لا على القرار المطلق وحده.</p>
-<div class="chapter-break"></div><h2 id="156-yield-curve">15.6 منحنى العائد (Yield Curve)</h2>
+<h2 id="156-yield-curve">15.6 منحنى العائد (Yield Curve)</h2>
 <p>يوضح منحنى العائد العلاقة بين عوائد السندات الحكومية ومدة استحقاقها. في الحالة الطبيعية، ترتفع العوائد كلما طالت مدة السند. عندما "ينعكس" هذا المنحنى (تصبح عوائد السندات قصيرة الأجل أعلى من طويلة الأجل)، يُعتبر ذلك تاريخيًا إشارة تحذيرية قوية على احتمال ركود اقتصادي قادم.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_62">ملخص الفصل</h2>
+<h2 id="_62">ملخص الفصل</h2>
 <ul>
 <li>فروق أسعار الفائدة بين الدول من أهم محركات أسواق العملات على المدى المتوسط.</li>
 <li>ارتفاع الفائدة يضغط عادة على تقييمات الأسهم، خصوصًا أسهم النمو.</li>
 <li>انعكاس منحنى العائد إشارة تحذيرية مهمة يجب مراقبتها ضمن التحليل الأساسي الأوسع.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_63">نقاط رئيسية</h2>
+<h2 id="_63">نقاط رئيسية</h2>
 <ol>
 <li>راقب فروق الفائدة النسبية بين الدول، وليس فقط مستوى الفائدة المطلق لدولة واحدة.</li>
 <li>تذكّر أن ارتفاع الفائدة له تأثير مزدوج: قد يدعم العملة لكنه يضغط عادة على الأسهم.</li>
 <li>تابع شكل منحنى العائد كمؤشر أساسي إضافي على المخاطر الاقتصادية المستقبلية.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_64">تمرين عملي</h2>
+<h2 id="_64">تمرين عملي</h2>
 <p>قارن سعر الفائدة الحالي في دولتين ذواتي عملة متداولة معًا (مثل الولايات المتحدة ومنطقة اليورو)، وتتبع كيف تحرك زوج عملتيهما خلال آخر ستة أشهر بالتوازي مع تغير هذا الفارق.</p>
-<div class="chapter-break"></div><h2 id="_65">دراسة حالة</h2>
+<h2 id="_65">دراسة حالة</h2>
 <p>عندما يبدأ بنك مركزي دورة رفع فائدة متتالية بينما يبقي بنك مركزي آخر (منافس تجاري رئيسي) فائدته دون تغيير، يتوسع الفارق بين الفائدتين تدريجيًا، ويستمر زوج العملتين في اتجاه صاعد ثابت لصالح العملة ذات الفائدة الأعلى طوال هذه الفترة، رغم التقلبات قصيرة الأمد اليومية.</p>
 <p>يوضّح الشكل 15.1 هذا المثال:</p>
 <p><img alt="الشكل 15.1" src="figures/fig-15-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 15.1 — فارق أسعار الفائدة بين دولتين مقابل حركة زوج عملتيهما</strong></p>
-<div class="part-break"></div><h1 id="16_1">الفصل 16: التضخم والانكماش</h1>
-<div class="chapter-break"></div><h2 id="161">16.1 ما هو التضخم؟</h2>
+<h1 id="16_1">الفصل 16: التضخم والانكماش</h1>
+<h2 id="161">16.1 ما هو التضخم؟</h2>
 <p>التضخم هو الارتفاع المستمر في المستوى العام لأسعار السلع والخدمات خلال فترة زمنية، مما يقلل القوة الشرائية للعملة. معظم البنوك المركزية الكبرى تستهدف معدل تضخم سنوي يقارب 2% كهدف "صحي" يوازن بين النمو الاقتصادي واستقرار الأسعار.</p>
-<div class="chapter-break"></div><h2 id="162">16.2 أنواع التضخم</h2>
+<h2 id="162">16.2 أنواع التضخم</h2>
 <table>
 <thead>
 <tr>
@@ -2479,86 +2496,86 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="163-164-cpi">16.3 و16.4 قياس التضخم ومؤشر أسعار المستهلك (CPI)</h2>
+<h2 id="163-164-cpi">16.3 و16.4 قياس التضخم ومؤشر أسعار المستهلك (CPI)</h2>
 <p>يُقاس التضخم أساسًا عبر مؤشر أسعار المستهلك (CPI)، الذي يتتبع تغير أسعار سلة سلع وخدمات تمثل نمط استهلاك الأسرة النموذجية. يُنشر عادة كنسبة شهرية ونسبة سنوية.</p>
-<div class="chapter-break"></div><h2 id="165-ppi">16.5 مؤشر أسعار المنتجين (PPI)</h2>
+<h2 id="165-ppi">16.5 مؤشر أسعار المنتجين (PPI)</h2>
 <p>يقيس تغير الأسعار عند مستوى الإنتاج (قبل وصولها للمستهلك النهائي)، ويُعتبر مؤشرًا مبكرًا (Leading Indicator) لتضخم المستهلك المستقبلي، لأن ارتفاع تكاليف الإنتاج ينتقل عادة إلى المستهلك خلال الأشهر التالية.</p>
-<div class="chapter-break"></div><h2 id="166">16.6 التضخم الأساسي مقابل التضخم الإجمالي</h2>
+<h2 id="166">16.6 التضخم الأساسي مقابل التضخم الإجمالي</h2>
 <ul>
 <li><strong>التضخم الإجمالي (Headline CPI):</strong> يشمل كل بنود السلة الاستهلاكية.</li>
 <li><strong>التضخم الأساسي (Core CPI):</strong> يستبعد بنود الطاقة والغذاء شديدة التقلب، ويُعتبر مقياسًا أكثر استقرارًا لاتجاه التضخم الفعلي بعيدًا عن الصدمات المؤقتة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="167">16.7 استهداف التضخم</h2>
+<h2 id="167">16.7 استهداف التضخم</h2>
 <p>معظم البنوك المركزية الحديثة تتبنى سياسة "استهداف التضخم" (Inflation Targeting)، حيث تُعدّل أسعار الفائدة صعودًا عند تجاوز التضخم الهدف المحدد (عادة 2%)، وهبوطًا عند تراجعه بشكل كبير عن هذا الهدف.</p>
-<div class="chapter-break"></div><h2 id="168">16.8 الانكماش وتباطؤ التضخم</h2>
+<h2 id="168">16.8 الانكماش وتباطؤ التضخم</h2>
 <ul>
 <li><strong>الانكماش (Deflation):</strong> انخفاض عام ومستمر في الأسعار، ويُعتبر أخطر من التضخم المرتفع أحيانًا لأنه يشجع تأجيل الاستهلاك والاستثمار.</li>
 <li><strong>تباطؤ التضخم (Disinflation):</strong> تباطؤ في معدل ارتفاع الأسعار (التضخم ما زال موجبًا لكنه يتراجع)، وهو حالة مختلفة تمامًا عن الانكماش رغم تشابه الاسم.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="169">16.9 استراتيجيات تداول التضخم</h2>
+<h2 id="169">16.9 استراتيجيات تداول التضخم</h2>
 <p>عند صدور بيان CPI أعلى من المتوقع، تميل الأسواق لتسعير احتمال تشديد نقدي أقرب (رفع فائدة أو تأجيل خفضها)، مما يدعم العملة المحلية عادة ويضغط على الأسهم. العكس يحدث عادة عند بيان أقل من المتوقع.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_66">ملخص الفصل</h2>
+<h2 id="_66">ملخص الفصل</h2>
 <ul>
 <li>التضخم يُقاس أساسًا عبر CPI، بينما يُستخدم PPI كمؤشر مبكر له.</li>
 <li>التضخم الأساسي (Core) أكثر أهمية من الإجمالي لفهم الاتجاه الحقيقي بعيدًا عن صدمات الطاقة والغذاء.</li>
 <li>استهداف التضخم يربط مباشرة بين بيانات CPI وقرارات أسعار الفائدة المستقبلية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_67">نقاط رئيسية</h2>
+<h2 id="_67">نقاط رئيسية</h2>
 <ol>
 <li>ميّز دائمًا بين التضخم الإجمالي والأساسي عند قراءة أي بيان CPI.</li>
 <li>راقب PPI كإشارة مبكرة على اتجاه CPI في الأشهر القادمة.</li>
 <li>اربط أي مفاجأة في بيانات التضخم مباشرة بتوقعاتك لقرار الفائدة القادم.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_68">تمرين عملي</h2>
+<h2 id="_68">تمرين عملي</h2>
 <p>راجع آخر ثلاثة بيانات CPI صادرة عن اقتصاد رئيسي، وسجّل التضخم الإجمالي والأساسي لكل منها، وحدد الاتجاه العام (تسارع أم تباطؤ).</p>
-<div class="chapter-break"></div><h2 id="_69">دراسة حالة</h2>
+<h2 id="_69">دراسة حالة</h2>
 <p>يصدر بيان تضخم إجمالي أقل من المتوقع، لكن التضخم الأساسي (الذي يستبعد الطاقة والغذاء) يأتي أعلى من المتوقع بسبب ارتفاع بند الخدمات تحديدًا. المتداول الذي ينظر فقط للرقم الإجمالي قد يستنتج تراجع الضغوط التضخمية، بينما المتداول الذي يفحص التفاصيل يدرك أن الضغوط الأساسية ما تزال مرتفعة، مما قد يبقي احتمال تشديد نقدي إضافي قائمًا.</p>
 <p>يوضّح الشكل 16.1 هذا المثال:</p>
 <p><img alt="الشكل 16.1" src="figures/fig-16-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 16.1 — مسار التضخم الإجمالي مقابل التضخم الأساسي عبر عدة أشهر</strong></p>
-<div class="part-break"></div><h1 id="17_1">الفصل 17: بيانات التوظيف</h1>
-<div class="chapter-break"></div><h2 id="171">17.1 أهمية بيانات التوظيف</h2>
+<h1 id="17_1">الفصل 17: بيانات التوظيف</h1>
+<h2 id="171">17.1 أهمية بيانات التوظيف</h2>
 <p>سوق العمل أحد أهم المقاييس على صحة الاقتصاد، لأنه يؤثر مباشرة على الاستهلاك (المحرك الأكبر لمعظم الاقتصادات الكبرى)، ويُعتبر أحد الهدفين الرئيسيين لمعظم البنوك المركزية إلى جانب استقرار الأسعار.</p>
-<div class="chapter-break"></div><h2 id="172-nfp">17.2 تقرير الوظائف غير الزراعية (NFP)</h2>
+<h2 id="172-nfp">17.2 تقرير الوظائف غير الزراعية (NFP)</h2>
 <p>يُنشر شهريًا في الولايات المتحدة، ويقيس عدد الوظائف المستحدثة في القطاعات غير الزراعية خلال الشهر السابق. يُعتبر من أكثر البيانات الاقتصادية تحريكًا للأسواق عالميًا نظرًا لحجم الاقتصاد الأمريكي وتأثيره الممتد لكل الأصول المرتبطة بالدولار.</p>
-<div class="chapter-break"></div><h2 id="173">17.3 معدل البطالة</h2>
+<h2 id="173">17.3 معدل البطالة</h2>
 <p>نسبة الأفراد العاطلين عن العمل (ويبحثون عنه فعليًا) من إجمالي القوى العاملة. معدل بطالة منخفض يشير لسوق عمل قوي، لكنه قد يثير أيضًا مخاوف تضخمية إذا رافقه ارتفاع سريع جدًا في الأجور.</p>
-<div class="chapter-break"></div><h2 id="174">17.4 متوسط الأجر بالساعة</h2>
+<h2 id="174">17.4 متوسط الأجر بالساعة</h2>
 <p>مقياس مهم لضغوط التضخم القادمة من جانب الأجور؛ ارتفاعه بشكل أسرع من الإنتاجية قد يترجم لاحقًا لارتفاع أسعار المستهلك، لذا يُراقَب هذا الرقم بعناية موازية لرقم الوظائف نفسه.</p>
-<div class="chapter-break"></div><h2 id="175">17.5 معدل المشاركة في القوى العاملة</h2>
+<h2 id="175">17.5 معدل المشاركة في القوى العاملة</h2>
 <p>نسبة الأفراد في سن العمل الذين يعملون فعليًا أو يبحثون عن عمل. انخفاض هذا المعدل رغم انخفاض معدل البطالة قد يعني ببساطة أن أفرادًا انسحبوا من سوق العمل تمامًا، وليس أن الوضع الاقتصادي بالضرورة أفضل مما يبدو من رقم البطالة وحده.</p>
-<div class="chapter-break"></div><h2 id="176-177-adp">17.6 و17.7 تقرير ADP ومطالبات البطالة</h2>
+<h2 id="176-177-adp">17.6 و17.7 تقرير ADP ومطالبات البطالة</h2>
 <ul>
 <li><strong>تقرير ADP:</strong> يصدر عادة قبل يومين من تقرير NFP الرسمي، ويُستخدم أحيانًا كمؤشر استرشادي مبكر رغم أن الترابط بينه وبين الرقم الرسمي ليس دائمًا دقيقًا.</li>
 <li><strong>مطالبات البطالة الأسبوعية:</strong> بيان أعلى تكرارًا (أسبوعي) يعطي لمحة أسرع عن اتجاه سوق العمل بين تقارير NFP الشهرية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="178">17.8 استراتيجيات تداول بيانات التوظيف</h2>
+<h2 id="178">17.8 استراتيجيات تداول بيانات التوظيف</h2>
 <p>نظرًا للتقلب الشديد المصاحب لصدور NFP، يُنصح غالبًا بالحذر من الدخول قبل صدور البيان مباشرة، وانتظار استقرار نسبي في الاتجاه بعد الإعلان بدقائق قليلة، بدلًا من محاولة توقع اتجاه الحركة الأولى شديدة التقلب.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_70">ملخص الفصل</h2>
+<h2 id="_70">ملخص الفصل</h2>
 <ul>
 <li>NFP من أكثر البيانات الاقتصادية تأثيرًا شهريًا على الدولار الأمريكي وما يرتبط به من أصول.</li>
 <li>متوسط الأجر بالساعة يربط بيانات التوظيف مباشرة بضغوط التضخم المستقبلية.</li>
 <li>معدل المشاركة في القوى العاملة يضيف سياقًا مهمًا لتفسير رقم البطالة بمفرده.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_71">نقاط رئيسية</h2>
+<h2 id="_71">نقاط رئيسية</h2>
 <ol>
 <li>لا تكتفِ برقم الوظائف المستحدثة وحده — راقب الأجور ومعدل المشاركة معًا لصورة أكمل.</li>
 <li>توخَّ الحذر من التقلب الحاد خلال الدقائق الأولى بعد صدور NFP.</li>
 <li>استخدم تقرير ADP كمؤشر استرشادي فقط، لا كبديل موثوق تمامًا عن الرقم الرسمي.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_72">تمرين عملي</h2>
+<h2 id="_72">تمرين عملي</h2>
 <p>راجع آخر تقرير NFP صادر، وسجّل: رقم الوظائف المستحدثة، معدل البطالة، ومتوسط الأجر بالساعة، وقارن كل رقم بتوقعات الاقتصاديين.</p>
-<div class="chapter-break"></div><h2 id="_73">دراسة حالة</h2>
+<h2 id="_73">دراسة حالة</h2>
 <p>يصدر تقرير NFP برقم وظائف مستحدثة أعلى بكثير من المتوقع، مما يدفع الدولار للارتفاع الفوري. لكن خلال الدقائق التالية، يتضح أن متوسط الأجر بالساعة جاء أقل من المتوقع، مما يقلل مخاوف الضغوط التضخمية من جانب الأجور. نتيجة لذلك، يتراجع جزء من الارتفاع الأولي للدولار خلال الساعة التالية، مما يوضح أهمية النظر لكل مكونات التقرير معًا وليس فقط للعنوان الرئيسي.</p>
 <p>يوضّح الشكل 17.1 هذا المثال:</p>
 <p><img alt="الشكل 17.1" src="figures/fig-17-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 17.1 — حركة الدولار حول صدور تقرير NFP، مع تصحيح جزئي بعد تفاصيل الأجور</strong></p>
-<div class="part-break"></div><h1 id="18_1">الفصل 18: الناتج المحلي الإجمالي والنمو الاقتصادي</h1>
-<div class="chapter-break"></div><h2 id="181">18.1 ما هو الناتج المحلي الإجمالي؟</h2>
+<h1 id="18_1">الفصل 18: الناتج المحلي الإجمالي والنمو الاقتصادي</h1>
+<h2 id="181">18.1 ما هو الناتج المحلي الإجمالي؟</h2>
 <p>الناتج المحلي الإجمالي (GDP) هو القيمة الإجمالية لكل السلع والخدمات النهائية المنتجة داخل حدود دولة معينة خلال فترة زمنية محددة (عادة ربع سنوي أو سنوي)، ويُعتبر المقياس الأشمل لحجم النشاط الاقتصادي.</p>
-<div class="chapter-break"></div><h2 id="182-183">18.2 و18.3 أنواع ومكونات الناتج المحلي الإجمالي</h2>
+<h2 id="182-183">18.2 و18.3 أنواع ومكونات الناتج المحلي الإجمالي</h2>
 <p>يُحسب الناتج المحلي الإجمالي وفق المعادلة: GDP = الاستهلاك + الاستثمار + الإنفاق الحكومي + (الصادرات − الواردات). تحليل أي من هذه المكونات ينمو أو يتراجع يعطي صورة أدق من الرقم الإجمالي وحده.</p>
 <table>
 <thead>
@@ -2586,43 +2603,43 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="184">18.4 معدل نمو الناتج المحلي الإجمالي</h2>
+<h2 id="184">18.4 معدل نمو الناتج المحلي الإجمالي</h2>
 <p>يُنشر عادة كنسبة نمو ربع سنوية (مقارنة بالربع السابق) ونسبة سنوية (مقارنة بنفس الربع من العام الماضي). النمو السلبي لربعين متتاليين يُعتبر تعريفًا تقنيًا شائعًا لـ"الركود الفني" (Technical Recession).</p>
-<div class="chapter-break"></div><h2 id="185">18.5 مراجعات الناتج المحلي الإجمالي</h2>
+<h2 id="185">18.5 مراجعات الناتج المحلي الإجمالي</h2>
 <p>يُنشر الرقم الأولي عادة كتقدير أولي (Advance/Preliminary) يخضع لمراجعات لاحقة (Revised/Final) مع توفر بيانات أدق. الأسواق تتفاعل عادة بقوة مع كل نسخة من هذه النسخ الثلاث، وليس فقط مع الرقم الأولي.</p>
-<div class="chapter-break"></div><h2 id="186">18.6 الناتج المحلي الإجمالي مقابل الناتج القومي الإجمالي</h2>
+<h2 id="186">18.6 الناتج المحلي الإجمالي مقابل الناتج القومي الإجمالي</h2>
 <ul>
 <li><strong>الناتج المحلي الإجمالي (GDP):</strong> ما يُنتج داخل حدود الدولة جغرافيًا، بغض النظر عن جنسية المالك.</li>
 <li><strong>الناتج القومي الإجمالي (GNP):</strong> ما ينتجه مواطنو/شركات الدولة، سواء داخل حدودها أو خارجها.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="187">18.7 تداول بيانات الناتج المحلي الإجمالي</h2>
+<h2 id="187">18.7 تداول بيانات الناتج المحلي الإجمالي</h2>
 <p>بما أن بيانات النمو تُنشر بتكرار أقل (ربع سنوي) وغالبًا ما تكون توقعاتها مسعّرة مسبقًا بدرجة عالية عبر بيانات شهرية أخرى (توظيف، مبيعات تجزئة، مؤشرات مديري المشتريات)، فإن رد الفعل السعري على GDP غالبًا ما يكون أقل حدة من NFP أو CPI، إلا في حالات المفاجآت الكبيرة أو الانتقال لركود فني غير متوقع.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_74">ملخص الفصل</h2>
+<h2 id="_74">ملخص الفصل</h2>
 <ul>
 <li>الناتج المحلي الإجمالي المقياس الأشمل للنشاط الاقتصادي، ويتكون من الاستهلاك والاستثمار والإنفاق الحكومي وصافي الصادرات.</li>
 <li>الرقم يُنشر بعدة نسخ (أولي، منقح، نهائي)، وكل نسخة قد تحرك السوق.</li>
 <li>ركودان فنيان متتاليان (نمو سلبي لربعين) يُعتبران تعريفًا تقنيًا شائعًا للركود.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_75">نقاط رئيسية</h2>
+<h2 id="_75">نقاط رئيسية</h2>
 <ol>
 <li>انظر دائمًا لمكونات النمو (استهلاك مقابل استثمار مثلًا) وليس للرقم الإجمالي فقط.</li>
 <li>تابع النسخ الثلاث لبيانات GDP (أولي، منقح، نهائي)، فكل منها قد يحرك الأسواق.</li>
 <li>تذكّر أن تأثير GDP على الأسواق عادة أقل حدة من البيانات الشهرية الأكثر تكرارًا مثل NFP وCPI.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_76">تمرين عملي</h2>
+<h2 id="_76">تمرين عملي</h2>
 <p>راجع آخر تقرير نمو ربع سنوي لاقتصاد رئيسي، وحدد أي المكونات (استهلاك، استثمار، إنفاق حكومي، صافي صادرات) ساهم أكثر في نتيجة النمو الإجمالية.</p>
-<div class="chapter-break"></div><h2 id="_77">دراسة حالة</h2>
+<h2 id="_77">دراسة حالة</h2>
 <p>يصدر تقرير نمو ربع سنوي أعلى قليلًا من المتوقع، لكن التفصيل يُظهر أن معظم النمو جاء من تراكم مخزون الشركات (وليس من استهلاك حقيقي متنامٍ من الأسر). هذا يثير تساؤلات لدى المحللين حول استدامة هذا النمو في الربع القادم، مما يفسر ردة فعل سعرية معتدلة رغم أن الرقم الرئيسي بدا إيجابيًا للوهلة الأولى.</p>
 <p>يوضّح الشكل 18.1 هذا المثال:</p>
 <p><img alt="الشكل 18.1" src="figures/fig-18-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 18.1 — مساهمة كل مكوّن في نمو الناتج المحلي الإجمالي</strong></p>
-<div class="part-break"></div><h1 id="19">الفصل 19: ثقة المستهلك والأعمال</h1>
-<div class="chapter-break"></div><h2 id="191-192">19.1 و19.2 مؤشر ومعنويات ثقة المستهلك</h2>
+<h1 id="19">الفصل 19: ثقة المستهلك والأعمال</h1>
+<h2 id="191-192">19.1 و19.2 مؤشر ومعنويات ثقة المستهلك</h2>
 <p>يقيس مؤشر ثقة المستهلك مدى تفاؤل الأسر تجاه الوضع الاقتصادي الحالي والمستقبلي، عبر استطلاعات دورية. ارتفاع الثقة يترافق عادة مع زيادة الإنفاق الاستهلاكي لاحقًا (وهو المحرك الأكبر لمعظم الاقتصادات)، بينما انخفاضها ينذر بتباطؤ محتمل في الاستهلاك.</p>
-<div class="chapter-break"></div><h2 id="193">19.3 ثقة الأعمال</h2>
+<h2 id="193">19.3 ثقة الأعمال</h2>
 <p>مؤشر مواز يقيس تفاؤل قادة الشركات تجاه ظروف الأعمال، ويؤثر على قرارات التوظيف والاستثمار المستقبلية. ثقة الأعمال المرتفعة تُعتبر إشارة مبكرة على نمو محتمل في الاستثمار والتوظيف خلال الأشهر القادمة.</p>
-<div class="chapter-break"></div><h2 id="194-195-pmi-ism">19.4 و19.5 مؤشر مديري المشتريات (PMI) ومؤشرات ISM</h2>
+<h2 id="194-195-pmi-ism">19.4 و19.5 مؤشر مديري المشتريات (PMI) ومؤشرات ISM</h2>
 <p>مؤشر مديري المشتريات (PMI) من أهم المؤشرات "الاستشرافية" (Leading Indicators)، لأنه يُبنى على استطلاع مباشر لمديري الشراء في الشركات حول الطلبات الجديدة، الإنتاج، والتوظيف. القراءة فوق 50 تشير لتوسع النشاط الاقتصادي، وتحتها تشير لانكماشه. مؤشرات ISM الأمريكية (للتصنيع والخدمات) من أكثر نسخ PMI متابعة عالميًا.</p>
 <table>
 <thead>
@@ -2646,67 +2663,67 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="196">19.6 تداول بيانات الثقة</h2>
+<h2 id="196">19.6 تداول بيانات الثقة</h2>
 <p>نظرًا لطبيعتها الاستشرافية، تُستخدم بيانات الثقة والـ PMI غالبًا لتوقع اتجاه بيانات أكثر تأخرًا (مثل التوظيف والناتج المحلي الإجمالي) قبل صدورها رسميًا، مما يجعلها أدوات مفيدة لبناء انحياز مبكر ضمن التحليل الأساسي.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_78">ملخص الفصل</h2>
+<h2 id="_78">ملخص الفصل</h2>
 <ul>
 <li>ثقة المستهلك والأعمال مؤشرات استشرافية تسبق تحركات فعلية في الاستهلاك والاستثمار.</li>
 <li>PMI فوق 50 يعني توسعًا، وتحته يعني انكماشًا في النشاط الاقتصادي.</li>
 <li>هذه المؤشرات مفيدة لبناء انحياز مبكر قبل صدور بيانات أكثر تأخرًا كـ GDP والتوظيف.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_79">نقاط رئيسية</h2>
+<h2 id="_79">نقاط رئيسية</h2>
 <ol>
 <li>تابع اتجاه PMI عبر عدة أشهر متتالية، لا قراءة واحدة فقط.</li>
 <li>اربط تراجع ثقة الأعمال بتوقعات أضعف للتوظيف والاستثمار في الأشهر القادمة.</li>
 <li>استخدم هذه البيانات الاستشرافية لتوقع اتجاه البيانات المتأخرة قبل صدورها.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_80">تمرين عملي</h2>
+<h2 id="_80">تمرين عملي</h2>
 <p>راجع آخر ثلاث قراءات لمؤشر ISM للتصنيع أو الخدمات في اقتصاد رئيسي، وحدد إن كان الاتجاه العام نحو التوسع أم الانكماش.</p>
-<div class="chapter-break"></div><h2 id="_81">دراسة حالة</h2>
+<h2 id="_81">دراسة حالة</h2>
 <p>يتراجع مؤشر PMI للتصنيع تدريجيًا لثلاثة أشهر متتالية ليقترب من مستوى 50 قادمًا من مستويات توسع قوية سابقًا. بعد شهرين من هذا التراجع التدريجي، يصدر تقرير GDP الفصلي بنمو أضعف من المتوقع بوضوح — مؤكدًا أن مؤشر PMI كان قد أعطى إشارة مبكرة لهذا التباطؤ قبل ظهوره رسميًا في بيانات النمو.</p>
 <p>يوضّح الشكل 19.1 هذا المثال:</p>
 <p><img alt="الشكل 19.1" src="figures/fig-19-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 19.1 — تراجع PMI تدريجيًا قبل صدور بيان نمو ضعيف</strong></p>
-<div class="part-break"></div><h1 id="20">الفصل 20: الميزان التجاري والحساب الجاري</h1>
-<div class="chapter-break"></div><h2 id="201">20.1 الميزان التجاري</h2>
+<h1 id="20">الفصل 20: الميزان التجاري والحساب الجاري</h1>
+<h2 id="201">20.1 الميزان التجاري</h2>
 <p>الفرق بين قيمة صادرات دولة وواردتها من السلع خلال فترة محددة. <strong>فائض تجاري</strong> (صادرات أكبر من واردات) يدعم العملة المحلية عادة (طلب أجنبي أكبر عليها لشراء الصادرات)، بينما <strong>عجز تجاري</strong> يعمل بالاتجاه المعاكس.</p>
-<div class="chapter-break"></div><h2 id="202">20.2 الحساب الجاري</h2>
+<h2 id="202">20.2 الحساب الجاري</h2>
 <p>مقياس أوسع من الميزان التجاري وحده، يشمل أيضًا تدفقات الدخل (كأرباح الاستثمارات الأجنبية) والتحويلات (كتحويلات العمالة في الخارج). عجز الحساب الجاري المزمن قد يشير لضعف تنافسي هيكلي في الاقتصاد يحتاج تمويلًا مستمرًا من الخارج.</p>
-<div class="chapter-break"></div><h2 id="203">20.3 التدفقات الرأسمالية</h2>
+<h2 id="203">20.3 التدفقات الرأسمالية</h2>
 <p>في المقابل، يقيس حساب رأس المال تدفقات الاستثمار الداخلة والخارجة (استثمار مباشر، محفظة مالية). دولة ذات عجز في الحساب الجاري تحتاج عادة لفائض مقابل في حساب رأس المال (تدفقات استثمارية داخلة) لتمويل ذلك العجز، وإلا واجهت ضغطًا على عملتها.</p>
-<div class="chapter-break"></div><h2 id="204">20.4 تداول البيانات التجارية</h2>
+<h2 id="204">20.4 تداول البيانات التجارية</h2>
 <p>بيانات الميزان التجاري عادة أقل تأثيرًا لحظيًا من بيانات مثل NFP أو CPI، لكنها مهمة لفهم الاتجاه الهيكلي طويل المدى لعملة معينة، خصوصًا للدول التي تعتمد اقتصاداتها بشكل كبير على الصادرات (كالسلع الأولية أو التصنيع).</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_82">ملخص الفصل</h2>
+<h2 id="_82">ملخص الفصل</h2>
 <ul>
 <li>الميزان التجاري يقيس الفرق بين الصادرات والواردات، والحساب الجاري أوسع منه ليشمل الدخل والتحويلات.</li>
 <li>الفائض التجاري يدعم العملة عادة، بينما العجز المزمن قد يضغط عليها هيكليًا.</li>
 <li>عجز الحساب الجاري يحتاج تمويلًا عبر فائض مقابل في تدفقات رأس المال.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_83">نقاط رئيسية</h2>
+<h2 id="_83">نقاط رئيسية</h2>
 <ol>
 <li>لا تخلط بين الميزان التجاري (سلع فقط) والحساب الجاري (أوسع نطاقًا).</li>
 <li>راقب استدامة تمويل أي عجز في الحساب الجاري عبر تدفقات رأس المال الداخلة.</li>
 <li>اعتبر هذه البيانات مؤشرات هيكلية طويلة المدى أكثر منها محركات لحظية للسعر.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_84">تمرين عملي</h2>
+<h2 id="_84">تمرين عملي</h2>
 <p>راجع آخر بيانات الميزان التجاري لدولة تعتمد اقتصادها على الصادرات (مثل دولة نفطية أو تصنيعية كبرى)، وتتبع العلاقة التاريخية التقريبية بين اتساع الفائض/العجز التجاري وحركة عملتها على المدى المتوسط.</p>
-<div class="chapter-break"></div><h2 id="_85">دراسة حالة</h2>
+<h2 id="_85">دراسة حالة</h2>
 <p>تسجل دولة معتمدة على صادرات الطاقة فائضًا تجاريًا متزايدًا مع ارتفاع أسعار الطاقة عالميًا. على مدى عدة أشهر، تدعم هذه التدفقات الدولارية الداخلة (من عائدات التصدير) عملتها المحلية تدريجيًا، حتى في ظل عوامل أخرى محايدة نسبيًا كأسعار الفائدة المحلية.</p>
 <p>يوضّح الشكل 20.1 هذا المثال:</p>
 <p><img alt="الشكل 20.1" src="figures/fig-20-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 20.1 — الفائض التجاري مقابل قيمة العملة المحلية خلال نفس الفترة</strong></p>
-<div class="part-break"></div><h1 id="21_1">الفصل 21: تحليل البيانات المالية للشركات</h1>
-<div class="chapter-break"></div><h2 id="211">21.1 نظرة عامة على البيانات المالية</h2>
+<h1 id="21_1">الفصل 21: تحليل البيانات المالية للشركات</h1>
+<h2 id="211">21.1 نظرة عامة على البيانات المالية</h2>
 <p>عند تحليل الأسهم تحديدًا (بخلاف العملات أو السلع)، يضيف التحليل الأساسي طبقة إضافية: دراسة البيانات المالية للشركة ذاتها لتقدير قيمتها العادلة، عبر ثلاث قوائم رئيسية.</p>
-<div class="chapter-break"></div><h2 id="212-income-statement">21.2 قائمة الدخل (Income Statement)</h2>
+<h2 id="212-income-statement">21.2 قائمة الدخل (Income Statement)</h2>
 <p>توضح إيرادات الشركة ومصاريفها وصافي ربحها خلال فترة محددة. أهم البنود: الإيرادات، تكلفة البضاعة المباعة، الربح الإجمالي، المصاريف التشغيلية، وصافي الربح النهائي (Net Income).</p>
-<div class="chapter-break"></div><h2 id="213-balance-sheet">21.3 الميزانية العمومية (Balance Sheet)</h2>
+<h2 id="213-balance-sheet">21.3 الميزانية العمومية (Balance Sheet)</h2>
 <p>تعكس المركز المالي للشركة في لحظة زمنية محددة، وفق المعادلة: الأصول = الخصوم + حقوق الملكية. تحليلها يساعد على تقييم مدى استدانة الشركة وقدرتها على الوفاء بالتزاماتها.</p>
-<div class="chapter-break"></div><h2 id="214-cash-flow-statement">21.4 قائمة التدفقات النقدية (Cash Flow Statement)</h2>
+<h2 id="214-cash-flow-statement">21.4 قائمة التدفقات النقدية (Cash Flow Statement)</h2>
 <p>تُظهر حركة النقد الفعلي داخل وخارج الشركة عبر ثلاثة أنشطة: التشغيلية، الاستثمارية، والتمويلية. شركة قد تُظهر ربحًا محاسبيًا في قائمة الدخل لكنها تعاني من تدفق نقدي تشغيلي ضعيف — وهذا التناقض يستحق الانتباه دومًا.</p>
-<div class="chapter-break"></div><h2 id="215">21.5 النسب المالية الرئيسية</h2>
+<h2 id="215">21.5 النسب المالية الرئيسية</h2>
 <table>
 <thead>
 <tr>
@@ -2738,39 +2755,39 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="216">21.6 طرق التقييم</h2>
+<h2 id="216">21.6 طرق التقييم</h2>
 <ul>
 <li><strong>نموذج الخصم النقدي (DCF):</strong> تقدير القيمة الحالية للتدفقات النقدية المستقبلية المتوقعة للشركة.</li>
 <li><strong>التقييم المقارن (Comparables):</strong> مقارنة مضاعفات الشركة (P/E، P/B) بمثيلاتها في نفس القطاع.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="217-earnings-reports">21.7 تقارير الأرباح (Earnings Reports)</h2>
+<h2 id="217-earnings-reports">21.7 تقارير الأرباح (Earnings Reports)</h2>
 <p>تصدر الشركات المدرجة تقارير أرباح ربع سنوية، وتقارن الأسواق النتائج الفعلية بتوقعات المحللين (تمامًا كما في البيانات الاقتصادية الكلية). مفاجأة إيجابية في الأرباح مصحوبة بتوقعات مستقبلية (Guidance) قوية عادة ما تدفع السهم صعودًا بقوة، والعكس صحيح.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_86">ملخص الفصل</h2>
+<h2 id="_86">ملخص الفصل</h2>
 <ul>
 <li>القوائم المالية الثلاث (الدخل، الميزانية، التدفقات النقدية) تكمّل بعضها، ولا يكفي الاعتماد على واحدة فقط.</li>
 <li>النسب المالية تسمح بمقارنة سريعة بين الشركات ضمن نفس القطاع.</li>
 <li>رد فعل السهم بعد تقارير الأرباح يعتمد على المفاجأة مقارنة بالتوقعات، والتوجيه المستقبلي (Guidance) لا يقل أهمية عن النتائج الحالية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_87">نقاط رئيسية</h2>
+<h2 id="_87">نقاط رئيسية</h2>
 <ol>
 <li>تحقق دائمًا من التطابق (أو التناقض) بين الربح المحاسبي والتدفق النقدي التشغيلي الفعلي.</li>
 <li>استخدم النسب المالية للمقارنة ضمن نفس القطاع، لا بمعزل عن سياقه.</li>
 <li>انتبه لتوجيهات الشركة المستقبلية (Guidance) بقدر اهتمامك بنتائج الربع الحالي نفسه.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_88">تمرين عملي</h2>
+<h2 id="_88">تمرين عملي</h2>
 <p>اختر شركة مدرجة تعرفها جيدًا، وراجع آخر تقرير أرباح لها: هل تجاوزت توقعات المحللين؟ وكيف تفاعل سعر سهمها في اليوم التالي؟</p>
-<div class="chapter-break"></div><h2 id="_89">دراسة حالة</h2>
+<h2 id="_89">دراسة حالة</h2>
 <p>تُعلن شركة كبرى عن أرباح ربع سنوية تتجاوز توقعات المحللين بوضوح، لكنها تخفض توقعاتها (Guidance) للربع القادم بسبب مخاوف من تباطؤ الطلب. رغم "التغلب" على توقعات الربع الحالي، ينخفض السهم بشكل حاد في الجلسة التالية، لأن السوق يعطي وزنًا أكبر للتوقعات المستقبلية من النتائج الماضية.</p>
 <p>يوضّح الشكل 21.1 هذا المثال:</p>
 <p><img alt="الشكل 21.1" src="figures/fig-21-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 21.1 — رد فعل السهم بعد تجاوز التوقعات مع توجيه مستقبلي أضعف</strong></p>
-<div class="part-break"></div><h1 id="22_1">الفصل 22: التقويم الاقتصادي وتداول الأخبار</h1>
-<div class="chapter-break"></div><h2 id="221">22.1 التقويم الاقتصادي</h2>
+<h1 id="22_1">الفصل 22: التقويم الاقتصادي وتداول الأخبار</h1>
+<h2 id="221">22.1 التقويم الاقتصادي</h2>
 <p>التقويم الاقتصادي هو الأداة العملية التي تجمع كل المفاهيم السابقة في هذا الجزء من الكتاب: جدول زمني منظم لمواعيد صدور كل البيانات الاقتصادية (تضخم، توظيف، فائدة، نمو...) لكل الدول، مصنّفة عادة حسب درجة تأثيرها المتوقع (منخفض، متوسط، مرتفع).</p>
-<div class="chapter-break"></div><h2 id="222">22.2 الأحداث الإخبارية عالية التأثير</h2>
+<h2 id="222">22.2 الأحداث الإخبارية عالية التأثير</h2>
 <p>الأحداث التي تستحق أعلى درجة انتباه عادة: قرارات أسعار الفائدة، تقارير التضخم (CPI)، تقارير التوظيف (NFP)، ومؤتمرات محافظي البنوك المركزية الصحفية. هذه الأحداث هي غالبًا مصدر شموع IFC وBCD التي نوقشت في الفصل 9.</p>
-<div class="chapter-break"></div><h2 id="223">22.3 استراتيجيات تداول الأخبار</h2>
+<h2 id="223">22.3 استراتيجيات تداول الأخبار</h2>
 <table>
 <thead>
 <tr>
@@ -2793,9 +2810,9 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="224">22.4 التداول قبل وبعد الأخبار</h2>
+<h2 id="224">22.4 التداول قبل وبعد الأخبار</h2>
 <p>يُنصح المتداولون الأقل خبرة عادة بتجنب فتح صفقات جديدة خلال الدقائق المحيطة مباشرة بالأحداث عالية التأثير، والاكتفاء بمراقبة كيفية تفاعل السعر مع البيان (خصوصًا العلاقة بين الرقم الفعلي والمتوقع، كما أُشير مرارًا في هذا الجزء)، قبل اتخاذ أي قرار.</p>
-<div class="chapter-break"></div><h2 id="225">22.5 إدارة مخاطر الأحداث الإخبارية</h2>
+<h2 id="225">22.5 إدارة مخاطر الأحداث الإخبارية</h2>
 <p>قواعد عملية أساسية:</p>
 <ol>
 <li>تقليل حجم المركز أو إغلاق الصفقات القائمة قبل الأحداث شديدة التأثير غير المؤكدة النتيجة.</li>
@@ -2803,74 +2820,74 @@
 <li>عدم مضاعفة المراكز فور الحركة الأولى بعد الخبر مباشرة، لارتفاع احتمال الحركات الكاذبة والارتدادات السريعة.</li>
 </ol>
 <hr />
-<div class="chapter-break"></div><h2 id="_90">ملخص الفصل</h2>
+<h2 id="_90">ملخص الفصل</h2>
 <ul>
 <li>التقويم الاقتصادي هو الأداة العملية التي تنظم متابعة كل مفاهيم التحليل الأساسي في هذا الجزء من الكتاب.</li>
 <li>التداول حول الأخبار عالي التأثير يحمل مخاطرة إضافية بسبب اتساع الفروق وسرعة التقلب.</li>
 <li>إدارة المخاطر (حجم المركز، وقف الخسارة، تجنب المطاردة الفورية) أهم من محاولة توقع اتجاه الحركة الأولى بدقة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_91">نقاط رئيسية</h2>
+<h2 id="_91">نقاط رئيسية</h2>
 <ol>
 <li>صنّف الأحداث حسب درجة تأثيرها، وخصص اهتمامًا أكبر للفئة عالية التأثير.</li>
 <li>فضّل انتظار استقرار نسبي بعد الحدث بدلًا من مطاردة الحركة الأولى شديدة التقلب.</li>
 <li>اجعل إدارة المخاطر حول الأحداث الإخبارية جزءًا مكتوبًا وثابتًا من خطة تداولك.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_92">تمرين عملي</h2>
+<h2 id="_92">تمرين عملي</h2>
 <p>راجع التقويم الاقتصادي للأسبوع القادم، وحدد الأحداث عالية التأثير المتعلقة بالأصول التي تتداولها، وخطط مسبقًا كيف ستدير حجم مراكزك القائمة حولها.</p>
-<div class="chapter-break"></div><h2 id="_93">دراسة حالة</h2>
+<h2 id="_93">دراسة حالة</h2>
 <p>قبل صدور قرار سعر فائدة متوقع بشدة أن يكون "بلا تغيير"، يقلل متداول حجم مركز قائم لديه بشكل استباقي تحسبًا لأي مفاجأة في نبرة التصريحات المرافقة (كما نوقش في الفصل 14). فعليًا، يخرج البيان كما كان متوقعًا في القرار نفسه، لكن نبرة متشددة غير متوقعة تحرك السوق بقوة؛ نظرًا لتقليل حجم المركز مسبقًا، تكون الخسارة المؤقتة (أو الفرصة الضائعة) محدودة ومُدارة، بدلًا من التعرض لتقلب كامل بحجم مركز غير مُعدَّل.</p>
 <p>يوضّح الشكل 22.1 هذا المثال:</p>
 <p><img alt="الشكل 22.1" src="figures/fig-22-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 22.1 — مستوى التأثير المتوقع للأحداث الاقتصادية عبر أيام الأسبوع</strong></p>
-<div class="part-break"></div><h1 id="_94">الجزء الرابع: التحليل الفني</h1>
-<div class="part-break"></div><h1 id="23">الفصل 23: مقدمة إلى التحليل الفني</h1>
-<div class="chapter-break"></div><h2 id="231">23.1 ما هو التحليل الفني؟</h2>
+<h1 id="_94">الجزء الرابع: التحليل الفني</h1>
+<h1 id="23">الفصل 23: مقدمة إلى التحليل الفني</h1>
+<h2 id="231">23.1 ما هو التحليل الفني؟</h2>
 <p>التحليل الفني هو دراسة حركة السعر التاريخية (وأحيانًا الحجم المصاحب لها) بهدف تحديد أنماط متكررة يمكن استخدامها لتوقع الاحتمالات المستقبلية للسعر، وتحديد نقاط دخول وخروج دقيقة. على عكس التحليل الأساسي الذي يسأل "لماذا"، يركز التحليل الفني على "متى" و"أين".</p>
-<div class="chapter-break"></div><h2 id="232">23.2 فلسفة التحليل الفني</h2>
+<h2 id="232">23.2 فلسفة التحليل الفني</h2>
 <p>يقوم التحليل الفني على ثلاث افتراضات جوهرية:</p>
 <ol>
 <li><strong>السعر يعكس كل شيء:</strong> كل المعلومات المتاحة (اقتصادية، سياسية، نفسية) تنعكس بالفعل في السعر الحالي.</li>
 <li><strong>السعر يتحرك في اتجاهات:</strong> الأسعار تميل للتحرك في اتجاهات قابلة للتحديد بدلًا من عشوائية بحتة، حتى لو كانت هذه الاتجاهات مؤقتة.</li>
 <li><strong>التاريخ يميل للتكرار:</strong> الأنماط النفسية للمتداولين (خوف، طمع، تردد) تتكرر عبر الزمن، مما يخلق أنماطًا سعرية متكررة يمكن التعرف عليها.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="233">23.3 أساسيات نظرية داو</h2>
+<h2 id="233">23.3 أساسيات نظرية داو</h2>
 <p>تُعد نظرية داو (Dow Theory) الأساس التاريخي لمعظم مبادئ التحليل الفني الحديث، ومن أهم مبادئها: السوق له ثلاثة اتجاهات متزامنة (أساسي، ثانوي، وصغير)، والاتجاه يبقى قائمًا حتى تظهر إشارة انعكاس واضحة، وحجم التداول يجب أن يؤكد الاتجاه.</p>
-<div class="chapter-break"></div><h2 id="234">23.4 التحليل الفني مقابل التحليل الأساسي</h2>
+<h2 id="234">23.4 التحليل الفني مقابل التحليل الأساسي</h2>
 <p>كما نوقش في الفصل 13، الأداتان متكاملتان لا متنافستان. في إطار "التحليل الثلاثي"، يُستخدم التحليل الفني عادة كالطبقة الأخيرة والأكثر دقة في عملية اتخاذ القرار، بعد أن يحدد التحليل الأساسي الانحياز العام، وتحدد مفاهيم SMC المناطق المؤسسية المهمة.</p>
-<div class="chapter-break"></div><h2 id="235">23.5 أنواع المخططات</h2>
+<h2 id="235">23.5 أنواع المخططات</h2>
 <p>سيتم التفصيل الكامل في الفصل التالي؛ كمقدمة: المخططات الخطية (Line)، الشريطية (Bar)، الشموع اليابانية (Candlestick)، وأنواع أخرى متخصصة مثل رينكو وكاغي والنقاط والأشكال.</p>
-<div class="chapter-break"></div><h2 id="236">23.6 الأطر الزمنية في التحليل الفني</h2>
+<h2 id="236">23.6 الأطر الزمنية في التحليل الفني</h2>
 <p>نفس مبدأ الأطر الزمنية المتعددة الذي نوقش في الفصل 10 ضمن SMC ينطبق هنا تمامًا: الأطر الكبرى لتحديد الاتجاه العام، والأطر الأصغر لتوقيت الدخول والخروج الدقيق.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_95">ملخص الفصل</h2>
+<h2 id="_95">ملخص الفصل</h2>
 <ul>
 <li>التحليل الفني يفترض أن السعر يعكس كل المعلومات المتاحة، ويتحرك في اتجاهات، وأن الأنماط التاريخية تميل للتكرار.</li>
 <li>نظرية داو تمثل الأساس التاريخي لمعظم مفاهيم التحليل الفني الحديث.</li>
 <li>في التحليل الثلاثي، يُستخدم التحليل الفني كطبقة أخيرة لتوقيت الدخول بعد تحديد السياق عبر التحليل الأساسي وSMC.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_96">نقاط رئيسية</h2>
+<h2 id="_96">نقاط رئيسية</h2>
 <ol>
 <li>لا تتعامل مع التحليل الفني كأداة تنبؤ مطلقة، بل كأداة لتقدير الاحتمالات وإدارة القرار.</li>
 <li>اربط أي إشارة فنية بسياقها من التحليل الأساسي وهيكل السوق كلما أمكن.</li>
 <li>حدد دائمًا الإطار الزمني الذي تعمل عليه قبل تفسير أي نمط أو مؤشر فني.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_97">تمرين عملي</h2>
+<h2 id="_97">تمرين عملي</h2>
 <p>اختر أصلًا ماليًا، وحدد اتجاهه الأساسي والثانوي وفقًا لمبادئ نظرية داو الثلاثة المذكورة أعلاه.</p>
-<div class="chapter-break"></div><h2 id="_98">دراسة حالة</h2>
+<h2 id="_98">دراسة حالة</h2>
 <p>يظهر أصل مالي اتجاهًا صاعدًا أساسيًا واضحًا على الفريم الأسبوعي، بينما يمر بتصحيح ثانوي هابط على الفريم اليومي لعدة أسابيع. المتداول الذي يفهم الفرق بين الاتجاهين (وفق نظرية داو) لا يفزع من التصحيح الثانوي، بل يعتبره فرصة محتملة للدخول مع الاتجاه الأساسي الأكبر عند وصول التصحيح لمنطقة اهتمام مناسبة.</p>
 <p>يوضّح الشكل 23.1 هذا المثال:</p>
 <p><img alt="الشكل 23.1" src="figures/fig-23-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 23.1 — اتجاه أساسي صاعد مع تصحيح ثانوي وفق نظرية داو</strong></p>
-<div class="part-break"></div><h1 id="24_1">الفصل 24: أنواع المخططات وبناؤها</h1>
-<div class="chapter-break"></div><h2 id="241-line-charts">24.1 المخططات الخطية (Line Charts)</h2>
+<h1 id="24_1">الفصل 24: أنواع المخططات وبناؤها</h1>
+<h2 id="241-line-charts">24.1 المخططات الخطية (Line Charts)</h2>
 <p>أبسط أنواع المخططات، تربط بين أسعار الإغلاق فقط عبر خط مستمر. مفيدة لرؤية الاتجاه العام بوضوح دون تشتت بصري، لكنها تفقد معلومات مهمة (الافتتاح، الأعلى، الأدنى) داخل كل فترة.</p>
 <p><img alt="الشكل 24.3" src="figures/fig-24-03.svg" /></p>
 <p class="fig-caption"><strong>الشكل 24.3 — مخطط خطي يعرض أسعار الإغلاق فقط</strong></p>
-<div class="chapter-break"></div><h2 id="242-bar-charts-ohlc">24.2 المخططات الشريطية (Bar Charts – OHLC)</h2>
+<h2 id="242-bar-charts-ohlc">24.2 المخططات الشريطية (Bar Charts – OHLC)</h2>
 <p>كل شريط يمثل فترة زمنية ويعرض أربع نقاط: الافتتاح (Open)، الأعلى (High)، الأدنى (Low)، والإغلاق (Close)، عبر خط رأسي مع شرطتين أفقيتين صغيرتين (يسار للافتتاح، يمين للإغلاق).</p>
 <p><img alt="الشكل 24.2" src="figures/fig-24-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 24.2 — مخطط شريطي (Bar Chart) يعرض بيانات OHLC الكاملة لكل فترة</strong></p>
-<div class="chapter-break"></div><h2 id="243-candlestick-charts">24.3 مخططات الشموع اليابانية (Candlestick Charts)</h2>
+<h2 id="243-candlestick-charts">24.3 مخططات الشموع اليابانية (Candlestick Charts)</h2>
 <p>الأكثر استخدامًا حاليًا في التحليل الفني وSMC معًا، لأنها تعرض نفس بيانات OHLC لكن بطريقة بصرية أوضح: "جسم" الشمعة يمثل المسافة بين الافتتاح والإغلاق (ملوّن حسب اتجاه الحركة)، و"الفتائل" (Wicks/Shadows) تمثل أعلى وأدنى نقطة وصل إليها السعر خلال الفترة.</p>
 <table>
 <thead>
@@ -2898,13 +2915,13 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="244-heikin-ashi">24.4 مخططات هايكن أشي (Heikin Ashi)</h2>
+<h2 id="244-heikin-ashi">24.4 مخططات هايكن أشي (Heikin Ashi)</h2>
 <p>نسخة معدّلة رياضيًا من الشموع اليابانية تُنعّم حركة السعر (كل شمعة تُحسب جزئيًا من متوسط الشمعة السابقة)، مما يسهل رؤية الاتجاه العام لكنه يخفي تفاصيل السعر الفعلي الدقيقة (لا تصلح وحدها لتحديد كتل الطلب أو FVG بدقة، لأنها لا تعكس الأسعار الحقيقية للتنفيذ).</p>
-<div class="chapter-break"></div><h2 id="245247">24.5–24.7 مخططات النقاط والأشكال، رينكو، وكاغي</h2>
+<h2 id="245247">24.5–24.7 مخططات النقاط والأشكال، رينكو، وكاغي</h2>
 <p>أنواع متخصصة تُبنى على حركة السعر فقط بغض النظر عن الزمن (بعكس كل الأنواع السابقة التي تُبنى على فترات زمنية ثابتة)، وتُستخدم غالبًا لتصفية الضوضاء قصيرة المدى والتركيز على الاتجاهات الجوهرية فقط. أقل شيوعًا في تطبيقات SMC الحديثة نظرًا لغياب مفهوم "الزمن" الذي تعتمد عليه مفاهيم مثل كسر الهيكل بشكل دقيق.</p>
-<div class="chapter-break"></div><h2 id="248">24.8 الأطر الزمنية للمخططات</h2>
+<h2 id="248">24.8 الأطر الزمنية للمخططات</h2>
 <p>يمكن بناء أي من الأنواع أعلاه (باستثناء رينكو والنقاط والأشكال) على أي إطار زمني: من 1 دقيقة وحتى الشهري، حسب أفق التداول المستهدف (مضاربة يومية، تداول متأرجح، أو استثمار طويل الأجل).</p>
-<div class="chapter-break"></div><h2 id="249">24.9 المقياس الحسابي مقابل المقياس اللوغاريتمي</h2>
+<h2 id="249">24.9 المقياس الحسابي مقابل المقياس اللوغاريتمي</h2>
 <p>عنصر إضافي مهم عند إعداد أي مخطط هو اختيار طريقة توزيع المحور السعري (المحور الرأسي):</p>
 <ul>
 <li><strong>المقياس الحسابي (Arithmetic Scale):</strong> المسافة بين كل وحدتين سعريتين متساوية دائمًا (مثلًا المسافة بين 10 و20 مساوية للمسافة بين 90 و100). مناسب لتحركات سعرية قصيرة المدى ونطاقات ضيقة نسبيًا.</li>
@@ -2914,29 +2931,29 @@
 <p class="fig-caption"><strong>الشكل 24.4 — نفس حركة السعر معروضة على مقياس حسابي (يسار) ومقياس لوغاريتمي (يمين)</strong></p>
 <p>القاعدة العملية: استخدم المقياس الحسابي للتحليل قصير المدى ضمن نطاق سعري ضيق، وانتقل للمقياس اللوغاريتمي عند تحليل مخططات طويلة المدى (سنوات) أو أصول شهدت نموًا كبيرًا نسبيًا.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_99">ملخص الفصل</h2>
+<h2 id="_99">ملخص الفصل</h2>
 <ul>
 <li>الشموع اليابانية هي المعيار الأكثر استخدامًا في SMC والتحليل الفني الحديث لغناها البصري والمعلوماتي.</li>
 <li>هايكن أشي مفيدة لرؤية الاتجاه العام لكنها غير موثوقة لتحديد مفاهيم SMC الدقيقة (كتل الطلب، FVG) لأنها لا تعكس أسعارًا حقيقية.</li>
 <li>المخططات المبنية على الحركة (رينكو، النقاط والأشكال) تصفّي الضوضاء الزمنية لكنها أقل ملاءمة لتحليل هيكل السوق التقليدي.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_100">نقاط رئيسية</h2>
+<h2 id="_100">نقاط رئيسية</h2>
 <ol>
 <li>استخدم الشموع اليابانية كخيار افتراضي لتحليل SMC والتحليل الفني المدمج في هذا الكتاب.</li>
 <li>تجنب استخدام هايكن أشي وحدها لتحديد كتل طلب أو FVG دقيقة.</li>
 <li>اختر الإطار الزمني بناءً على أفق تداولك المستهدف قبل البدء بالتحليل.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_101">تمرين عملي</h2>
+<h2 id="_101">تمرين عملي</h2>
 <p>افتح نفس الأصل المالي على نوعين مختلفين من المخططات (شموع يابانية وهايكن أشي) لنفس الفترة الزمنية، ولاحظ الفروق البصرية بينهما عند نفس نقاط السعر.</p>
-<div class="chapter-break"></div><h2 id="_102">دراسة حالة</h2>
+<h2 id="_102">دراسة حالة</h2>
 <p>يحاول متداول تحديد كتلة طلب دقيقة باستخدام مخطط هايكن أشي، لكنه يجد صعوبة في تحديد الشمعة المعاكسة الدقيقة الأخيرة قبل الاندفاعة، لأن جسم الشمعة "مُنعّم" رياضيًا ولا يعكس سعر الافتتاح والإغلاق الفعليين. عند التبديل لمخطط الشموع اليابانية القياسي لنفس الفترة، يصبح تحديد كتلة الطلب بدقة أوضح بكثير.</p>
 <p>يوضّح الشكل 24.1 هذا المثال:</p>
 <p><img alt="الشكل 24.1" src="figures/fig-24-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 24.1 — نفس الفترة الزمنية على مخطط شموع يابانية ومخطط هايكن أشي</strong></p>
-<div class="part-break"></div><h1 id="25_1">الفصل 25: أنماط الشموع اليابانية – الدليل الكامل</h1>
-<div class="chapter-break"></div><h2 id="251">25.1 فهم الشموع اليابانية</h2>
+<h1 id="25_1">الفصل 25: أنماط الشموع اليابانية – الدليل الكامل</h1>
+<h2 id="251">25.1 فهم الشموع اليابانية</h2>
 <p>كل شمعة تحكي قصة الصراع بين المشترين والبائعين خلال فترة زمنية محددة. حجم الجسم يعكس قوة الطرف المسيطر، بينما تعكس الفتائل مدى الرفض الذي واجهه السعر عند أقصى نقطة وصل إليها.</p>
-<div class="chapter-break"></div><h2 id="252">25.2 أنماط الشمعة الواحدة</h2>
+<h2 id="252">25.2 أنماط الشمعة الواحدة</h2>
 <table>
 <thead>
 <tr>
@@ -2980,7 +2997,7 @@
 </table>
 <p><img alt="الشكل 25.1" src="figures/fig-25-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 25.1 — الأنماط الرئيسية للشموع اليابانية: المطرقة، النجمة الساقطة، الابتلاع الصعودي/الهبوطي، الدوجي، ونجمة الصباح</strong></p>
-<div class="chapter-break"></div><h2 id="253-254">25.3 و25.4 أنماط الشمعتين والثلاث شموع</h2>
+<h2 id="253-254">25.3 و25.4 أنماط الشمعتين والثلاث شموع</h2>
 <p><strong>أنماط الشمعتين:</strong></p>
 <table>
 <thead>
@@ -3045,46 +3062,46 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="255">25.5 نماذج الاستمرارية</h2>
+<h2 id="255">25.5 نماذج الاستمرارية</h2>
 <p>بعض أنماط الشموع لا تشير لانعكاس بل لاستراحة مؤقتة قبل استئناف الاتجاه، مثل نمط "الثلاث طرق الصاعدة/الهابطة" (Rising/Falling Three Methods): حركة قوية، تليها عدة شموع تصحيحية صغيرة معاكسة، ثم استئناف الحركة الأصلية بقوة.</p>
-<div class="chapter-break"></div><h2 id="256259">25.6–25.9 تصنيف الأنماط حسب الاتجاه</h2>
+<h2 id="256259">25.6–25.9 تصنيف الأنماط حسب الاتجاه</h2>
 <p>كل الأنماط المذكورة أعلاه يمكن تصنيفها إلى: صاعدة (تظهر في نهاية اتجاه هابط وتنذر بانعكاس صعودي)، هابطة (تظهر في نهاية اتجاه صاعد وتنذر بانعكاس هبوطي)، أو محايدة (تشير للتردد دون اتجاه واضح للانعكاس، كالدوجي والمغزل بمفردهما).</p>
-<div class="chapter-break"></div><h2 id="2510">25.10 موثوقية أنماط الشموع</h2>
+<h2 id="2510">25.10 موثوقية أنماط الشموع</h2>
 <p>من المهم جدًا عدم التعامل مع أي نمط شمعة بمعزل عن سياقه: نفس نمط "المطرقة" يحمل دلالة مختلفة تمامًا إذا ظهر عند كتلة طلب SMC مقارنة بظهوره وسط نطاق عرضي بلا أي سياق. موثوقية الأنماط ترتفع بشكل ملحوظ عند اقترانها بمناطق اهتمام أخرى (دعم/مقاومة، كتلة طلب، مستوى فيبوناتشي).</p>
-<div class="chapter-break"></div><h2 id="2511">25.11 التداول بأنماط الشموع</h2>
+<h2 id="2511">25.11 التداول بأنماط الشموع</h2>
 <p>القاعدة العملية: استخدم نمط الشمعة كـ"تأكيد أخير" عند الوصول لمنطقة اهتمام محددة مسبقًا (وليس كسبب مستقل للدخول). هذا يتماشى تمامًا مع منهجية "الإطار الكامل للدخول" التي نوقشت في الفصل 11 ضمن SMC.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_103">ملخص الفصل</h2>
+<h2 id="_103">ملخص الفصل</h2>
 <ul>
 <li>أنماط الشموع تنقسم إلى شمعة واحدة، شمعتين، وثلاث شموع، وكل مجموعة لها إشارات صعودية وهبوطية مقابلة.</li>
 <li>لا يجب التعامل مع أي نمط شمعة بمعزل عن سياقه السعري الأوسع (دعم/مقاومة، كتلة طلب، اتجاه عام).</li>
 <li>أفضل استخدام لأنماط الشموع هو كتأكيد أخير عند الوصول لمنطقة اهتمام، لا كإشارة دخول مستقلة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_104">نقاط رئيسية</h2>
+<h2 id="_104">نقاط رئيسية</h2>
 <ol>
 <li>احفظ الأنماط الأساسية (مطرقة، ابتلاع، نجمة الصباح/المساء) فهي الأكثر شيوعًا وفائدة عملية.</li>
 <li>اربط ظهور أي نمط بموقعه بالنسبة لمناطق الدعم/المقاومة أو كتل الطلب/العرض.</li>
 <li>لا تتداول بناءً على نمط شمعة وحيد دون تأكيد إضافي من السياق العام.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_105">تمرين عملي</h2>
+<h2 id="_105">تمرين عملي</h2>
 <p>راجع مخططًا يوميًا لأي أصل، وحدد خمسة أنماط شموع مختلفة (من الجدولين أعلاه)، وسجّل: هل ظهرت عند منطقة دعم/مقاومة أو كتلة طلب/عرض واضحة؟ وماذا حدث للسعر بعدها؟</p>
-<div class="chapter-break"></div><h2 id="_106">دراسة حالة</h2>
+<h2 id="_106">دراسة حالة</h2>
 <p>يظهر نمط "مطرقة" واضح عند نهاية اتجاه هابط، لكنه يظهر وسط نطاق عرضي بلا أي دعم واضح خلفه — فيفشل الانعكاس المتوقع ويستمر الهبوط. بعد عدة أيام، يظهر نمط مطرقة مشابه تمامًا، لكن هذه المرة عند كتلة طلب صاعدة طازجة ومنطقة خصم عميقة (كما نوقش في الفصل 8) — وهذه المرة ينعكس السعر صعودًا بقوة. الفرق الجوهري بين الحالتين هو السياق، وليس شكل الشمعة نفسه.</p>
 <p>يوضّح الشكل 25.2 هذا المثال:</p>
 <p><img alt="الشكل 25.2" src="figures/fig-25-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 25.2 — نمط المطرقة نفسه: يفشل بلا سياق، وينجح عند كتلة طلب</strong></p>
-<div class="part-break"></div><h1 id="26_1">الفصل 26: الدعم والمقاومة</h1>
-<div class="chapter-break"></div><h2 id="261">26.1 ما هما الدعم والمقاومة؟</h2>
+<h1 id="26_1">الفصل 26: الدعم والمقاومة</h1>
+<h2 id="261">26.1 ما هما الدعم والمقاومة؟</h2>
 <p><strong>الدعم</strong> مستوى سعري يميل الطلب عنده لتجاوز العرض، مما يوقف الهبوط مؤقتًا أو دائمًا. <strong>المقاومة</strong> مستوى سعري يميل العرض عنده لتجاوز الطلب، مما يوقف الصعود. هذان المفهومان من أقدم وأهم ركائز التحليل الفني، وهما يتقاطعان مباشرة مع مفهومي كتلة الطلب/العرض في SMC (الفصل 5) رغم اختلاف طريقة تحديدهما بدقة.</p>
 <p><img alt="الشكل 26.4" src="figures/fig-26-04.svg" /></p>
 <p class="fig-caption"><strong>الشكل 26.4 — التعريف البصري الأساسي للدعم والمقاومة</strong></p>
-<div class="chapter-break"></div><h2 id="262">26.2 تحديد مستويات الدعم والمقاومة</h2>
+<h2 id="262">26.2 تحديد مستويات الدعم والمقاومة</h2>
 <p>تُحدَّد عادة عبر: القمم والقيعان التاريخية الواضحة، المتوسطات المتحركة الرئيسية، خطوط الاتجاه، والمستويات النفسية المستديرة (كالأرقام الصحيحة الكبيرة).</p>
-<div class="chapter-break"></div><h2 id="263">26.3 المستويات النفسية</h2>
+<h2 id="263">26.3 المستويات النفسية</h2>
 <p>أرقام مستديرة (مثل 1.2000 في أزواج العملات، أو 100 دولار لسهم ما) تجذب اهتمامًا نفسيًا جماعيًا من المتداولين، فيضع كثيرون أوامرهم المعلقة وأهدافهم عندها تحديدًا، مما يجعلها فعليًا مناطق سيولة مكثفة (بالمعنى الذي نوقش في الفصل 4).</p>
-<div class="chapter-break"></div><h2 id="264-role-reversal">26.4 انعكاس الأدوار (Role Reversal)</h2>
+<h2 id="264-role-reversal">26.4 انعكاس الأدوار (Role Reversal)</h2>
 <p>عند اختراق مستوى مقاومة بشكل حاسم، يميل هذا المستوى للتحول إلى دعم عند إعادة اختباره لاحقًا من الأعلى (والعكس صحيح للدعم المكسور الذي يتحول لمقاومة). هذا المبدأ هو الأساس التقليدي لمفهوم "منطقة الفليب" في SMC (الفصل 9).</p>
-<div class="chapter-break"></div><h2 id="265">26.5 تداول الدعم والمقاومة</h2>
+<h2 id="265">26.5 تداول الدعم والمقاومة</h2>
 <p>استراتيجيتان أساسيتان:</p>
 <ul>
 <li><strong>الارتداد (Bounce):</strong> الدخول عند وصول السعر للمستوى مع توقع ارتداده، مناسب في الأسواق العرضية أو ضمن اتجاه واضح عند العودة لمستوى داعم له.</li>
@@ -3096,78 +3113,84 @@
 <p>ومن أهم المهارات العملية هنا التمييز بين الاختراق الحقيقي والاختراق الكاذب:</p>
 <p><img alt="الشكل 26.6" src="figures/fig-26-06.svg" /></p>
 <p class="fig-caption"><strong>الشكل 26.6 — الاختراق الحقيقي (يستمر بعده الاتجاه) مقابل الاختراق الكاذب (يرتد السعر بسرعة)</strong></p>
-<div class="chapter-break"></div><h2 id="266-trendlines">26.6 خطوط الاتجاه (Trendlines)</h2>
+<h2 id="266-trendlines">26.6 خطوط الاتجاه (Trendlines)</h2>
 <p>خط مستقيم يربط بين قمتين متتاليتين (خط اتجاه هابط) أو قاعين متتاليين (خط اتجاه صاعد)، ويعمل كدعم أو مقاومة ديناميكية متحركة مع الزمن، بعكس المستويات الأفقية الثابتة.</p>
 <p>يوضّح الشكل 26.3 الخطوات العملية الثلاث لرسم خط اتجاه صحيح:</p>
 <p><img alt="الشكل 26.3" src="figures/fig-26-03.svg" /></p>
 <p class="fig-caption"><strong>الشكل 26.3 — خطوات رسم خط الاتجاه: تحديد نقطتي تأرجح، ثم وصلهما، ثم امتداد الخط للمستقبل</strong></p>
-<div class="chapter-break"></div><h2 id="267-price-channels">26.7 القنوات السعرية (Price Channels)</h2>
+<h2 id="267-price-channels">26.7 القنوات السعرية (Price Channels)</h2>
 <p>عند رسم خط اتجاه مواز للخط الأصلي على الجانب الآخر من حركة السعر، يتشكل "قناة سعرية" تحصر تحرك السعر بين حدين متوازيين، وتُستخدم لتحديد مناطق شراء (عند الحد السفلي في قناة صاعدة) وبيع (عند الحد العلوي).</p>
 <p><img alt="الشكل 26.2" src="figures/fig-26-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 26.2 — خط الاتجاه الصاعد كدعم، والقناة السعرية الموازية كمقاومة</strong></p>
 <hr />
-<div class="chapter-break"></div><h2 id="_107">ملخص الفصل</h2>
+<h2 id="_107">ملخص الفصل</h2>
 <ul>
 <li>الدعم والمقاومة من أقدم مفاهيم التحليل الفني، وتتقاطع مباشرة مع كتل الطلب/العرض في SMC.</li>
 <li>انعكاس الأدوار (تحول مقاومة مكسورة إلى دعم) هو الأساس التقليدي لمفهوم منطقة الفليب.</li>
 <li>خطوط الاتجاه والقنوات السعرية توفر دعمًا/مقاومة ديناميكية متحركة، بخلاف المستويات الأفقية الثابتة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_108">نقاط رئيسية</h2>
+<h2 id="_108">نقاط رئيسية</h2>
 <ol>
 <li>اجمع دائمًا بين المستويات الأفقية وخطوط الاتجاه لتحديد مناطق اهتمام أكثر دقة.</li>
 <li>راقب سلوك السعر عند المستويات النفسية المستديرة كمناطق سيولة محتملة.</li>
 <li>ميّز بين استراتيجية الارتداد واستراتيجية الاختراق بناءً على سياق السوق (عرضي أم في اتجاه واضح).</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_109">تمرين عملي</h2>
+<h2 id="_109">تمرين عملي</h2>
 <p>ارسم خط اتجاه صاعد وخط اتجاه هابط على مخطط 4 ساعات لأصل يتحرك حاليًا ضمن نطاق واضح، وحدد أين تتقاطع هذه الخطوط مع مستويات أفقية سابقة.</p>
-<div class="chapter-break"></div><h2 id="_110">دراسة حالة</h2>
+<h2 id="_110">دراسة حالة</h2>
 <p>يُكسر مستوى مقاومة أفقي ظل صامدًا لعدة أسابيع بإغلاق قوي وحجم تداول مرتفع. خلال الأيام التالية، يتصحح السعر ليعاود اختبار هذا المستوى نفسه من الأعلى، فيرتد عنه صعودًا بقوة — مؤكدًا تحوله من مقاومة إلى دعم (انعكاس الأدوار)، ومتطابقًا في الوقت نفسه مع منطقة فليب SMC عند نفس المستوى بالضبط.</p>
 <p>يوضّح الشكل 26.1 هذا المثال:</p>
 <p><img alt="الشكل 26.1" src="figures/fig-26-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 26.1 — انعكاس الأدوار: مقاومة مكسورة تتحول إلى دعم جديد</strong></p>
-<div class="part-break"></div><h1 id="27_1">الفصل 27: تحليل الاتجاه</h1>
-<div class="chapter-break"></div><h2 id="271">27.1 مفهوم الاتجاه</h2>
+<h1 id="27_1">الفصل 27: تحليل الاتجاه</h1>
+<h2 id="271">27.1 مفهوم الاتجاه</h2>
 <p>الاتجاه هو الميل العام لحركة السعر خلال فترة زمنية محددة. تحديد الاتجاه بدقة هو نقطة الانطلاق لأي قرار تداولي، سواء في التحليل الفني التقليدي أو في قراءة هيكل السوق ضمن SMC (الفصل 3) — والمفهومان في جوهرهما يصفان نفس الظاهرة من زاويتين متكاملتين.</p>
-<div class="chapter-break"></div><h2 id="272">27.2 الاتجاه الصاعد، الهابط، والعرضي</h2>
+<h2 id="272">27.2 الاتجاه الصاعد، الهابط، والعرضي</h2>
 <p>نفس التصنيف الثلاثي الذي نوقش في الفصل 3 (صاعد: HH-HL، هابط: LH-LL، عرضي: بلا اتجاه واضح ضمن نطاق) ينطبق هنا تمامًا بمصطلحات التحليل الفني التقليدي.</p>
-<div class="chapter-break"></div><h2 id="273-274">27.3 و27.4 تحديد الاتجاه وخطوط الاتجاه</h2>
+<p><img alt="الشكل 27.2" src="figures/fig-27-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 27.2 — الاتجاه الصاعد (Uptrend): تتابع من القمم والقيعان الأعلى فالأعلى</strong></p>
+<p><img alt="الشكل 27.3" src="figures/fig-27-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 27.3 — الاتجاه الهابط (Downtrend): تتابع من القمم والقيعان الأدنى فالأدنى</strong></p>
+<p><img alt="الشكل 27.4" src="figures/fig-27-04.svg" /></p>
+<p class="fig-caption"><strong>الشكل 27.4 — الاتجاه العرضي (Sideways / Range): تذبذب السعر بين مستويي دعم ومقاومة أفقيين تقريبًا دون اتجاه واضح</strong></p>
+<h2 id="273-274">27.3 و27.4 تحديد الاتجاه وخطوط الاتجاه</h2>
 <p>يُحدَّد الاتجاه عبر: تسلسل القمم والقيعان (الطريقة الأساسية)، اتجاه خطوط الاتجاه المرسومة (الفصل 26)، واتجاه المتوسطات المتحركة الرئيسية.</p>
-<div class="chapter-break"></div><h2 id="275">27.5 المتوسطات المتحركة كأداة لتحديد الاتجاه</h2>
+<h2 id="275">27.5 المتوسطات المتحركة كأداة لتحديد الاتجاه</h2>
 <p>عندما يتداول السعر باستمرار فوق متوسط متحرك رئيسي (كمتوسط 200 يوم) واتجاه هذا المتوسط نفسه صاعد، يُعتبر ذلك تأكيدًا إضافيًا على اتجاه صاعد عام. سيُفصَّل هذا أكثر في الفصل 29.</p>
-<div class="chapter-break"></div><h2 id="276">27.6 قياس قوة الاتجاه</h2>
+<h2 id="276">27.6 قياس قوة الاتجاه</h2>
 <ul>
 <li><strong>ميل خط الاتجاه:</strong> كلما كان أكثر انحدارًا (حادًا)، دل على زخم أقوى (لكن أيضًا استدامة أقل غالبًا).</li>
 <li><strong>حجم التداول المصاحب:</strong> اتجاه حقيقي يُفترض أن يترافق مع حجم تداول متزايد في اتجاه الحركة الرئيسية.</li>
 <li><strong>مسافة تباعد السعر عن المتوسطات المتحركة:</strong> تباعد كبير جدًا قد ينذر بحركة تصحيحية مرتقبة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="277">27.7 إشارات انعكاس الاتجاه</h2>
+<h2 id="277">27.7 إشارات انعكاس الاتجاه</h2>
 <p>تشمل: تغيّر الشخصية (CHOCH، الفصل 3)، كسر خط اتجاه رئيسي بإغلاق واضح، تباعد سلبي مع مؤشرات الزخم (سيُشرح في الفصل 29)، وظهور أنماط انعكاسية كلاسيكية (الفصل 28).</p>
-<div class="chapter-break"></div><h2 id="278">27.8 التداول مع الاتجاه</h2>
+<h2 id="278">27.8 التداول مع الاتجاه</h2>
 <p>القاعدة الذهبية الأشهر في التحليل الفني: "الاتجاه صديقك" (The Trend is Your Friend). إحصائيًا، فرص النجاح مع الاتجاه السائد أعلى عادة من محاولة توقع انعكاسه المبكر، خصوصًا للمتداولين الأقل خبرة.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_111">ملخص الفصل</h2>
+<h2 id="_111">ملخص الفصل</h2>
 <ul>
 <li>تحليل الاتجاه في التحليل الفني وقراءة هيكل السوق في SMC يصفان نفس الظاهرة من زاويتين متكاملتين.</li>
 <li>قوة الاتجاه تُقاس عبر ميل خط الاتجاه، الحجم المصاحب، ومدى التباعد عن المتوسطات المتحركة.</li>
 <li>التداول مع الاتجاه السائد أعلى احتمالية نجاح إحصائيًا من محاولة توقع انعكاسه المبكر.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_112">نقاط رئيسية</h2>
+<h2 id="_112">نقاط رئيسية</h2>
 <ol>
 <li>حدد الاتجاه أولًا عبر تسلسل القمم والقيعان قبل أي أداة أخرى.</li>
 <li>استخدم المتوسطات المتحركة كتأكيد إضافي على اتجاه محدد مسبقًا، لا كأداة تحديد وحيدة.</li>
 <li>انتبه لإشارات الانعكاس المبكرة (CHOCH، تباعد الزخم) دون التسرع في مخالفة الاتجاه السائد.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_113">تمرين عملي</h2>
+<h2 id="_113">تمرين عملي</h2>
 <p>حدد اتجاه ثلاثة أصول مختلفة حاليًا باستخدام تسلسل القمم والقيعان، ثم تحقق من توافق هذا التحديد مع اتجاه متوسط متحرك 200 فترة على نفس الفريم.</p>
-<div class="chapter-break"></div><h2 id="_114">دراسة حالة</h2>
+<h2 id="_114">دراسة حالة</h2>
 <p>يتداول أصل مالي في اتجاه صاعد ثابت لعدة أشهر، فوق متوسطه المتحرك 200 يوم باستمرار. عندما يظهر أول تباعد سلبي بين السعر ومؤشر الزخم (قمة سعرية جديدة دون تأكيد مماثل من المؤشر)، يبدأ متداولون متمرسون بتشديد إدارة المخاطر على مراكزهم الصاعدة القائمة، دون الانقلاب فورًا للبيع، تحسبًا لبداية تصحيح أو انعكاس محتمل يتأكد لاحقًا عبر CHOCH فعلي على المخطط.</p>
 <p>يوضّح الشكل 27.1 هذا المثال:</p>
 <p><img alt="الشكل 27.1" src="figures/fig-27-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 27.1 — اتجاه صاعد مع تباعد سلبي بين السعر ومؤشر RSI</strong></p>
-<div class="part-break"></div><h1 id="28">الفصل 28: أنماط المخططات – الموسوعة الكاملة</h1>
-<div class="chapter-break"></div><h2 id="281">28.1 مقدمة إلى أنماط المخططات</h2>
+<h1 id="28">الفصل 28: أنماط المخططات – الموسوعة الكاملة</h1>
+<h2 id="281">28.1 مقدمة إلى أنماط المخططات</h2>
 <p>أنماط المخططات (Chart Patterns) هي أشكال هندسية متكررة تتشكل من حركة السعر عبر الزمن، وتُصنَّف عادة إلى فئتين رئيسيتين: أنماط انعكاسية (تنذر بنهاية الاتجاه الحالي)، وأنماط استمرارية (تنذر باستراحة مؤقتة قبل استئناف الاتجاه).</p>
-<div class="chapter-break"></div><h2 id="282-284">28.2 و28.4 أنماط الانعكاس الصاعدة</h2>
+<h2 id="282-284">28.2 و28.4 أنماط الانعكاس الصاعدة</h2>
 <table>
 <thead>
 <tr>
@@ -3208,7 +3231,7 @@
 <p class="fig-caption"><strong>الشكل 28.4 — نموذج القاع المزدوج (Double Bottom)</strong></p>
 <p><img alt="الشكل 28.3" src="figures/fig-28-03.svg" /></p>
 <p class="fig-caption"><strong>الشكل 28.3 — نموذج الكوب والعروة (Cup and Handle)</strong></p>
-<div class="chapter-break"></div><h2 id="283-285">28.3 و28.5 أنماط الانعكاس الهابطة</h2>
+<h2 id="283-285">28.3 و28.5 أنماط الانعكاس الهابطة</h2>
 <table>
 <thead>
 <tr>
@@ -3240,7 +3263,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="286">28.6 الأنماط الثنائية (يمكن أن تكون انعكاسية أو استمرارية حسب سياق الاختراق)</h2>
+<h2 id="286">28.6 الأنماط الثنائية (يمكن أن تكون انعكاسية أو استمرارية حسب سياق الاختراق)</h2>
 <table>
 <thead>
 <tr>
@@ -3277,36 +3300,36 @@
 </table>
 <p><img alt="الشكل 28.1" src="figures/fig-28-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 28.1 — الأنماط الرئيسية لمخططات الأسعار: الرأس والكتفين، القمة المزدوجة، المثلث المتماثل، الوتد الصاعد، العلم، والمستطيل</strong></p>
-<div class="chapter-break"></div><h2 id="287">28.7 قياس أهداف الأنماط</h2>
+<h2 id="287">28.7 قياس أهداف الأنماط</h2>
 <p>تُقاس أهداف معظم الأنماط بنفس المبدأ العام: قياس "ارتفاع" النمط (المسافة بين أعلى وأدنى نقطة فيه)، ثم إسقاط هذه المسافة من نقطة الاختراق في اتجاه الحركة المتوقعة.</p>
-<div class="chapter-break"></div><h2 id="288">28.8 موثوقية الأنماط</h2>
+<h2 id="288">28.8 موثوقية الأنماط</h2>
 <p>كما في أنماط الشموع، ترتفع موثوقية أي نمط مخطط بشكل ملحوظ عند اقترانه بـ: اتجاه عام متوافق (الفصل 27)، مستوى دعم/مقاومة أو كتلة طلب/عرض عند نقطة الاختراق، وحجم تداول متزايد عند لحظة الاختراق نفسها.</p>
-<div class="chapter-break"></div><h2 id="289">28.9 تداول أنماط المخططات</h2>
+<h2 id="289">28.9 تداول أنماط المخططات</h2>
 <p>يُنصح غالبًا بانتظار <strong>إغلاق شمعة واضح</strong> خارج حدود النمط قبل الدخول (بدلًا من الدخول عند مجرد لمس خط النمط)، لتجنب الاختراقات الوهمية التي قد تكون في الواقع عمليات سحب سيولة (كما نوقش في الفصل 4).</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_115">ملخص الفصل</h2>
+<h2 id="_115">ملخص الفصل</h2>
 <ul>
 <li>أنماط المخططات تنقسم إلى انعكاسية (قمة/قاع مزدوج، رأس وكتفين، أوتاد) واستمرارية (أعلام، رايات، مستطيلات)، مع أنماط ثنائية تعتمد على اتجاه الاختراق (المثلثات).</li>
 <li>تُقاس معظم الأهداف بإسقاط "ارتفاع" النمط من نقطة الاختراق.</li>
 <li>انتظار إغلاق شمعة واضح خارج النمط يقلل من مخاطر الاختراقات الوهمية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_116">نقاط رئيسية</h2>
+<h2 id="_116">نقاط رئيسية</h2>
 <ol>
 <li>اربط كل نمط دائمًا بسياقه (الاتجاه العام، الدعم/المقاومة القريب) قبل التداول عليه.</li>
 <li>لا تفترض اتجاه اختراق المثلثات مسبقًا — انتظر تأكيد الإغلاق الفعلي.</li>
 <li>استخدم قاعدة قياس ارتفاع النمط كنقطة انطلاق لتحديد الهدف، مع تعديلها حسب مناطق سيولة قريبة.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_117">تمرين عملي</h2>
+<h2 id="_117">تمرين عملي</h2>
 <p>ابحث في مخطط تاريخي عن مثال واحد لنمط انعكاسي (مثل قمة مزدوجة) وواحد استمراري (مثل علم)، وقس أهدافهما وفق قاعدة إسقاط الارتفاع، وقارن بما حدث فعليًا للسعر بعد الاختراق.</p>
-<div class="chapter-break"></div><h2 id="_118">دراسة حالة</h2>
+<h2 id="_118">دراسة حالة</h2>
 <p>يتشكل نمط "رأس وكتفين" واضح في نهاية اتجاه صاعد طويل، مع خط رقبة يتطابق مع مستوى دعم أفقي سابق. عند كسر خط الرقبة بإغلاق قوي ومصحوب بارتفاع في حجم التداول، ينخفض السعر لاحقًا بمقدار قريب جدًا من ارتفاع الرأس عن خط الرقبة، محققًا الهدف النظري للنمط بدقة ملحوظة.</p>
 <p>يوضّح الشكل 28.2 هذا المثال:</p>
 <p><img alt="الشكل 28.2" src="figures/fig-28-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 28.2 — نموذج الرأس والكتفين مع خط الرقبة وقياس الهدف</strong></p>
-<div class="part-break"></div><h1 id="29">الفصل 29: المؤشرات الفنية – الدليل الكامل</h1>
-<div class="chapter-break"></div><h2 id="291">29.1 مقدمة إلى المؤشرات</h2>
+<h1 id="29">الفصل 29: المؤشرات الفنية – الدليل الكامل</h1>
+<h2 id="291">29.1 مقدمة إلى المؤشرات</h2>
 <p>المؤشرات الفنية هي حسابات رياضية مبنية على السعر و/أو الحجم، تهدف لتبسيط قراءة السوق (اتجاه، زخم، تقلب) بصريًا. يجب التعامل معها كأدوات مساعدة تؤكد أو تضيف سياقًا لتحليل السعر الخام، لا كبدائل مستقلة عنه.</p>
-<div class="chapter-break"></div><h2 id="292">29.2 أنواع المؤشرات</h2>
+<h2 id="292">29.2 أنواع المؤشرات</h2>
 <table>
 <thead>
 <tr>
@@ -3338,7 +3361,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="298-moving-averages">29.8 المتوسطات المتحركة (Moving Averages)</h2>
+<h2 id="298-moving-averages">29.8 المتوسطات المتحركة (Moving Averages)</h2>
 <ul>
 <li><strong>المتوسط المتحرك البسيط (SMA):</strong> متوسط حسابي بسيط لعدد محدد من الفترات.</li>
 <li><strong>المتوسط المتحرك الأسي (EMA):</strong> يعطي وزنًا أكبر للأسعار الأحدث، فيتفاعل بسرعة أكبر مع التغيرات.</li>
@@ -3346,55 +3369,55 @@
 <p><strong>تقاطع المتوسطات:</strong> عندما يعبر متوسط قصير الأجل فوق متوسط طويل الأجل، يُعتبر إشارة صعودية (Golden Cross)، والعكس إشارة هبوطية (Death Cross).</p>
 <p><img alt="الشكل 29.2" src="figures/fig-29-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 29.2 — تقاطع المتوسطات المتحركة (Golden Cross) بين متوسط قصير وآخر طويل الأجل</strong></p>
-<div class="chapter-break"></div><h2 id="299-macd">29.9 مؤشر MACD</h2>
+<h2 id="299-macd">29.9 مؤشر MACD</h2>
 <p>يقيس الفرق بين متوسطين متحركين أسيين (عادة 12 و26)، مع خط إشارة (عادة متوسط 9 فترات على MACD نفسه). تقاطع خط MACD فوق خط الإشارة إشارة صعودية، وتحته إشارة هبوطية. يُستخدم أيضًا للكشف عن التباعد (Divergence) بين حركة السعر والزخم.</p>
-<div class="chapter-break"></div><h2 id="2910-rsi">29.10 مؤشر القوة النسبية (RSI)</h2>
+<h2 id="2910-rsi">29.10 مؤشر القوة النسبية (RSI)</h2>
 <p>يتراوح بين 0 و100، ويقيس سرعة وحجم تغيرات السعر الأخيرة. القراءة فوق 70 تشير عادة لتشبع شرائي (احتمال تصحيح هبوطي)، وتحت 30 تشير لتشبع بيعي (احتمال ارتداد صعودي). في الاتجاهات القوية جدًا، قد يبقى RSI في مناطق التشبع لفترات طويلة دون انعكاس فعلي — لذا يُستخدم غالبًا مع تأكيد إضافي.</p>
-<div class="chapter-break"></div><h2 id="2911-stochastic">29.11 مؤشر ستوكاستيك (Stochastic)</h2>
+<h2 id="2911-stochastic">29.11 مؤشر ستوكاستيك (Stochastic)</h2>
 <p>يقارن سعر الإغلاق الحالي بنطاق الأسعار (الأعلى/الأدنى) خلال فترة محددة، ويتراوح أيضًا بين 0 و100 بنفس منطق مناطق التشبع الشرائي/البيعي لمؤشر RSI تقريبًا، لكنه أكثر حساسية وسرعة استجابة.</p>
-<div class="chapter-break"></div><h2 id="2912-bollinger-bands">29.12 بولينجر باند (Bollinger Bands)</h2>
+<h2 id="2912-bollinger-bands">29.12 بولينجر باند (Bollinger Bands)</h2>
 <p>يتكون من متوسط متحرك مركزي، مع نطاقين علوي وسفلي يبعدان عنه بمقدار انحرافين معياريين. اقتراب السعر من النطاق العلوي يشير لارتفاع نسبي، ومن السفلي لانخفاض نسبي. تضيّق النطاقات (Squeeze) ينذر غالبًا باقتراب حركة تقلب قوية قادمة.</p>
 <p><img alt="الشكل 29.3" src="figures/fig-29-03.svg" /></p>
 <p class="fig-caption"><strong>الشكل 29.3 — انضغاط بولينجر باند (Squeeze) يليه توسّع حاد في التقلب</strong></p>
-<div class="chapter-break"></div><h2 id="2913-ichimoku-cloud">29.13 سحابة إيشيموكو (Ichimoku Cloud)</h2>
+<h2 id="2913-ichimoku-cloud">29.13 سحابة إيشيموكو (Ichimoku Cloud)</h2>
 <p>نظام متكامل يجمع بين خطوط متعددة (خط التحويل، خط الأساس، السحابة المستقبلية، والخط المتأخر) لتوفير صورة شاملة عن الاتجاه، الدعم/المقاومة، والزخم في أداة واحدة.</p>
-<div class="chapter-break"></div><h2 id="2914-2915">29.14 و29.15 فيبوناتشي ارتداد وامتداد</h2>
+<h2 id="2914-2915">29.14 و29.15 فيبوناتشي ارتداد وامتداد</h2>
 <ul>
 <li><strong>ارتداد فيبوناتشي:</strong> يُستخدم لتحديد مناطق تصحيح محتملة أثناء اتجاه قائم (كما نوقش بالتفصيل في الفصل 8 ضمن مفهوم الخصم والعلاوة في SMC).</li>
 <li><strong>امتداد فيبوناتشي:</strong> يُستخدم لتوقع أهداف محتملة <em>بعد</em> تجاوز السعر لنقطة سابقة، عبر نسب مثل 127% و161.8%.</li>
 </ul>
 <p><img alt="الشكل 29.4" src="figures/fig-29-04.svg" /></p>
 <p class="fig-caption"><strong>الشكل 29.4 — مستويات ارتداد فيبوناتشي الرئيسية (23.6%، 38.2%، 50%، 61.8%، 78.6%) على حركة تصحيحية</strong></p>
-<div class="chapter-break"></div><h2 id="2916">29.16 نظرية إليوت الموجية (لمحة تمهيدية)</h2>
+<h2 id="2916">29.16 نظرية إليوت الموجية (لمحة تمهيدية)</h2>
 <p>نظرية تصف حركة السعر كسلسلة موجات دافعة (خمس موجات مع الاتجاه العام) وموجات تصحيحية (ثلاث موجات معاكسة)، وتُستخدم لوضع الحركة الحالية ضمن سياق دورة أكبر. تتطلب ممارسة طويلة لإتقان تطبيقها بثبات نظرًا للتفسيرات المتعددة الممكنة لنفس الحركة.</p>
 <p><img alt="الشكل 29.5" src="figures/fig-29-05.svg" /></p>
 <p class="fig-caption"><strong>الشكل 29.5 — هيكل موجات إليوت: خمس موجات دافعة (1-5) تليها ثلاث موجات تصحيحية (A-B-C)</strong></p>
-<div class="chapter-break"></div><h2 id="2917-atr">29.17 متوسط المدى الحقيقي (ATR)</h2>
+<h2 id="2917-atr">29.17 متوسط المدى الحقيقي (ATR)</h2>
 <p>يقيس متوسط مدى التقلب (وليس الاتجاه)، ويُستخدم عمليًا بشكل واسع لتحديد مسافة وقف الخسارة بما يتناسب مع التقلب الطبيعي الحالي للأصل، بدلًا من استخدام مسافة ثابتة بالنقاط لكل الأصول والظروف.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_119">ملخص الفصل</h2>
+<h2 id="_119">ملخص الفصل</h2>
 <ul>
 <li>المؤشرات الفنية تنقسم إلى أربع فئات رئيسية: اتجاه، زخم، تقلب، وحجم.</li>
 <li>كل مؤشر له استخدام مثالي ومحدودياته؛ لا يوجد مؤشر "مثالي" يعمل في كل الظروف.</li>
 <li>الأفضل دمج مؤشر أو اثنين من فئات مختلفة (مثلًا: اتجاه + زخم) بدلًا من تكديس عدة مؤشرات من نفس الفئة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_120">نقاط رئيسية</h2>
+<h2 id="_120">نقاط رئيسية</h2>
 <ol>
 <li>اختر مؤشرًا واحدًا من كل فئة تحتاجها بدلًا من إثقال المخطط بمؤشرات متشابهة الوظيفة.</li>
 <li>استخدم ATR لتحديد مسافة وقف الخسارة بما يناسب التقلب الفعلي للأصل.</li>
 <li>تعامل مع مناطق التشبع الشرائي/البيعي (RSI، ستوكاستيك) بحذر خلال الاتجاهات القوية جدًا.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_121">تمرين عملي</h2>
+<h2 id="_121">تمرين عملي</h2>
 <p>طبّق RSI وMACD معًا على نفس المخطط، وابحث عن حالة تباعد (Divergence) بين حركة السعر وأي من المؤشرين، وسجّل ماذا حدث للسعر بعدها.</p>
-<div class="chapter-break"></div><h2 id="_122">دراسة حالة</h2>
+<h2 id="_122">دراسة حالة</h2>
 <p>يواصل أصل مالي تسجيل قمم سعرية جديدة أعلى، لكن مؤشر RSI يسجل قممًا أدنى في كل مرة (تباعد سلبي كلاسيكي). هذا التباعد وحده لا يكفي كإشارة بيع فورية، لكنه يدفع متداولًا حذرًا لمراقبة هيكل السوق عن قرب لأي إشارة CHOCH تؤكد بداية انعكاس فعلي، بدلًا من الاعتماد على التباعد وحده كسبب للدخول.</p>
 <p>يوضّح الشكل 29.1 هذا المثال:</p>
 <p><img alt="الشكل 29.1" src="figures/fig-29-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 29.1 — السعر مقابل مؤشري RSI وMACD، موضحًا تباعدًا سلبيًا كلاسيكيًا</strong></p>
-<div class="part-break"></div><h1 id="30">الفصل 30: تحليل الحجم</h1>
-<div class="chapter-break"></div><h2 id="301">30.1 أهمية الحجم</h2>
+<h1 id="30">الفصل 30: تحليل الحجم</h1>
+<h2 id="301">30.1 أهمية الحجم</h2>
 <p>الحجم (عدد الوحدات المتداولة خلال فترة معينة) يضيف بُعدًا مهمًا غائبًا عن السعر وحده: <strong>قوة الاقتناع</strong> خلف أي حركة. حركة سعرية بحجم مرتفع تحمل مصداقية أكبر من حركة مماثلة بحجم منخفض وضعيف.</p>
-<div class="chapter-break"></div><h2 id="302">30.2 الحجم والسعر: القواعد العامة</h2>
+<h2 id="302">30.2 الحجم والسعر: القواعد العامة</h2>
 <table>
 <thead>
 <tr>
@@ -3421,7 +3444,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="303">30.3 مؤشرات الحجم</h2>
+<h2 id="303">30.3 مؤشرات الحجم</h2>
 <ul>
 <li><strong>التوازن الحجمي (On-Balance Volume – OBV):</strong> يجمع أو يطرح الحجم تراكميًا حسب اتجاه إغلاق كل شمعة، ويُستخدم لرصد تراكم أو تصريف خفي قد لا يظهر بوضوح على السعر وحده.</li>
 <li><strong>متوسط السعر المرجح بالحجم (VWAP):</strong> متوسط سعري يعطي وزنًا أكبر للفترات ذات الحجم الأعلى، ويُستخدم كثيرًا كمرجع نشط خلال جلسة التداول اليومية.</li>
@@ -3429,91 +3452,91 @@
 <p><strong>الفائدة المفتوحة (Open Interest):</strong> مقياس خاص بأسواق العقود الآجلة والخيارات، يختلف عن الحجم في أنه لا يقيس عدد الصفقات المنفذة خلال فترة معينة، بل <strong>إجمالي عدد العقود المفتوحة (غير المغلقة بعد)</strong> في السوق في لحظة معينة. ارتفاع السعر مصحوبًا بارتفاع الفائدة المفتوحة يشير عادة لدخول أموال جديدة فعليًا تدعم الاتجاه، بينما ارتفاع السعر مع تراجع الفائدة المفتوحة قد يشير إلى أن الحركة ناتجة عن إغلاق مراكز بيع سابقة (تغطية) أكثر من كونها اقتناعًا شرائيًا جديدًا.</p>
 <p><img alt="الشكل 30.2" src="figures/fig-30-02.svg" /></p>
 <p class="fig-caption"><strong>الشكل 30.2 — تطور الفائدة المفتوحة (Open Interest) مقارنة بحركة السعر</strong></p>
-<div class="chapter-break"></div><h2 id="304">30.4 أنماط الحجم</h2>
+<h2 id="304">30.4 أنماط الحجم</h2>
 <ul>
 <li><strong>قمة حجم عند انعكاس (Climax Volume):</strong> حجم استثنائي الارتفاع عند نهاية حركة قوية، غالبًا يشير لاستنفاد الاتجاه (شراء ذعري أو بيع ذعري أخير).</li>
 <li><strong>جفاف الحجم (Volume Dry-up):</strong> انخفاض حاد في الحجم أثناء تصحيح ضمن اتجاه أكبر، يُعتبر علامة صحية تشير لغياب اهتمام حقيقي بمخالفة الاتجاه السائد.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="305">30.5 استراتيجيات تداول الحجم</h2>
+<h2 id="305">30.5 استراتيجيات تداول الحجم</h2>
 <p>يُستخدم الحجم بشكل مثالي كتأكيد إضافي لإشارات أخرى: اختراق نمط مخطط (الفصل 28) مصحوب بارتفاع حاد في الحجم أكثر موثوقية من اختراق بحجم عادي أو منخفض. وبالمثل، شمعة تمويل مؤسسي (IFC، الفصل 9) تكتسب مصداقية أكبر عندما تترافق مع حجم تداول استثنائي فعليًا (حين تتوفر بيانات الحجم، كما في الأسهم والعقود الآجلة).</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_123">ملخص الفصل</h2>
+<h2 id="_123">ملخص الفصل</h2>
 <ul>
 <li>الحجم يقيس قوة الاقتناع خلف أي حركة سعرية، ويضيف طبقة تأكيد مهمة لا يوفرها السعر وحده.</li>
 <li>ارتفاع السعر مع ضعف الحجم علامة تحذيرية على ضعف الاتجاه، وليس تأكيدًا له.</li>
 <li>الحجم أداة تأكيد مثالية للاختراقات وأنماط المخططات وشموع تدفق الأوامر المؤسسي.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_124">نقاط رئيسية</h2>
+<h2 id="_124">نقاط رئيسية</h2>
 <ol>
 <li>لا تكتفِ بمشاهدة السعر وحده — راقب الحجم المصاحب لأي حركة أو اختراق مهم.</li>
 <li>اعتبر ضعف الحجم أثناء استمرار الاتجاه إشارة تحذيرية تستحق المراقبة، لا التجاهل.</li>
 <li>استخدم الحجم كطبقة تأكيد إضافية للاختراقات وليس كأداة تحليل مستقلة بمفردها.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_125">تمرين عملي</h2>
+<h2 id="_125">تمرين عملي</h2>
 <p>راجع اختراقًا حديثًا لنمط مخطط (مثل مثلث أو مستطيل) على أصل يوفر بيانات حجم واضحة (كالأسهم أو العقود الآجلة)، وتحقق: هل ترافق الاختراق مع ارتفاع ملحوظ في الحجم؟</p>
-<div class="chapter-break"></div><h2 id="_126">دراسة حالة</h2>
+<h2 id="_126">دراسة حالة</h2>
 <p>يخترق سهم مستوى مقاومة أفقي ظل صامدًا لأسابيع، لكن الاختراق يترافق مع حجم تداول أقل من المتوسط اليومي المعتاد بوضوح. خلال الأيام التالية، يفشل السعر في الاستمرار صعودًا ويعود للتذبذب أسفل المستوى المخترق — مؤكدًا أن ضعف الحجم كان علامة تحذيرية مبكرة على أن الاختراق لم يكن مدعومًا باقتناع حقيقي كافٍ من السوق.</p>
 <p>يوضّح الشكل 30.1 هذا المثال:</p>
 <p><img alt="الشكل 30.1" src="figures/fig-30-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 30.1 — اختراق بحجم ضعيف نسبيًا، يليه فشل الاختراق وعودة السعر للنطاق</strong></p>
-<div class="part-break"></div><h1 id="31_1">الفصل 31: التحليل الفني المتقدم</h1>
-<div class="chapter-break"></div><h2 id="311-harmonic-patterns">31.1 الأنماط التوافقية (Harmonic Patterns)</h2>
+<h1 id="31_1">الفصل 31: التحليل الفني المتقدم</h1>
+<h2 id="311-harmonic-patterns">31.1 الأنماط التوافقية (Harmonic Patterns)</h2>
 <p>أنماط هندسية دقيقة (مثل Gartley وButterfly وBat وCrab) تُبنى على نسب فيبوناتشي محددة بدقة بين نقاط الحركة المختلفة (X-A-B-C-D)، وتهدف لتحديد مناطق انعكاس محتملة بدقة رياضية أعلى من الأنماط الكلاسيكية العادية. تتطلب دقة عالية في القياس وتدريبًا خاصًا للتعرف عليها بثقة.</p>
-<div class="chapter-break"></div><h2 id="312-gann-theory">31.2 نظرية جان (Gann Theory)</h2>
+<h2 id="312-gann-theory">31.2 نظرية جان (Gann Theory)</h2>
 <p>طوّرها المتداول ويليام جان، وتجمع بين تحليل السعر والزمن معًا (بعكس معظم أدوات التحليل الفني التي تركز على السعر فقط)، عبر أدوات مثل زوايا جان (Gann Angles) التي تفترض علاقة هندسية ثابتة بين حركة السعر ومرور الزمن.</p>
-<div class="chapter-break"></div><h2 id="313-wyckoff-method">31.3 طريقة ويكوف (Wyckoff Method)</h2>
+<h2 id="313-wyckoff-method">31.3 طريقة ويكوف (Wyckoff Method)</h2>
 <p>منهجية تحليلية تركز على دورة السوق المكونة من أربع مراحل: <strong>التجميع</strong> (Accumulation، حيث تشتري المؤسسات بهدوء عند القيعان)، <strong>الترويج الصعودي</strong> (Markup)، <strong>التوزيع</strong> (Distribution، حيث تبيع المؤسسات تدريجيًا عند القمم)، و<strong>الترويج الهبوطي</strong> (Markdown). هذا الإطار قريب جدًا فلسفيًا من مفاهيم SMC الحديثة، وكثير من الباحثين يعتبرون SMC امتدادًا وتطويرًا عمليًا لأفكار ويكوف الأصلية.</p>
-<div class="chapter-break"></div><h2 id="314-market-profile">31.4 بروفايل السوق (Market Profile)</h2>
+<h2 id="314-market-profile">31.4 بروفايل السوق (Market Profile)</h2>
 <p>أداة تعرض توزيع حجم التداول عبر مستويات سعرية مختلفة خلال جلسة معينة (بدلًا من توزيعه عبر الزمن كما في المخططات التقليدية)، وتساعد على تحديد "منطقة القيمة" (Value Area) التي تركّز فيها معظم النشاط، وهي مفيدة جدًا لتحديد مناطق قد تتوافق مع كتل الطلب/العرض في SMC.</p>
-<div class="chapter-break"></div><h2 id="315-order-flow-analysis">31.5 تحليل تدفق الأوامر (Order Flow Analysis)</h2>
+<h2 id="315-order-flow-analysis">31.5 تحليل تدفق الأوامر (Order Flow Analysis)</h2>
 <p>على عكس مفهوم "تدفق أوامر المؤسسات" الأوسع في SMC (الفصل 9)، يشير هذا المصطلح في سياق التحليل الفني المتقدم تحديدًا لأدوات مثل "شريط الوقت والمبيعات" (Time &amp; Sales) و"دفتر الأوامر" (Order Book / DOM)، التي تعرض تفاصيل الصفقات الفعلية لحظة بلحظة، وتُستخدم غالبًا في التداول عالي التردد أو المضاربة داخل اليوم شديدة الدقة.</p>
-<div class="chapter-break"></div><h2 id="316-pivot-points">31.6 نقاط البيفوت (Pivot Points)</h2>
+<h2 id="316-pivot-points">31.6 نقاط البيفوت (Pivot Points)</h2>
 <p>مستويات محسوبة رياضيًا من أسعار الجلسة السابقة (الأعلى، الأدنى، الإغلاق)، تُستخدم كمستويات دعم ومقاومة محتملة لليوم أو الأسبوع الحالي، وهي شائعة الاستخدام خصوصًا بين متداولي اليوم في أسواق الفوركس والعقود الآجلة.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_127">ملخص الفصل</h2>
+<h2 id="_127">ملخص الفصل</h2>
 <ul>
 <li>الأدوات المتقدمة (التوافقية، جان، ويكوف، بروفايل السوق) تضيف طبقات تحليل أعمق فوق الأساسيات المشروحة في الفصول السابقة.</li>
 <li>طريقة ويكوف قريبة جدًا فلسفيًا من مفاهيم SMC الحديثة، وتُعتبر أحد أصولها الفكرية التاريخية.</li>
 <li>هذه الأدوات المتقدمة تُستخدم عادة كطبقة إضافية اختيارية، وليست ضرورية للتداول الأساسي الناجح.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_128">نقاط رئيسية</h2>
+<h2 id="_128">نقاط رئيسية</h2>
 <ol>
 <li>لا تنتقل للأدوات المتقدمة قبل إتقان أساسيات هيكل السوق والدعم/المقاومة وأنماط الشموع.</li>
 <li>اعتبر مراحل ويكوف الأربع (تجميع، ترويج صعودي، توزيع، ترويج هبوطي) إطارًا تكميليًا لقراءة هيكل السوق في SMC.</li>
 <li>جرّب نقاط البيفوت كأداة إضافية سريعة لتحديد مستويات يومية محتملة، خصوصًا في التداول قصير الأجل.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_129">تمرين عملي</h2>
+<h2 id="_129">تمرين عملي</h2>
 <p>احسب نقاط البيفوت اليومية لأصل ما بناءً على بيانات الجلسة السابقة (أعلى، أدنى، إغلاق)، وراقب كيف تفاعل السعر مع هذه المستويات خلال الجلسة الحالية.</p>
-<div class="chapter-break"></div><h2 id="_130">دراسة حالة</h2>
+<h2 id="_130">دراسة حالة</h2>
 <p>بعد اتجاه هابط طويل، يدخل أصل مالي في مرحلة تذبذب عرضي عند مستويات منخفضة تاريخيًا، مصحوبة بحجم تداول متزايد تدريجيًا دون اختراق واضح لأي اتجاه — وهي خصائص كلاسيكية لمرحلة "التجميع" في طريقة ويكوف. بعد عدة أسابيع من هذا التذبذب، يخترق السعر أعلى النطاق بقوة، بادئًا مرحلة "الترويج الصعودي" التي تستمر لأشهر تالية.</p>
 <p>يوضّح الشكل 31.1 هذا المثال:</p>
 <p><img alt="الشكل 31.1" src="figures/fig-31-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 31.1 — مرحلة التجميع (Wyckoff Accumulation) تليها مرحلة الترويج الصعودي (Markup)</strong></p>
-<div class="part-break"></div><h1 id="_131">الجزء الخامس: دمج التحليلات الثلاثة</h1>
-<div class="part-break"></div><h1 id="32_1">الفصل 32: إطار التحليل الثلاثي</h1>
-<div class="chapter-break"></div><h2 id="321">32.1 مقدمة إلى التحليل الثلاثي</h2>
+<h1 id="_131">الجزء الخامس: دمج التحليلات الثلاثة</h1>
+<h1 id="32_1">الفصل 32: إطار التحليل الثلاثي</h1>
+<h2 id="321">32.1 مقدمة إلى التحليل الثلاثي</h2>
 <p>بعد استعراض الأجزاء الثلاثة بالتفصيل — مفاهيم الأموال الذكية، التحليل الأساسي، والتحليل الفني — يجمع هذا الفصل الخيوط الثلاثة في عملية قرار واحدة متسلسلة وقابلة للتكرار.</p>
-<div class="chapter-break"></div><h2 id="322">32.2 فلسفة التكامل</h2>
+<h2 id="322">32.2 فلسفة التكامل</h2>
 <p>كما ورد في مقدمة الكتاب: التحليل الأساسي يجيب عن "ماذا" يجب أن يحدث، مفاهيم SMC تجيب عن "كيف" ستتحرك المؤسسات، والتحليل الفني يجيب عن "متى" بالضبط ننفذ. الإطار العملي التالي يرتب هذه الأسئلة الثلاثة في تسلسل عمل واحد.</p>
-<div class="chapter-break"></div><h2 id="323-1">32.3 الخطوة 1: التحليل الأساسي – النظرة الكلية</h2>
+<h2 id="323-1">32.3 الخطوة 1: التحليل الأساسي – النظرة الكلية</h2>
 <ul>
 <li>تحديد الانحياز الاقتصادي العام للأصل (مثلًا: هل السياسة النقدية المرتبطة بعملة معينة متشددة أم متساهلة حاليًا؟).</li>
 <li>مراجعة التقويم الاقتصادي القادم لتحديد أي أحداث عالية التأثير قد تغيّر هذا الانحياز.</li>
 <li>الخروج بخلاصة بسيطة: انحياز صاعد، هابط، أو محايد/غير واضح على المدى المتوسط.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="324-2">32.4 الخطوة 2: مفاهيم الأموال الذكية – النظرة المؤسسية</h2>
+<h2 id="324-2">32.4 الخطوة 2: مفاهيم الأموال الذكية – النظرة المؤسسية</h2>
 <ul>
 <li>تحديد هيكل السوق الحالي على الفريم الأعلى (يومي/4 ساعات)، والتأكد من توافقه مع الانحياز الأساسي من الخطوة السابقة.</li>
 <li>تحديد أقرب مناطق سيولة وكتل طلب/عرض مهمة يُحتمل أن يتفاعل معها السعر.</li>
 <li>إن تعارض هيكل السوق الحالي بشكل صريح مع الانحياز الأساسي (كأن يكون الانحياز الاقتصادي صاعدًا بينما الهيكل الفني يظهر CHOCH هابطًا واضحًا)، يُفضَّل التزام الحذر أو الانتظار حتى يتضح أي الطرفين سيقود السعر فعليًا.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="325-3">32.5 الخطوة 3: التحليل الفني – نظرة التنفيذ</h2>
+<h2 id="325-3">32.5 الخطوة 3: التحليل الفني – نظرة التنفيذ</h2>
 <ul>
 <li>الانتقال لفريم زمني أصغر عند اقتراب السعر من منطقة الاهتمام المحددة في الخطوة السابقة.</li>
 <li>البحث عن تأكيد إضافي: نمط شمعة مناسب (الفصل 25)، مؤشر زخم متوافق (الفصل 29)، أو حجم تداول داعم (الفصل 30).</li>
 <li>تحديد نقطة الدخول، وقف الخسارة (خلف الهيكل مباشرة)، والهدف (عند أقرب منطقة سيولة أو دعم/مقاومة معاكسة).</li>
 </ul>
-<div class="chapter-break"></div><h2 id="326-checklist">32.6 عملية التكامل الكاملة (Checklist موحّد)</h2>
+<h2 id="326-checklist">32.6 عملية التكامل الكاملة (Checklist موحّد)</h2>
 <table>
 <thead>
 <tr>
@@ -3545,49 +3568,49 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="327">32.7 أنظمة تداول التحليل الثلاثي</h2>
+<h2 id="327">32.7 أنظمة تداول التحليل الثلاثي</h2>
 <p>النموذج العملي الموصى به: لا تفتح صفقة إلا إذا أجبت بـ"نعم" على الأسئلة الثلاثة الأولى في الجدول أعلاه، مع نسبة مخاطرة إلى عائد لا تقل عادة عن 1:2. كلما اكتملت الطبقات الثلاث معًا (اقتصادي + مؤسسي + فني)، ارتفعت جودة القرار بشكل ملحوظ مقارنة بالاعتماد على طبقة واحدة فقط.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_132">ملخص الفصل</h2>
+<h2 id="_132">ملخص الفصل</h2>
 <ul>
 <li>إطار التحليل الثلاثي يرتب الأسئلة الثلاثة (ماذا، كيف، متى) في عملية قرار واحدة متسلسلة.</li>
 <li>التعارض الصريح بين الانحياز الأساسي وهيكل السوق يستوجب الحذر بدلًا من تجاهل أحد الطرفين.</li>
 <li>أفضل الصفقات هي تلك التي تتوافق فيها الطبقات الثلاث معًا، لا التي تعتمد على طبقة واحدة بمعزل عن البقية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_133">نقاط رئيسية</h2>
+<h2 id="_133">نقاط رئيسية</h2>
 <ol>
 <li>ابدأ دائمًا من الصورة الاقتصادية الكبرى قبل النزول لتفاصيل SMC والتحليل الفني.</li>
 <li>لا تتجاهل تعارضًا واضحًا بين طبقتين من الطبقات الثلاث — اعتبره إشارة لطلب مزيد من الوضوح قبل الدخول.</li>
 <li>استخدم قائمة التحقق الموحدة قبل كل صفقة كعادة ثابتة لا استثناء.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_134">تمرين عملي</h2>
+<h2 id="_134">تمرين عملي</h2>
 <p>اختر صفقة محتملة حاليًا على أي أصل تتابعه، وطبّق عليها خطوات إطار التحليل الثلاثي الثلاث بالترتيب، وسجّل إجابتك عن كل سؤال في الجدول أعلاه قبل اتخاذ أي قرار.</p>
-<div class="chapter-break"></div><h2 id="_135">دراسة حالة</h2>
+<h2 id="_135">دراسة حالة</h2>
 <p>يحدد متداول انحيازًا اقتصاديًا صاعدًا لعملة معينة بناءً على فارق فائدة متزايد لصالحها (الفصل 15). عند فحص الفريم اليومي، يجد هيكل سوق صاعدًا متوافقًا تمامًا مع كتلة طلب طازجة عند منطقة خصم عميقة. عند اقتراب السعر من هذه المنطقة، يظهر على فريم 15 دقيقة نمط ابتلاع صعودي مصحوب بارتفاع في الحجم. بتوافق الطبقات الثلاث معًا، يدخل المتداول الصفقة بثقة أعلى بكثير من صفقة تعتمد على أي طبقة منفردة.</p>
 <p>يوضّح الشكل 32.1 هذا المثال:</p>
 <p><img alt="الشكل 32.1" src="figures/fig-32-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 32.1 — تطابق الطبقات الثلاث: الانحياز الاقتصادي، منطقة SMC، والتأكيد الفني</strong></p>
-<div class="part-break"></div><h1 id="33_1">الفصل 33: علم النفس وإدارة المخاطر</h1>
-<div class="chapter-break"></div><h2 id="331">33.1 علم نفس التداول</h2>
+<h1 id="33_1">الفصل 33: علم النفس وإدارة المخاطر</h1>
+<h2 id="331">33.1 علم نفس التداول</h2>
 <p>مهما بلغت دقة التحليل (الأساسي، SMC، أو الفني)، فإن تنفيذ القرار يبقى محكومًا بحالة المتداول النفسية لحظة الضغط على زر الشراء أو البيع. كثير من الخسائر لا تنتج عن تحليل خاطئ، بل عن تنفيذ سيئ لتحليل صحيح بسبب عامل نفسي (كما نوقشت مصطلحاته في الفصل 1، القسم 1.6).</p>
-<div class="chapter-break"></div><h2 id="332">33.2 الخوف والطمع</h2>
+<h2 id="332">33.2 الخوف والطمع</h2>
 <p>الدافعان النفسيان الأساسيان المحركان لسلوك أغلب المتداولين: <strong>الخوف</strong> يدفع للخروج المبكر من صفقات رابحة أو تجنب فرص جيدة، و<strong>الطمع</strong> يدفع للمخاطرة الزائدة أو البقاء في صفقات خاسرة أملًا في التعافي. الوعي بوجود هذين الدافعين لا يلغيهما، لكنه يساعد على التعرف عليهما لحظة ظهورهما واتخاذ قرار واعٍ رغم تأثيرهما.</p>
-<div class="chapter-break"></div><h2 id="333-334">33.3 و33.4 التحكم العاطفي والانضباط</h2>
+<h2 id="333-334">33.3 و33.4 التحكم العاطفي والانضباط</h2>
 <p>الانضباط هو الالتزام الصارم بقواعد خطة تداول مكتوبة مسبقًا، بغض النظر عن نتيجة الصفقة الأخيرة. يتطلب هذا عادة: تحديد قواعد الدخول والخروج <strong>قبل</strong> فتح الصفقة، عدم تعديل وقف الخسارة بدافع الأمل بعد الدخول، وقبول أن الخسارة الفردية جزء طبيعي من أي نظام تداول مهما كانت جودته.</p>
-<div class="chapter-break"></div><h2 id="335">33.5 مبادئ إدارة المخاطر</h2>
+<h2 id="335">33.5 مبادئ إدارة المخاطر</h2>
 <p>قاعدة أساسية: <strong>المخاطرة بجزء صغير جدًا من رأس المال في كل صفقة</strong> (عادة بين 0.5% و2%)، بحيث لا تُهدد أي سلسلة خسائر متتالية (وهي حتمية إحصائيًا في أي نظام) استمرارية المتداول في السوق.</p>
-<div class="chapter-break"></div><h2 id="336-position-sizing">33.6 تحديد حجم المركز (Position Sizing)</h2>
+<h2 id="336-position-sizing">33.6 تحديد حجم المركز (Position Sizing)</h2>
 <p>معادلة عملية بسيطة:</p>
 <blockquote>
 <p>حجم المركز = (رأس المال × نسبة المخاطرة المقبولة) ÷ (المسافة بالنقاط بين الدخول ووقف الخسارة × قيمة النقطة)</p>
 </blockquote>
 <p>هذه المعادلة تضمن أن الخسارة الفعلية عند تفعيل وقف الخسارة تساوي دائمًا نفس النسبة الثابتة من رأس المال، بغض النظر عن مدى اتساع أو ضيق وقف الخسارة لكل صفقة على حدة.</p>
-<div class="chapter-break"></div><h2 id="337-338">33.7 و33.8 إدارة وقف الخسارة وجني الأرباح</h2>
+<h2 id="337-338">33.7 و33.8 إدارة وقف الخسارة وجني الأرباح</h2>
 <ul>
 <li><strong>وقف الخسارة:</strong> يُوضع دائمًا بناءً على السياق الفني/الهيكلي (خلف كتلة الطلب أو نقطة الهيكل المرجعية)، لا بناءً على مبلغ مالي عشوائي مسبق.</li>
 <li><strong>جني الأرباح:</strong> يمكن أن يكون هدفًا ثابتًا مسبقًا (عند أقرب سيولة معاكسة)، أو متحركًا (Trailing Stop) يتبع الاتجاه لتعظيم الربح في الصفقات القوية.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="339-rrr">33.9 نسبة المخاطرة إلى المكافأة (RRR)</h2>
+<h2 id="339-rrr">33.9 نسبة المخاطرة إلى المكافأة (RRR)</h2>
 <p>حتى مع نسبة نجاح أقل من 50%، يمكن لنظام تداول أن يكون مربحًا على المدى الطويل إذا كانت نسبة المخاطرة إلى المكافأة إيجابية بشكل كافٍ (مثلًا 1:2 أو أعلى)، لأن الأرباح من الصفقات الناجحة تعوّض الخسائر من الصفقات الفاشلة الأكثر عددًا.</p>
 <table>
 <thead>
@@ -3615,30 +3638,30 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="3310-trading-journal">33.10 دفتر التداول (Trading Journal)</h2>
+<h2 id="3310-trading-journal">33.10 دفتر التداول (Trading Journal)</h2>
 <p>توثيق كل صفقة (سبب الدخول وفق إطار التحليل الثلاثي، حجم المركز، النتيجة، والدرس المستفاد) هو الأداة الأهم لتطوير الأداء بمرور الوقت، لأنه يحوّل التجربة من انطباعات متفرقة إلى بيانات قابلة للتحليل والتحسين المستمر.</p>
 <hr />
-<div class="chapter-break"></div><h2 id="_136">ملخص الفصل</h2>
+<h2 id="_136">ملخص الفصل</h2>
 <ul>
 <li>علم النفس وإدارة المخاطر هما ما يحول تحليلًا دقيقًا إلى نتائج فعلية مستدامة على المدى الطويل.</li>
 <li>تحديد حجم المركز بمعادلة ثابتة يضمن اتساق المخاطرة عبر كل الصفقات بغض النظر عن اتساع وقف الخسارة.</li>
 <li>نظام بنسبة نجاح متواضعة يمكن أن يكون مربحًا طويل المدى إذا كانت نسبة المخاطرة إلى المكافأة مناسبة.</li>
 </ul>
-<div class="chapter-break"></div><h2 id="_137">نقاط رئيسية</h2>
+<h2 id="_137">نقاط رئيسية</h2>
 <ol>
 <li>حدد قواعد الدخول والخروج قبل فتح أي صفقة، ولا تعدّلها بدافع الأمل بعد الدخول.</li>
 <li>لا تتجاوز أبدًا نسبة مخاطرة ثابتة صغيرة لكل صفقة (0.5%-2%) مهما بدت الفرصة واضحة.</li>
 <li>وثّق كل صفقة في دفتر تداول لتحويل الخبرة إلى تحسين مستمر وممنهج.</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_138">تمرين عملي</h2>
+<h2 id="_138">تمرين عملي</h2>
 <p>احسب حجم المركز المناسب لصفقة افتراضية برأس مال 10,000 وحدة نقدية، نسبة مخاطرة 1%، ومسافة وقف خسارة 50 نقطة (بافتراض قيمة نقطة معينة)، باستخدام المعادلة الواردة في القسم 33.6.</p>
-<div class="chapter-break"></div><h2 id="_139">دراسة حالة</h2>
+<h2 id="_139">دراسة حالة</h2>
 <p>يمر متداول بسلسلة من خمس صفقات خاسرة متتالية على نظام تداول التحليل الثلاثي الذي طوّره واختبره جيدًا مسبقًا. بفضل التزامه بمخاطرة ثابتة لا تتجاوز 1% لكل صفقة، لا يتجاوز إجمالي خسارته حوالي 5% من رأس ماله رغم هذه السلسلة السلبية. في الصفقة السادسة، يتحقق إعداد عالي الجودة وفق إطار التحليل الثلاثي بنسبة مخاطرة إلى عائد 1:3، فيعوّض هذا الربح الواحد جزءًا كبيرًا من خسائر الصفقات الخمس السابقة مجتمعة — موضحًا كيف تحمي إدارة المخاطر الجيدة المتداول من سلاسل الخسارة الحتمية إحصائيًا في أي نظام.</p>
 <p>يوضّح الشكل 33.1 هذا المثال:</p>
 <p><img alt="الشكل 33.1" src="figures/fig-33-01.svg" /></p>
 <p class="fig-caption"><strong>الشكل 33.1 — منحنى رأس المال: تراجع محدود عبر خمس صفقات خاسرة، ثم تعافٍ بفضل صفقة بنسبة مخاطرة/عائد مرتفعة</strong></p>
-<div class="part-break"></div><h1 id="_140">الملاحق</h1>
-<div class="chapter-break"></div><h2 id="_141">الملحق أ: التقويم الاقتصادي — دليل مرجعي سريع</h2>
+<h1 id="_140">الملاحق</h1>
+<h2 id="_141">الملحق أ: التقويم الاقتصادي — دليل مرجعي سريع</h2>
 <table>
 <thead>
 <tr>
@@ -3699,7 +3722,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="_142">الملحق ب: مرجع سريع لأنماط المخططات</h2>
+<h2 id="_142">الملحق ب: مرجع سريع لأنماط المخططات</h2>
 <table>
 <thead>
 <tr>
@@ -3751,7 +3774,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="_143">الملحق ج: مرجع سريع لأنماط الشموع</h2>
+<h2 id="_143">الملحق ج: مرجع سريع لأنماط الشموع</h2>
 <table>
 <thead>
 <tr>
@@ -3788,7 +3811,7 @@
 </tr>
 </tbody>
 </table>
-<div class="chapter-break"></div><h2 id="_144">الملحق د: إعدادات المؤشرات الشائعة (نقاط انطلاق عامة)</h2>
+<h2 id="_144">الملحق د: إعدادات المؤشرات الشائعة (نقاط انطلاق عامة)</h2>
 <table>
 <thead>
 <tr>
@@ -3824,7 +3847,7 @@
 </tbody>
 </table>
 <p><em>(هذه إعدادات شائعة كنقطة انطلاق فقط، ويُنصح بتعديلها حسب الأصل المتداول والإطار الزمني بعد اختبارها.)</em></p>
-<div class="chapter-break"></div><h2 id="trading-plan-template">الملحق هـ: نموذج خطة تداول (Trading Plan Template)</h2>
+<h2 id="trading-plan-template">الملحق هـ: نموذج خطة تداول (Trading Plan Template)</h2>
 <ol>
 <li><strong>الأصل والإطار الزمني:</strong> ___</li>
 <li><strong>الانحياز الأساسي الحالي:</strong> ___ (الفصل 13-22)</li>
@@ -3838,9 +3861,9 @@
 <li><strong>سبب الدخول باختصار (مطابقة Checklist الفصل 32):</strong> ___</li>
 <li><strong>بعد إغلاق الصفقة — الدرس المستفاد:</strong> ___</li>
 </ol>
-<div class="chapter-break"></div><h2 id="_145">الملحق و: مسرد المصطلحات</h2>
+<h2 id="_145">الملحق و: مسرد المصطلحات</h2>
 <p>راجع الفصل 1 (المصطلحات والرموز والاختصارات) للمسرد الكامل المفصّل حسب المجال؛ هذا الملحق يشير فقط لموقعه ضمن الكتاب تسهيلًا للرجوع السريع.</p>
-<div class="chapter-break"></div><h2 id="_146">الملحق ز: القراءات الموصى بها</h2>
+<h2 id="_146">الملحق ز: القراءات الموصى بها</h2>
 <ul>
 <li>مراجع أساسية حول نظرية داو ونظرية إليوت الموجية للتعمق التاريخي في جذور التحليل الفني الكلاسيكي.</li>
 <li>مراجع حول طريقة ويكوف للتعمق في الأصول الفكرية لمفاهيم SMC الحديثة (الفصل 31).</li>
@@ -3853,26 +3876,25 @@
 
 <div class="en-page legal-page">
   <div class="part-break"></div>
-  <h1>Legal Notice</h1>
-  <p>This book, <strong>The Triple Analysis</strong>, including its text, structure, and all original
-  diagrams, figures, and illustrations, is the intellectual property of its authors, Ahmed Abdelhafez
-  and Ahmed Abu Omran, and is protected under national and international copyright law.</p>
-  <p>The following actions are strictly prohibited without prior written consent from the authors:</p>
+  <h1>تنبيه قانوني</h1>
+  <p>يُعد هذا الكتاب، <strong>التحليل الثلاثي</strong>، بنصّه وهيكله وجميع ما يتضمنه من رسوم وأشكال
+  توضيحية أصلية، ملكية فكرية لمؤلفَيه، Ahmed Abdelhafez وAhmed Abu Omran، ويخضع لحماية قوانين حقوق
+  النشر المحلية والدولية.</p>
+  <p>يُمنع منعًا باتًا القيام بأي من الإجراءات التالية دون إذن كتابي مسبق من المؤلفَين:</p>
   <ul>
-    <li>Reselling this book, in whole or in part, in any format.</li>
-    <li>Republishing this book, or any portion of it, under any name.</li>
-    <li>Copying, duplicating, or uploading this book to any website, file-sharing service, forum, or
-    social media platform.</li>
-    <li>Using any text, diagram, figure, or illustration from this book for commercial purposes.</li>
-    <li>Translating, adapting, or creating derivative works based on this book without authorization.</li>
+    <li>إعادة بيع هذا الكتاب، كليًا أو جزئيًا، بأي صيغة.</li>
+    <li>إعادة نشر هذا الكتاب، أو أي جزء منه، تحت أي اسم.</li>
+    <li>نسخ هذا الكتاب أو تكراره أو رفعه على أي موقع إلكتروني، أو خدمة مشاركة ملفات، أو منتدى، أو
+    منصة تواصل اجتماعي.</li>
+    <li>استخدام أي نص أو رسم أو شكل توضيحي من هذا الكتاب لأغراض تجارية.</li>
+    <li>ترجمة هذا الكتاب أو تعديله أو إنتاج أي عمل مشتق منه دون تصريح.</li>
   </ul>
-  <p>All rights not expressly granted herein are reserved by the authors. Any violation of these terms
-  may expose the responsible party to civil and criminal liability under applicable copyright laws, and
-  the authors reserve the right to pursue all available legal remedies against any individual or entity
-  found to be in breach of this notice.</p>
-  <p>For permissions, licensing inquiries, or authorized use of any material from this book, please
-  contact the authors directly.</p>
-  <p style="margin-top:2em;">&copy; 2026 Ahmed Abdelhafez &amp; Ahmed Abu Omran. All Rights Reserved.</p>
+  <p>تبقى جميع الحقوق غير الممنوحة صراحةً هنا محفوظة للمؤلفَين. أي انتهاك لهذه الشروط قد يُعرّض
+  المخالف للمساءلة المدنية والجنائية وفق قوانين حقوق النشر المعمول بها، ويحتفظ المؤلفان بحقهما في
+  اتخاذ كل الإجراءات القانونية المتاحة ضد أي فرد أو جهة يثبت انتهاكها لهذا التنبيه.</p>
+  <p>للاستفسار عن التصاريح أو التراخيص أو الاستخدام المصرح به لأي مادة من هذا الكتاب، يُرجى التواصل
+  مع المؤلفَين مباشرة.</p>
+  <p style="margin-top:2em;">© 2026 Ahmed Abdelhafez وAhmed Abu Omran. جميع الحقوق محفوظة.</p>
 </div>
 
 
