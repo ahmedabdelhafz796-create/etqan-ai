@@ -722,6 +722,105 @@ def fig_12_01():
     set_ylim_pad(ax, list(l) + list(h) + [h.max() + 1.6])
     save(fig, "fig-12-01")
 
+# ============================================================ 12.1 System 1: Daily bias + OB entry (dedicated)
+def fig_12_02():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    up = synth_walk(14, drift=0.6, vol=0.5, start=100, seed=1202)
+    ob_seg = synth_walk(4, drift=-0.15, vol=0.3, start=up[-1], seed=12021)
+    bos = synth_walk(8, drift=0.8, vol=0.5, start=ob_seg[-1], seed=12022)
+    retest = synth_walk(8, drift=-0.5, vol=0.4, start=bos[-1], seed=12023)
+    cont = synth_walk(10, drift=0.7, vol=0.5, start=retest[-1], seed=12024)
+    closes = np.concatenate([up, ob_seg, bos, retest, cont])
+    o, h, l, c = to_ohlc(closes, seed=1202)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    ob_x = 15
+    box(ax, ob_x - 0.6, ob_x + 0.6, min(o[ob_x], c[ob_x]) - 0.15, max(o[ob_x], c[ob_x]) + 0.15, color=GOLD_LIGHT, edge=GOLD)
+    ax.text(2, h.max() + 0.8, "1: انحياز يومي صاعد", color=NAVY, fontsize=9, fontweight="bold")
+    ax.text(2, h.max() + 0.1, "2: كتلة طلب 4 ساعات", color=GOLD, fontsize=9, fontweight="bold")
+    arrow(ax, (32, l[32]), (38, l[32] + 0.2), color=GREEN, label="3: دخول عند الرفض")
+    set_ylim_pad(ax, list(l) + list(h) + [h.max() + 1.4])
+    ax.set_title("النظام 1: الانحياز اليومي + الدخول من كتلة طلب", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-12-02")
+
+# ============================================================ 12.2 System 2: Liquidity sweep + FVG entry (dedicated)
+def fig_12_03():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    pre = synth_walk(14, drift=-0.1, vol=0.3, start=100, seed=1203)
+    sweep = synth_walk(3, drift=-0.9, vol=0.25, start=pre[-1], seed=12031)
+    imp = synth_walk(3, drift=1.6, vol=0.3, start=sweep[-1], seed=12032)
+    cont = synth_walk(14, drift=0.6, vol=0.5, start=imp[-1], seed=12033)
+    closes = np.concatenate([pre, sweep, imp, cont])
+    o, h, l, c = to_ohlc(closes, seed=1203)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    level = l[:14].min() + 0.05
+    hline(ax, level, 0, len(closes) - 1, color=GREY, lw=1.6, label="1: سيولة (قيعان متساوية)")
+    arrow(ax, (16, l[16]), (18, l[16] - 1.0), color=RED, ls="dashed", label="2: سحب سيولة")
+    x1, x3 = 17, 19
+    fvg_lo, fvg_hi = h[x1], l[x3]
+    if fvg_hi < fvg_lo: fvg_lo, fvg_hi = fvg_hi, fvg_lo
+    box(ax, x1 + 0.3, x3 - 0.3, fvg_lo, fvg_hi, color="#F2D98A", edge="#B7791F", label="3: FVG")
+    set_ylim_pad(ax, list(l) + list(h) + [l[16] - 1.4])
+    ax.set_title("النظام 2: سحب السيولة + الدخول من FVG", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-12-03")
+
+# ============================================================ 12.3 System 3: CHOCH + flip zone entry (dedicated)
+def fig_12_04():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    down = synth_walk(14, drift=-0.55, vol=0.5, start=108, seed=1204)
+    choch = synth_walk(4, drift=0.9, vol=0.4, start=down[-1], seed=12041)
+    cont = synth_walk(10, drift=0.5, vol=0.5, start=choch[-1], seed=12042)
+    retest = synth_walk(6, drift=-0.35, vol=0.3, start=cont[-1], seed=12043)
+    bounce = synth_walk(10, drift=0.7, vol=0.5, start=retest[-1], seed=12044)
+    closes = np.concatenate([down, choch, cont, retest, bounce])
+    o, h, l, c = to_ohlc(closes, seed=1204)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    arrow(ax, (13, l[13]), (17, h[17] + 0.5), color=NAVY, label="1: CHOCH")
+    flip = h[14:18].max() + 0.1
+    hline(ax, flip, 18, len(closes) - 1, color=GOLD, lw=2.0, label="2: منطقة فليب")
+    marker_point(ax, 30, flip + 0.1, color=GREEN, label="3: إعادة اختبار ناجحة", va="bottom", dy=0.6, fontsize=8.5)
+    set_ylim_pad(ax, list(l) + list(h) + [h[14:18].max() + 1.2])
+    ax.set_title("النظام 3: CHOCH + الدخول من منطقة الفليب", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-12-04")
+
+# ============================================================ 12.4 System 4: Multi-timeframe alignment (dedicated)
+def fig_12_05():
+    fig, axes = plt.subplots(1, 3, figsize=(11.5, 4.2), dpi=150)
+    titles = ["يومي: انحياز صاعد", "4 ساعات: منطقة اهتمام", "15 دقيقة: دخول دقيق"]
+    seeds = [1205, 1206, 1207]
+    drifts = [0.5, 0.15, 0.05]
+    for ax, title, sd, dr in zip(axes, titles, seeds, drifts):
+        closes = synth_walk(24, drift=dr, vol=0.6, start=100, seed=sd)
+        o, h, l, c = to_ohlc(closes, seed=sd)
+        plot_candles(ax, o, h, l, c, width=0.6)
+        for spine in ["top", "right"]: ax.spines[spine].set_visible(False)
+        ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(title, fontsize=10, color=GREEN, fontweight="bold")
+        set_ylim_pad(ax, list(l) + list(h))
+    fig.suptitle("النظام 4: دخول فقط عند توافق الفريمات الثلاثة على نفس الاتجاه", fontsize=10.5, color=NAVY, fontweight="bold")
+    fig.tight_layout(pad=0.8, rect=[0, 0, 1, 0.92])
+    save(fig, "fig-12-05")
+
+# ============================================================ 12.5 System 5: Discount/Premium + inducement (dedicated)
+def fig_12_06():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    up = synth_walk(20, drift=0.6, vol=0.5, start=100, seed=1208)
+    pull = synth_walk(10, drift=-0.4, vol=0.4, start=up[-1], seed=12081)
+    ind = synth_walk(4, drift=-0.3, vol=0.2, start=pull[-1], seed=12082)
+    sweep = synth_walk(2, drift=-0.6, vol=0.2, start=ind[-1], seed=12083)
+    cont = synth_walk(12, drift=0.75, vol=0.5, start=sweep[-1], seed=12084)
+    closes = np.concatenate([up, pull, ind, sweep, cont])
+    o, h, l, c = to_ohlc(closes, seed=1208)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    swing_low, swing_high = l[:20].min(), h[:20].max()
+    rng = swing_high - swing_low
+    disc_top = swing_low + rng * 0.30
+    box(ax, 0, len(closes) - 1, swing_low, disc_top, color="#DDEBDD", edge=GREEN, alpha=0.3, label="1: منطقة خصم عميقة")
+    letter_point(ax, 32, l[32] - 0.2, "2: حافز", color=RED, va="top", dy=0.5, circle=False, fontsize=9)
+    arrow(ax, (34, l[34]), (44, c[-1]), color=GREEN, label="3: دخول بعد السحب")
+    set_ylim_pad(ax, list(l) + list(h))
+    ax.set_title("النظام 5: الخصم/العلاوة + الحافز", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-12-06")
+
 # ============================================================ 13.1 Actual vs forecast reaction
 def fig_13_01():
     fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
