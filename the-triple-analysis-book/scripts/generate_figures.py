@@ -846,6 +846,25 @@ def fig_13_01():
     for s in ax2.spines.values(): s.set_visible(False)
     save(fig, "fig-13-01")
 
+# ============================================================ 13.3 Three-layer framework flow (dedicated)
+def fig_13_02():
+    fig, ax = plt.subplots(figsize=(8.6, 3.8), dpi=150)
+    ax.set_xlim(0, 10); ax.set_ylim(0, 4); ax.axis("off")
+    fig.patch.set_facecolor("white")
+    boxes = [
+        (0.5, "التحليل الأساسي", "تحديد الانحياز الكلي", NAVY),
+        (3.8, "مفاهيم SMC", "تحديد منطقة الاهتمام", GOLD),
+        (7.1, "التحليل الفني", "توقيت الدخول الدقيق", GREEN),
+    ]
+    for x, title, sub, color in boxes:
+        ax.add_patch(Rectangle((x, 1.3), 2.4, 1.4, facecolor=color, alpha=0.15, edgecolor=color, linewidth=1.8))
+        ax.text(x + 1.2, 2.25, title, ha="center", va="center", fontsize=10.5, color=color, fontweight="bold")
+        ax.text(x + 1.2, 1.65, sub, ha="center", va="center", fontsize=8.5, color=NAVY)
+    for x0 in [0.5, 3.8]:
+        ax.add_patch(FancyArrowPatch((x0 + 2.4, 2.0), (x0 + 3.3, 2.0), arrowstyle="-|>", color=GREY,
+                                      linewidth=2, mutation_scale=16))
+    save(fig, "fig-13-02")
+
 # ============================================================ 14.1 Rate decision vs presser
 def fig_14_01():
     fig, ax = new_ax(price_axis=True)
@@ -861,6 +880,29 @@ def fig_14_01():
     arrow(ax, (presser_x, closes[presser_x]), (39, closes[-1]), color=GOLD, label="ارتفاع العملة")
     ax.set_ylabel("مؤشر العملة")
     save(fig, "fig-14-01")
+
+# ============================================================ 14.5 QE vs QT (dedicated)
+def fig_14_02():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.2), dpi=150)
+    n = 24
+    qe_balance = 100 + np.cumsum(np.random.default_rng(1402).uniform(1.5, 3.5, n))
+    qe_curr = 100 - np.cumsum(np.random.default_rng(1403).uniform(0.2, 0.8, n))
+    axes[0].plot(qe_balance, color=NAVY, linewidth=2.2, label="ميزانية البنك المركزي")
+    axes[0].plot(qe_curr, color=RED, linewidth=2.2, linestyle="--", label="قيمة العملة")
+    axes[0].set_title("التيسير الكمي (QE)", fontsize=10.5, color=NAVY, fontweight="bold")
+
+    qt_balance = 130 - np.cumsum(np.random.default_rng(1404).uniform(1.5, 3.5, n))
+    qt_curr = 96 + np.cumsum(np.random.default_rng(1405).uniform(0.2, 0.8, n))
+    axes[1].plot(qt_balance, color=NAVY, linewidth=2.2, label="ميزانية البنك المركزي")
+    axes[1].plot(qt_curr, color=GREEN, linewidth=2.2, linestyle="--", label="قيمة العملة")
+    axes[1].set_title("التشديد الكمي (QT)", fontsize=10.5, color=NAVY, fontweight="bold")
+
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([]); ax.set_yticks([])
+        ax.legend(frameon=False, fontsize=8.5, loc="center left")
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-14-02")
 
 # ============================================================ 15.1 Rate differential vs FX
 def fig_15_01():
@@ -882,6 +924,27 @@ def fig_15_01():
     ax1.set_xlabel("الزمن")
     save(fig, "fig-15-01")
 
+# ============================================================ 15.6 Yield curve: normal vs inverted (dedicated)
+def fig_15_02():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.2), dpi=150)
+    maturities = ["1ش", "3ش", "1س", "2س", "5س", "10س", "30س"]
+    normal = [1.0, 1.3, 1.8, 2.3, 2.8, 3.2, 3.6]
+    axes[0].plot(range(len(maturities)), normal, color=GREEN, linewidth=2.4, marker="o", markersize=5)
+    axes[0].set_xticks(range(len(maturities))); axes[0].set_xticklabels(maturities, fontsize=8.5)
+    axes[0].set_title("منحنى طبيعي: نمو اقتصادي متوقع", fontsize=10, color=GREEN, fontweight="bold")
+
+    inverted = [3.6, 3.5, 3.3, 3.0, 2.6, 2.2, 2.0]
+    axes[1].plot(range(len(maturities)), inverted, color=RED, linewidth=2.4, marker="o", markersize=5)
+    axes[1].set_xticks(range(len(maturities))); axes[1].set_xticklabels(maturities, fontsize=8.5)
+    axes[1].set_title("منحنى معكوس: إشارة تحذيرية من ركود", fontsize=10, color=RED, fontweight="bold")
+
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_ylabel("العائد (%)")
+        ax.grid(axis="y", color=GRID)
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-15-02")
+
 # ============================================================ 16.1 Headline vs core CPI
 def fig_16_01():
     fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
@@ -897,6 +960,25 @@ def fig_16_01():
     for s in ["top", "right"]: ax.spines[s].set_visible(False)
     ax.legend(frameon=False, fontsize=9.5)
     save(fig, "fig-16-01")
+
+# ============================================================ 16.8 Inflation vs Disinflation vs Deflation (dedicated)
+def fig_16_02():
+    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    months = np.arange(12)
+    inflation = 2.0 + months * 0.15
+    disinflation = 6.0 - months * 0.3
+    deflation = 1.0 - months * 0.2
+    ax.plot(months, inflation, color=RED, linewidth=2.2, label="تضخم متسارع")
+    ax.plot(months, disinflation, color=GOLD, linewidth=2.2, label="تباطؤ تضخم (Disinflation)")
+    ax.plot(months, deflation, color=NAVY, linewidth=2.2, label="انكماش (Deflation)")
+    ax.axhline(0, color=GREY, linestyle=":", linewidth=1.2)
+    ax.set_ylabel("التغير السنوي في الأسعار (%)")
+    ax.set_xlabel("الشهر")
+    ax.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.legend(frameon=False, fontsize=9)
+    save(fig, "fig-16-02")
 
 # ============================================================ 17.1 NFP reaction
 def fig_17_01():
