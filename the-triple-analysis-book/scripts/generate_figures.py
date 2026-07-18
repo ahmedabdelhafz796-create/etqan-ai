@@ -105,6 +105,98 @@ def fig_04_01():
     set_ylim_pad(ax, list(l) + list(h) + [eq_level - 2.5])
     save(fig, "fig-04-01")
 
+# ============================================================ 4.3a Buy-side liquidity (dedicated)
+def fig_04_02():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(14, 0.5, 0.4), (4, 0.05, 0.15), (12, -0.6, 0.5)], start=100, seed=402)
+    o, h, l, c = to_ohlc(closes, seed=402)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    level = h[12:18].max() + 0.1
+    hline(ax, level, 0, len(closes) - 1, color=RED, lw=2.0)
+    box(ax, 0, len(closes) - 1, level, level + 1.3, color="#F4A6A6", alpha=0.3, edge=None)
+    ax.text(len(closes) / 2, level + 0.65, "سيولة شراء (Buy-side Liquidity): أوامر وقف بيع + شراء معلّقة",
+            color=RED, fontsize=9.5, ha="center", va="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [level + 1.6], pad_frac=0.12)
+    save(fig, "fig-04-02")
+
+# ============================================================ 4.3b Sell-side liquidity (dedicated)
+def fig_04_03():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(14, -0.5, 0.4), (4, -0.05, 0.15), (12, 0.6, 0.5)], start=100, seed=403)
+    o, h, l, c = to_ohlc(closes, seed=403)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    level = l[12:18].min() - 0.1
+    hline(ax, level, 0, len(closes) - 1, color=GREEN, lw=2.0)
+    box(ax, 0, len(closes) - 1, level - 1.3, level, color="#DDEBDD", alpha=0.4, edge=None)
+    ax.text(len(closes) / 2, level - 0.65, "سيولة بيع (Sell-side Liquidity): أوامر وقف شراء + بيع معلّقة",
+            color=GREEN, fontsize=9.5, ha="center", va="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [level - 1.6], pad_frac=0.12)
+    save(fig, "fig-04-03")
+
+# ============================================================ 4.6-4.8 Trend liquidity (dedicated)
+def fig_04_04():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(8, 0.55, 0.35), (3, -0.15, 0.2), (8, 0.5, 0.35), (3, -0.15, 0.2),
+                           (8, 0.5, 0.35), (3, -0.15, 0.2), (8, 0.55, 0.35)], start=100, seed=404)
+    o, h, l, c = to_ohlc(closes, seed=404)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    for x in [10, 21, 32]:
+        marker_point(ax, x, l[x] - 0.15, color=GOLD, label="سيولة اتجاه", va="top", dy=0.6, fontsize=8.5)
+    ax.text(len(closes) / 2, h.max() + 0.6, "سيولة الاتجاه: تتجمع تدريجيًا عند كل تصحيح بسيط", color=GOLD,
+            fontsize=9.5, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [h.max() + 1.0], pad_frac=0.12)
+    save(fig, "fig-04-04")
+
+# ============================================================ 4.4-4.5 Equal highs/lows liquidity (dedicated)
+def fig_04_05():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(10, 0.1, 0.3), (6, 0.5, 0.3), (10, -0.15, 0.3), (6, 0.5, 0.3),
+                           (10, -0.15, 0.25)], start=100, seed=405)
+    o, h, l, c = to_ohlc(closes, seed=405)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    level = max(h[9], h[25]) + 0.1
+    hline(ax, level, 0, len(closes) - 1, color=GOLD, lw=2.0, label="قمم متساوية (Equal Highs)")
+    letter_point(ax, 9, h[9] + 0.3, "A", color=NAVY, va="bottom", dy=0.3, fontsize=10.5)
+    letter_point(ax, 25, h[25] + 0.3, "B", color=NAVY, va="bottom", dy=0.3, fontsize=10.5)
+    ax.text(len(closes) / 2, l.min() - 0.2, "بركة سيولة كثيفة عند كل تكرار للمستوى نفسه تقريبًا",
+            color=GOLD, fontsize=9, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [level + 1.0, l.min() - 0.9], pad_frac=0.08)
+    save(fig, "fig-04-05")
+
+# ============================================================ 4.9 Geometric liquidity (dedicated)
+def fig_04_06():
+    n = 40
+    def shape(i):
+        return 3.2 * np.exp(-((i - 12) ** 2) / 20) + 3.3 * np.exp(-((i - 28) ** 2) / 20)
+    fig, ax, o, h, l, c = _pattern_candles(shape, n=n, seed=406, base=100, figsize=(8.6, 4.6))
+    level = max(h[12], h[28]) + 0.1
+    hline(ax, level, 0, n - 1, color=RED, lw=2.0, label="قمة مزدوجة ظاهريًا")
+    box(ax, 8, 32, level, level + 0.9, color="#F4A6A6", alpha=0.3, edge=None)
+    ax.text(n / 2, level + 0.45, "تُقرأ أولًا كمصيدة سيولة قبل قراءتها كنموذج انعكاس تقليدي",
+            color=RED, fontsize=9, ha="center", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, list(l) + list(h) + [level + 1.2], pad_frac=0.1)
+    ax.set_title("السيولة الهندسية (Geometric Liquidity)", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-04-06")
+
+# ============================================================ 4.10 Liquidity sweep definition (dedicated)
+def fig_04_07():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    pre = synth_walk(16, drift=0.05, vol=0.3, start=100, seed=4071)
+    level = pre.max() + 0.3
+    sweep = synth_walk(2, drift=1.4, vol=0.2, start=pre[-1], seed=4072)
+    rev = synth_walk(16, drift=-0.7, vol=0.5, start=sweep[-1], seed=4073)
+    closes = np.concatenate([pre, sweep, rev])
+    o, h, l, c = to_ohlc(closes, seed=4071, wick=0.9)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, level, 0, len(closes) - 1, color=GREY, lw=1.8, ls=":")
+    arrow(ax, (17, h[17]), (17, level + 1.4), color=RED, label="فتيل يخترق المستوى")
+    arrow(ax, (18, h[18] + 0.2), (30, c[-1]), color=NAVY, ls="dashed", label="ارتداد سريع معاكس")
+    ax.set_title("سحب السيولة (Liquidity Sweep)", fontsize=11, color=NAVY, fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [level + 1.8])
+    save(fig, "fig-04-07")
+
 # ============================================================ 5.1 Order block formation + retest
 def fig_05_01():
     fig, ax = new_ax()
@@ -163,6 +255,94 @@ def fig_06_01():
     arrow(ax, (33, l[33] + 0.4), (37, fvg_high), color=NAVY, ls="dashed", label="العودة إلى FVG / OB")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-06-01")
+
+# ============================================================ 6.2a Bullish FVG 3-candle definition (dedicated)
+def fig_06_02():
+    fig, ax = new_ax(w=7.4, h=4.2)
+    closes = np.array([100, 100.4, 103.8, 104.6])
+    o, h, l, c = to_ohlc(closes, seed=602, wick=0.35)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    box(ax, 0.55, 1.45, h[0], l[2], color="#F2D98A", edge="#B7791F")
+    ax.text(1, (h[0] + l[2]) / 2, "FVG", color="#B7791F", fontsize=9.5, ha="center", va="center", fontweight="bold")
+    for x, lab in zip([0, 1, 2], ["الشمعة 1", "الشمعة 2", "الشمعة 3"]):
+        ax.text(x, l[x] - 0.35, lab, color=NAVY, fontsize=9, ha="center", fontweight="bold")
+    ax.text(1, h.max() + 0.4, "لا تداخل بين قمة (1) وقاع (3)", color="#B7791F", fontsize=8.5, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    ax.set_title("تعريف FVG صاعدة عبر ثلاث شموع متتالية", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-06-02")
+
+# ============================================================ 6.2b Bearish FVG 3-candle definition (dedicated)
+def fig_06_03():
+    fig, ax = new_ax(w=7.4, h=4.2)
+    closes = np.array([105, 104.6, 101.2, 100.4])
+    o, h, l, c = to_ohlc(closes, seed=603, wick=0.35)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    box(ax, 0.55, 1.45, l[0], h[2], color="#F4A6A6", edge=RED)
+    ax.text(1, (l[0] + h[2]) / 2, "FVG", color=RED, fontsize=9.5, ha="center", va="center", fontweight="bold")
+    for x, lab in zip([0, 1, 2], ["الشمعة 1", "الشمعة 2", "الشمعة 3"]):
+        ax.text(x, h[x] + 0.35, lab, color=NAVY, fontsize=9, ha="center", fontweight="bold")
+    ax.text(1, l.min() - 0.4, "لا تداخل بين قاع (1) وقمة (3)", color=RED, fontsize=8.5, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    ax.set_title("تعريف FVG هبوطية عبر ثلاث شموع متتالية", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-06-03")
+
+# ============================================================ 6.3 Compound imbalance (dedicated)
+def fig_06_04():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    pre = synth_walk(10, drift=0.1, vol=0.3, start=100, seed=6041)
+    imp = synth_walk(7, drift=1.9, vol=0.25, start=pre[-1], seed=6042)
+    post = synth_walk(10, drift=0.3, vol=0.5, start=imp[-1], seed=6043)
+    closes = np.concatenate([pre, imp, post])
+    o, h, l, c = to_ohlc(closes, seed=6041, wick=0.35)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    for k in range(3):
+        x1, x3 = 10 + k * 2, 12 + k * 2
+        lo, hi = h[x1], l[x3]
+        if hi < lo: lo, hi = hi, lo
+        box(ax, x1 + 0.3, x3 - 0.3, lo, hi, color="#F2D98A", edge="#B7791F")
+    ax.text(13, h.max() + 0.5, "اختلال مركّب: عدة فجوات متتالية تُعامل ككتلة اهتمام واحدة", color="#B7791F",
+            fontsize=9, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [h.max() + 0.9])
+    save(fig, "fig-06-04")
+
+# ============================================================ 6.5 Partial fill of FVG (dedicated)
+def fig_06_05():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    pre = synth_walk(10, drift=0.1, vol=0.3, start=100, seed=6051)
+    imp = synth_walk(3, drift=2.0, vol=0.25, start=pre[-1], seed=6052)
+    hold = synth_walk(12, drift=0.2, vol=0.4, start=imp[-1], seed=6053)
+    fill = synth_walk(6, drift=-0.5, vol=0.3, start=hold[-1], seed=6054)
+    cont = synth_walk(10, drift=0.7, vol=0.5, start=fill[-1], seed=6055)
+    closes = np.concatenate([pre, imp, hold, fill, cont])
+    o, h, l, c = to_ohlc(closes, seed=6051, wick=0.4)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    x1, x3 = 10, 12
+    lo, hi = h[x1], l[x3]
+    if hi < lo: lo, hi = hi, lo
+    box(ax, x1 + 0.3, x3 - 0.3, lo, hi, color="#F2D98A", edge="#B7791F", label="FVG")
+    mid = (lo + hi) / 2
+    hline(ax, mid, x3, 41, color=GREY, ls=":", lw=1.2)
+    arrow(ax, (26, hold[-1]), (31, mid), color=NAVY, ls="dashed", label="ملء جزئي فقط (لمس الحافة القريبة)")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-06-05")
+
+# ============================================================ 6.6-6.7 FVG entry steps (dedicated)
+def fig_06_06():
+    fig, axes = plt.subplots(1, 4, figsize=(12, 3.6), dpi=150)
+    titles = ["1. تحديد الانحياز العام", "2. تحديد FVG حديثة", "3. انتظار لمس الحافة", "4. دخول + وقف خلف الحافة البعيدة"]
+    for i, (ax, title) in enumerate(zip(axes, titles)):
+        closes = synth_walk(16, drift=0.5, vol=0.4, start=100, seed=606 + i)
+        o, h, l, c = to_ohlc(closes, seed=606 + i, wick=0.4)
+        plot_candles(ax, o, h, l, c, width=0.5)
+        if i >= 1:
+            box(ax, 7.3, 8.7, h[7], l[9] if l[9] > h[7] else h[7] + 0.6, color="#F2D98A", edge="#B7791F")
+        if i == 3:
+            ax.axhline(h[7] - 0.3, color=RED, linestyle=":", linewidth=1.3)
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(title, fontsize=9, color=NAVY, fontweight="bold")
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-06-06")
 
 # ============================================================ 7.1 Inducement then continuation
 def fig_07_01():
