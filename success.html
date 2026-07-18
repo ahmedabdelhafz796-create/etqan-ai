@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تأكيد الدفع — إتقان AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#1F2937; --gold:#B7791F; --cream:#F7F4EE; --ink:#2A2420; --green:#15803D; --red:#c0392b;}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Tajawal', sans-serif; background:var(--cream); color:var(--ink);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .card{
+    background:#fff; border-radius:26px; padding:46px 36px; max-width:480px; width:100%;
+    text-align:center; box-shadow:0 22px 55px rgba(31,41,55,.12);
+  }
+  .spinner{
+    width:48px; height:48px; border:4px solid #eee; border-top-color:var(--gold);
+    border-radius:50%; margin:0 auto 22px; animation:spin 1s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  h1{font-size:22px; color:var(--navy); margin-bottom:10px;}
+  p{color:#6c7a89; font-size:14px; line-height:1.7;}
+  .btn-download{
+    display:none; margin-top:22px; background:var(--green); color:#fff;
+    padding:15px 30px; border-radius:14px; text-decoration:none; font-weight:800;
+    transition:.2s;
+  }
+  .btn-download:hover{opacity:.9;}
+  .support{margin-top:26px; font-size:13px;}
+  .support a{color:var(--gold); font-weight:700; text-decoration:none;}
+  .order-id{font-family:monospace; font-size:12px; color:#aaa; margin-top:16px; word-break:break-all;}
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="spinner" id="spinner"></div>
+  <h1 id="title">جارٍ تأكيد الدفع...</h1>
+  <p id="desc">استلمنا طلبك، وبننتظر تأكيد الشبكة للعملة الرقمية. ده بياخد من دقيقة لعشرة دقايق حسب العملة اللي اخترتها.</p>
+  <a href="#" class="btn-download" id="downloadBtn">⬇️ حمّل الحزمة الآن</a>
+  <div class="support">
+    محتاج مساعدة؟ <a href="https://t.me/Ahm_t_AHZ01" target="_blank">تواصل عبر تليجرام</a>
+  </div>
+  <div class="order-id" id="orderIdText"></div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('order_id');
+
+  const title = document.getElementById('title');
+  const desc = document.getElementById('desc');
+  const spinner = document.getElementById('spinner');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const orderIdText = document.getElementById('orderIdText');
+
+  if (orderId) {
+    orderIdText.textContent = 'رقم الطلب: ' + orderId;
+  }
+
+  if (!orderId) {
+    title.textContent = 'رابط غير صالح';
+    desc.textContent = 'لم يتم العثور على رقم الطلب. لو دفعت بالفعل، تواصل معنا عبر تليجرام وإحنا هنساعدك.';
+    spinner.style.display = 'none';
+  } else {
+    let attempts = 0;
+    const maxAttempts = 200; // ~10 minutes at a 3s interval
+
+    async function poll() {
+      attempts++;
+      try {
+        const res = await fetch('/api/order-status?order_id=' + encodeURIComponent(orderId));
+        const data = await res.json();
+
+        if (data.status === 'paid') {
+          spinner.style.display = 'none';
+          title.textContent = 'تم تأكيد الدفع 🎉';
+          desc.textContent = 'شكراً لثقتك، الحزمة جاهزة للتحميل الآن.';
+          downloadBtn.href = '/api/download?order_id=' + encodeURIComponent(orderId) + '&token=' + encodeURIComponent(data.downloadToken);
+          downloadBtn.style.display = 'inline-block';
+          return;
+        }
+
+        if (data.status === 'unknown') {
+          spinner.style.display = 'none';
+          title.textContent = 'لم يتم العثور على الطلب';
+          desc.textContent = 'تواصل معنا عبر تليجرام مع ذكر رقم الطلب اللي فوق.';
+          return;
+        }
+
+        if (attempts >= maxAttempts) {
+          spinner.style.display = 'none';
+          title.textContent = 'التأكيد بياخد وقت أطول من المعتاد';
+          desc.textContent = 'دفعتك لسه بتتأكد على الشبكة. لو اتأخرت أكتر من ساعة، تواصل معنا عبر تليجرام مع رقم الطلب اللي فوق.';
+          return;
+        }
+
+        setTimeout(poll, 3000);
+      } catch (err) {
+        setTimeout(poll, 5000);
+      }
+    }
+
+    poll();
+  }
+</script>
+
+</body>
+</html>
