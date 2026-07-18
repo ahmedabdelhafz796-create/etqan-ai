@@ -360,6 +360,74 @@ def fig_07_01():
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-07-01")
 
+# ============================================================ 7.2 Valid inducement sequence (dedicated)
+def fig_07_02():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    pre = synth_walk(10, drift=-0.5, vol=0.4, start=108, seed=702)
+    ob_seg = synth_walk(4, drift=-0.1, vol=0.25, start=pre[-1], seed=7021)
+    ind_up = synth_walk(6, drift=0.5, vol=0.3, start=ob_seg[-1], seed=7022)
+    sweep = synth_walk(3, drift=-0.7, vol=0.25, start=ind_up[-1], seed=7023)
+    cont = synth_walk(14, drift=0.8, vol=0.5, start=sweep[-1], seed=7024)
+    closes = np.concatenate([pre, ob_seg, ind_up, sweep, cont])
+    o, h, l, c = to_ohlc(closes, seed=702, wick=0.4)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    ob_x = 12
+    box(ax, ob_x - 1, ob_x + 1, min(o[ob_x], c[ob_x]) - 0.15, max(o[ob_x], c[ob_x]) + 0.15,
+        color=GOLD_LIGHT, edge=GOLD, label="1: كتلة طلب (فريم أكبر)")
+    ind_x = 19
+    letter_point(ax, ind_x, h[ind_x] + 0.2, "2: حافز", color=RED, va="bottom", dy=0.6, circle=False, fontsize=9)
+    arrow(ax, (ind_x, l[22] - 0.2), (ind_x + 2, l[22] - 1.0), color=RED, ls="dashed", label="3: سحب سيولة الحافز")
+    arrow(ax, (ind_x + 2, l[22] - 0.8), (36, c[-1]), color=NAVY, label="4: استكمال نحو كتلة الطلب")
+    set_ylim_pad(ax, list(l) + list(h) + [l[22] - 1.6])
+    ax.set_title("تسلسل الحافز الصالح: كتلة طلب ← حافز ← سحب سيولة ← استكمال", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-07-02")
+
+# ============================================================ 7.3 Internal trap (dedicated, two-panel)
+def fig_07_03():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.4), dpi=150)
+    htf_closes = regime_walk([(14, 0.6, 0.4), (10, -0.15, 0.3), (14, 0.7, 0.45)], start=100, seed=703)
+    o1, h1, l1, c1 = to_ohlc(htf_closes, seed=703, wick=0.4)
+    plot_candles(axes[0], o1, h1, l1, c1, width=0.55)
+    box(axes[0], 13, 24, l1[14:24].min() - 0.2, h1[14:24].max() + 0.2, color="#DDE7EE", edge=NAVY, alpha=0.3)
+    axes[0].set_title("الإطار الأعلى: نطاق تصحيحي عام", fontsize=10, color=NAVY, fontweight="bold")
+
+    ltf = synth_walk(30, drift=-0.05, vol=0.35, start=100, seed=7031)
+    trap_x = 18
+    ltf[trap_x:trap_x + 3] -= 1.2
+    o2, h2, l2, c2 = to_ohlc(ltf, seed=7031, wick=0.4)
+    plot_candles(axes[1], o2, h2, l2, c2, width=0.55)
+    marker_point(axes[1], trap_x + 1, l2[trap_x + 1] - 0.15, color=RED, label="فخ داخلي", va="top", dy=0.6, fontsize=9)
+    axes[1].set_title("الإطار الأصغر: الفخ الداخلي يظهر هنا فقط", fontsize=10, color=NAVY, fontweight="bold")
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([])
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-07-03")
+
+# ============================================================ 7.6 Avoiding traps: naive vs contextual entry (dedicated)
+def fig_07_04():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.4), dpi=150)
+    pre = synth_walk(14, drift=-0.5, vol=0.4, start=108, seed=704)
+    dip = synth_walk(4, drift=-0.6, vol=0.3, start=pre[-1], seed=7041)
+    rev = synth_walk(14, drift=0.75, vol=0.5, start=dip[-1], seed=7042)
+    closes = np.concatenate([pre, dip, rev])
+    o, h, l, c = to_ohlc(closes, seed=704, wick=0.4)
+
+    plot_candles(axes[0], o, h, l, c, width=0.55)
+    marker_point(axes[0], 15, h[15] + 0.2, color=RED, label="بيع فوري عند الكسر", va="bottom", dy=0.6, fontsize=8.5)
+    arrow(axes[0], (16, c[16]), (26, c[26] + 1.5), color=RED, ls="dashed", label="خسارة")
+    axes[0].set_title("الدخول الساذج: بيع عند أول كسر صغير", fontsize=10, color=RED, fontweight="bold")
+
+    plot_candles(axes[1], o, h, l, c, width=0.55)
+    marker_point(axes[1], 17, l[17] - 0.2, color=GREEN, label="شراء بعد فهم السياق", va="top", dy=0.6, fontsize=8.5)
+    arrow(axes[1], (18, c[18]), (31, c[-1]), color=GREEN, label="ربح")
+    axes[1].set_title("الدخول الواعي بالسياق: انتظار التأكيد", fontsize=10, color=GREEN, fontweight="bold")
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([])
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-07-04")
+
 # ============================================================ 8.1 Discount zone + OB confluence
 def fig_08_01():
     fig, ax = new_ax()
@@ -379,6 +447,63 @@ def fig_08_01():
     box(ax, 38, 40, disc_bot - 0.2, disc_top + 0.2, color=GOLD_LIGHT, edge=GOLD, label="OB")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-08-01")
+
+# ============================================================ 8.1 Discount vs Premium halves (dedicated)
+def fig_08_02():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(16, 0.6, 0.5), (14, -0.5, 0.45)], start=100, seed=802)
+    o, h, l, c = to_ohlc(closes, seed=802)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    swing_low, swing_high = l.min(), h.max()
+    mid = (swing_low + swing_high) / 2
+    box(ax, 0, len(closes) - 1, swing_low, mid, color="#DDEBDD", edge=GREEN, alpha=0.3)
+    box(ax, 0, len(closes) - 1, mid, swing_high, color="#F4A6A6", alpha=0.25, edge=RED)
+    ax.text(len(closes) / 2, (swing_low + mid) / 2, "منطقة الخصم (Discount) — تُفضَّل للشراء", color=GREEN,
+            fontsize=9.5, ha="center", va="center", fontweight="bold")
+    ax.text(len(closes) / 2, (mid + swing_high) / 2, "منطقة العلاوة (Premium) — تُفضَّل للبيع", color=RED,
+            fontsize=9.5, ha="center", va="center", fontweight="bold")
+    hline(ax, mid, 0, len(closes) - 1, color=NAVY, ls="--", lw=1.6, label="50%")
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.15)
+    save(fig, "fig-08-02")
+
+# ============================================================ 8.2 Fibonacci levels in SMC (dedicated)
+def fig_08_03():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(16, 0.6, 0.5), (14, -0.5, 0.45)], start=100, seed=803)
+    o, h, l, c = to_ohlc(closes, seed=803)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    swing_low, swing_high = l.min(), h.max()
+    rng = swing_high - swing_low
+    levels = {"0%": 1.0, "50%": 0.5, "61.8%": 0.382, "70.5%": 0.295, "100%": 0.0}
+    for label, frac in levels.items():
+        y = swing_low + rng * frac
+        hline(ax, y, 0, len(closes) - 1, color=GREY, ls=":", lw=1.1, label=label, label_side="right")
+    disc_top = swing_low + rng * 0.295
+    box(ax, 0, len(closes) - 1, swing_low, disc_top, color="#DDEBDD", edge=GREEN, alpha=0.3)
+    ax.text(len(closes) / 2, (swing_low + disc_top) / 2, "الخصم العميق (61.8%–70.5%)", color=GREEN,
+            fontsize=9, ha="center", va="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.15)
+    save(fig, "fig-08-03")
+
+# ============================================================ 8.3 Rule 70-80-85 zoom (dedicated)
+def fig_08_04():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(16, 0.6, 0.5), (16, -0.5, 0.45)], start=100, seed=804)
+    o, h, l, c = to_ohlc(closes, seed=804)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    swing_low, swing_high = l[:16].min(), h[:16].max()
+    rng = swing_high - swing_low
+    zone_top = swing_low + rng * 0.30
+    zone_bot = swing_low + rng * 0.15
+    box(ax, 0, len(closes) - 1, zone_bot, zone_top, color="#DDEBDD", edge=GREEN, alpha=0.4, label="ارتداد 70%–85%")
+    box(ax, 0, len(closes) - 1, zone_top, zone_top + (rng * 0.2), color="#F4A6A6", alpha=0.2, edge=None)
+    ax.text(len(closes) / 2, zone_top + rng * 0.1, "لا تشترِ هنا (ارتداد ضحل فقط 20%-30%)", color=RED,
+            fontsize=8.5, ha="center", fontweight="bold")
+    ax.text(len(closes) / 2, (zone_bot + zone_top) / 2, "منطقة الدخول المفضلة (70%-85%)", color=GREEN,
+            fontsize=9, ha="center", va="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [zone_top + rng * 0.3], pad_frac=0.08)
+    ax.set_title("قاعدة 70-80-85: انتظار الخصم العميق قبل الشراء", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-08-04")
 
 # ============================================================ 9.1 IFC news candle
 def fig_09_01():
