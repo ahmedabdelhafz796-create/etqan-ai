@@ -1291,6 +1291,75 @@ def fig_25_02():
     fig.tight_layout(pad=0.8)
     save(fig, "fig-25-02")
 
+def _candle_pattern_fig(name, title, candles, xlim=(-1, None), ylim=(0, 5)):
+    n = max(cx for cx, *_ in candles) + 1
+    x1 = xlim[1] if xlim[1] is not None else n
+    fig, ax = plt.subplots(figsize=(8.0, 2.7), dpi=150)
+    fig.patch.set_facecolor("white")
+    for cx, o, h, l, c in candles:
+        _draw_candle_shape(ax, cx, o, h, l, c, w=0.55)
+    ax.set_xlim(xlim[0], x1)
+    ax.set_ylim(*ylim)
+    ax.set_title(title, fontsize=11, color=NAVY, fontweight="bold")
+    ax.set_xticks([]); ax.set_yticks([])
+    for s in ax.spines.values(): s.set_visible(False)
+    save(fig, name)
+
+# ============================================================ 25.2 dedicated single-candle patterns
+def fig_25_03():
+    _candle_pattern_fig("fig-25-03", "المطرقة (Hammer) — انعكاس صعودي محتمل", [(0, 2.7, 3.1, 1.0, 3.0)])
+
+def fig_25_04():
+    _candle_pattern_fig("fig-25-04", "الرجل المشنوق (Hanging Man) — انعكاس هبوطي محتمل", [(0, 3.0, 3.1, 1.0, 2.7)])
+
+def fig_25_05():
+    _candle_pattern_fig("fig-25-05", "النجمة الساقطة (Shooting Star) — انعكاس هبوطي محتمل", [(0, 2.3, 4.5, 2.2, 2.6)])
+
+def fig_25_06():
+    _candle_pattern_fig("fig-25-06", "المغزل (Spinning Top) — تردد وتوازن", [(0, 2.4, 4.0, 1.0, 2.7)])
+
+def fig_25_07():
+    _candle_pattern_fig("fig-25-07", "الدوجي (Doji) — تردد شديد", [(0, 2.5, 4.0, 1.0, 2.55)])
+
+def fig_25_08():
+    _candle_pattern_fig("fig-25-08", "ماروبوزو (Marubozu) — سيطرة كاملة لطرف واحد", [(0, 1.0, 4.0, 1.0, 4.0)])
+
+# ============================================================ 25.3 dedicated two-candle patterns
+def fig_25_09():
+    _candle_pattern_fig("fig-25-09", "السحابة الداكنة (Dark Cloud Cover) — انعكاس هبوطي",
+                        [(0, 1.5, 3.6, 1.4, 3.5), (1, 3.8, 3.9, 2.0, 2.3)], xlim=(-1, 2))
+
+def fig_25_10():
+    _candle_pattern_fig("fig-25-10", "خط الاختراق (Piercing Line) — انعكاس صعودي",
+                        [(0, 3.5, 3.6, 1.4, 1.5), (1, 1.2, 3.2, 1.1, 2.8)], xlim=(-1, 2))
+
+# ============================================================ 25.4 dedicated three-candle patterns
+def fig_25_11():
+    _candle_pattern_fig("fig-25-11", "نجمة المساء (Evening Star) — انعكاس هبوطي",
+                        [(0, 1.0, 4.3, 0.8, 4.0), (1, 4.05, 4.4, 3.85, 4.15), (2, 3.9, 4.1, 0.8, 1.1)],
+                        xlim=(-1, 3))
+
+def fig_25_12():
+    _candle_pattern_fig("fig-25-12", "ثلاثة جنود بيض (Three White Soldiers) — استمرار صعودي قوي",
+                        [(0, 1.0, 2.1, 0.9, 2.0), (1, 1.6, 2.9, 1.5, 2.8), (2, 2.3, 3.7, 2.2, 3.6)],
+                        xlim=(-1, 3))
+
+def fig_25_13():
+    _candle_pattern_fig("fig-25-13", "ثلاثة غربان سود (Three Black Crows) — استمرار هبوطي قوي",
+                        [(0, 3.6, 3.7, 2.5, 2.6), (1, 3.0, 3.1, 1.7, 1.8), (2, 2.2, 2.3, 0.9, 1.0)],
+                        xlim=(-1, 3), ylim=(0, 4.2))
+
+# ============================================================ 25.5 dedicated continuation patterns
+def fig_25_14():
+    _candle_pattern_fig("fig-25-14", "الثلاث طرق الصاعدة (Rising Three Methods) — استمرار صعودي",
+                        [(0, 1.0, 4.0, 0.9, 3.9), (1, 3.6, 3.7, 3.0, 3.1), (2, 3.2, 3.3, 2.6, 2.7),
+                         (3, 2.8, 2.9, 2.3, 2.4), (4, 2.5, 5.0, 2.4, 4.8)], xlim=(-1, 5))
+
+def fig_25_15():
+    _candle_pattern_fig("fig-25-15", "الثلاث طرق الهابطة (Falling Three Methods) — استمرار هبوطي",
+                        [(0, 4.0, 4.1, 1.0, 1.1), (1, 1.4, 2.0, 1.3, 1.9), (2, 1.8, 2.4, 1.7, 2.3),
+                         (3, 2.2, 2.7, 2.1, 2.6), (4, 2.5, 2.6, 0.0, 0.2)], xlim=(-1, 5))
+
 # ============================================================ 26.1 Role reversal
 def fig_26_01():
     fig, ax = new_ax()
