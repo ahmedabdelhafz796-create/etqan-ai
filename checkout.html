@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إتمام الشراء — إتقان AI</title>
+<meta name="description" content="أكمل عملية شراء حزمة إتقان أدوات الذكاء الاصطناعي بأمان عبر الدفع بالعملات الرقمية.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1F2937; --navy-deep:#141b26; --gold:#B7791F; --gold-light:#E0A94A;
+    --cream:#F7F4EE; --ink:#2A2420; --green:#15803D; --red:#c0392b;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Tajawal', sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.7;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  .num{font-family:'Space Grotesk', sans-serif;}
+
+  header.top{
+    padding:20px 6%;
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--navy); color:#fff;
+  }
+  header.top a{color:#fff; text-decoration:none; font-size:14px; opacity:.85; transition:.2s;}
+  header.top a:hover{opacity:1;}
+  .logo{font-weight:900; font-size:20px;}
+  .logo span{color:var(--gold-light);}
+
+  main{flex:1; display:flex; justify-content:center; padding:50px 6%;}
+  .wrap{max-width:960px; width:100%; display:grid; grid-template-columns:1fr 1.25fr; gap:28px; align-items:start;}
+  @media (max-width:820px){ .wrap{grid-template-columns:1fr;} }
+
+  .summary, .form-card{
+    background:#fff; border-radius:22px; padding:34px;
+    box-shadow:0 12px 34px rgba(31,41,55,.08);
+  }
+  .summary .eyebrow{color:var(--gold); font-weight:700; font-size:13px; letter-spacing:.5px;}
+  .summary h2{font-size:21px; margin:8px 0 16px; color:var(--navy);}
+  .summary .price{font-size:46px; font-weight:900; color:var(--navy); margin:6px 0;}
+  .summary .price .cur{font-size:20px; vertical-align:top; color:var(--gold); font-weight:700;}
+  .summary .price-note{font-size:13px; color:#6c7a89; margin-bottom:16px;}
+  .summary ul{list-style:none; margin:12px 0 20px;}
+  .summary li{padding:9px 0; border-bottom:1px dashed #e5e0d8; font-size:14px; position:relative; padding-right:26px;}
+  .summary li:last-child{border-bottom:none;}
+  .summary li:before{content:"✓"; position:absolute; right:0; color:var(--green); font-weight:900;}
+  .badge-secure{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#eef7f0; color:var(--green);
+    padding:7px 16px; border-radius:999px; font-size:13px; font-weight:700;
+  }
+
+  .form-card h2{font-size:20px; margin-bottom:20px; color:var(--navy);}
+  .lang-options{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px;}
+  .lang-option{
+    border:2px solid #e5e0d8; border-radius:14px; padding:14px 6px; text-align:center;
+    cursor:pointer; transition:.2s; font-size:13px; font-weight:700; user-select:none;
+  }
+  .lang-option .flag{font-size:26px; display:block; margin-bottom:6px;}
+  .lang-option:hover{border-color:var(--gold-light);}
+  .lang-option.active{border-color:var(--gold); background:#fbf3e6;}
+
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--navy);}
+  .field input{
+    width:100%; padding:14px 16px; border:2px solid #e5e0d8; border-radius:13px;
+    font-size:15px; font-family:inherit; background:#fdfcfa; color:var(--ink);
+    transition:.2s;
+  }
+  .field input:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 4px rgba(183,121,31,.1);}
+  .field .hint{font-size:12px; color:#6c7a89; margin-top:6px;}
+
+  .btn-pay{
+    width:100%; padding:17px; border:none; border-radius:14px;
+    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+    color:#fff; font-size:17px; font-weight:800; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    transition:.25s; margin-top:6px;
+  }
+  .btn-pay:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 10px 24px rgba(31,41,55,.25);}
+  .btn-pay:disabled{opacity:.6; cursor:not-allowed; transform:none;}
+  .pay-note{font-size:12px; color:#6c7a89; text-align:center; margin-top:12px; line-height:1.6;}
+
+  .alert{
+    display:none; background:#fdecec; color:var(--red);
+    padding:13px 16px; border-radius:11px; font-size:14px; margin-bottom:18px;
+    border:1px solid rgba(192,57,41,.2);
+  }
+
+  footer{text-align:center; padding:22px; font-size:13px; color:#6c7a89;}
+  footer a{color:var(--gold); text-decoration:none; font-weight:700;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">إتقان <span>AI</span></div>
+  <a href="index.html">← رجوع للصفحة الرئيسية</a>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <div class="summary">
+      <span class="eyebrow">ملخص الطلب</span>
+      <h2>حزمة إتقان أدوات الذكاء الاصطناعي 2026</h2>
+      <div class="price"><span class="cur">$</span>19</div>
+      <p class="price-note">دفعة واحدة فقط — بدون اشتراك شهري</p>
+      <ul>
+        <li>الدليل الكامل (31+ صفحة) بلغة واحدة تختارها</li>
+        <li>ملف الـ279 فكرة مشروع كامل</li>
+        <li>تحديثات مجانية لأي إضافة مستقبلية</li>
+        <li>وصول فوري بعد تأكيد الدفع على الشبكة</li>
+      </ul>
+      <span class="badge-secure">🔒 دفع مشفّر عبر NOWPayments</span>
+    </div>
+
+    <div class="form-card">
+      <h2>💳 بيانات الدفع</h2>
+      <div class="alert" id="formAlert"></div>
+
+      <form id="checkoutForm" novalidate>
+        <div class="field">
+          <label>اختر لغة الحزمة</label>
+          <div class="lang-options" id="langOptions">
+            <div class="lang-option active" data-lang="ar"><span class="flag">🇪🇬</span>العربية</div>
+            <div class="lang-option" data-lang="en"><span class="flag">🇬🇧</span>English</div>
+            <div class="lang-option" data-lang="tr"><span class="flag">🇹🇷</span>Türkçe</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fullName">الاسم الكامل</label>
+          <input type="text" id="fullName" placeholder="اسمك بالكامل" autocomplete="name" required>
+        </div>
+
+        <div class="field">
+          <label for="email">البريد الإلكتروني</label>
+          <input type="email" id="email" placeholder="example@email.com" autocomplete="email" required>
+          <div class="hint">هيتم استخدامه لإرسال تأكيد الطلب — تأكد إنه صحيح</div>
+        </div>
+
+        <button type="submit" class="btn-pay" id="payBtn">
+          <span id="payBtnText">🔐 ادفع بعملة رقمية الآن</span>
+        </button>
+        <p class="pay-note">هيتم تحويلك لصفحة دفع NOWPayments الآمنة — بتدعم أكثر من 100 عملة رقمية (USDT، BTC، ETH...)</p>
+      </form>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  محتاج مساعدة؟ <a href="https://t.me/Ahm_t_AHZ01" target="_blank">تواصل عبر تليجرام</a>
+</footer>
+
+<script>
+  let selectedLang = 'ar';
+
+  document.querySelectorAll('.lang-option').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+      el.classList.add('active');
+      selectedLang = el.dataset.lang;
+    });
+  });
+
+  function showAlert(msg) {
+    const alertBox = document.getElementById('formAlert');
+    alertBox.textContent = msg;
+    alertBox.style.display = 'block';
+  }
+
+  function hideAlert() {
+    document.getElementById('formAlert').style.display = 'none';
+  }
+
+  document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+
+    const name = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+
+    if (name.length < 3) {
+      showAlert('من فضلك أدخل اسمك بالكامل (3 أحرف على الأقل)');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showAlert('من فضلك أدخل بريد إلكتروني صحيح');
+      return;
+    }
+
+    const payBtn = document.getElementById('payBtn');
+    const payBtnText = document.getElementById('payBtnText');
+    payBtn.disabled = true;
+    payBtnText.textContent = '⏳ جارٍ تجهيز صفحة الدفع...';
+
+    try {
+      const res = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, language: selectedLang })
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('تعذر الاتصال بخادم الدفع، حاول مرة أخرى بعد قليل');
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || 'حدث خطأ غير متوقع، حاول مرة أخرى');
+      }
+
+      window.location.href = data.invoiceUrl;
+    } catch (err) {
+      showAlert(err.message);
+      payBtn.disabled = false;
+      payBtnText.textContent = '🔐 ادفع بعملة رقمية الآن';
+    }
+  });
+</script>
+
+</body>
+</html>

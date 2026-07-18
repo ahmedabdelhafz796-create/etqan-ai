@@ -1,0 +1,8 @@
+{
+  "name": "etqan-ai-payment-backend-reference",
+  "private": true,
+  "description": "Reference backend for the إتقان AI crypto checkout flow (NOWPayments). Deploy wherever you like.",
+  "engines": {
+    "node": ">=18"
+  }
+}
