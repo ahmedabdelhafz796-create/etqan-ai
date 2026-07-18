@@ -113,6 +113,61 @@ def to_ohlc(closes, wick=0.6, seed=0):
     return opens, highs, lows, closes
 
 
+def regime_walk(segments, start=100.0, seed=0):
+    """Concatenate several (n, drift, vol) regimes into one longer, more
+    organic multi-swing series -- reads like a real multi-month chart instead
+    of a short single-drift snippet (matches the density of real technical
+    analysis textbook charts, which span many swings rather than one move)."""
+    closes = []
+    cur = start
+    for i, (n, drift, vol) in enumerate(segments):
+        seg = synth_walk(n, drift, vol, start=cur, seed=seed + i * 17)
+        closes.append(seg)
+        cur = seg[-1]
+    return np.concatenate(closes)
+
+
+# ---------------- classic-textbook annotation primitives ----------------
+
+def letter_point(ax, x, y, letter, color=NAVY, dy=0.5, va="bottom", fontsize=11.5,
+                  circle=True, r=None):
+    """Marks a swing point with a small circle + bold letter (A, B, C, D...),
+    the lettered swing-point convention used throughout classic technical
+    analysis texts (Dow Theory, Murrey Math, Edwards & Magee)."""
+    if circle:
+        ax.add_patch(mpatches.Circle((x, y), r or 0.35, facecolor="none",
+                                      edgecolor=color, linewidth=1.6, zorder=6))
+    ty = y + dy if va == "bottom" else y - dy
+    ax.text(x, ty, letter, fontsize=fontsize, color=color, fontweight="bold",
+            ha="center", va=va, zorder=7)
+
+
+def zigzag(ax, points, color=NAVY, lw=2.2, ls="-", letters=None, letter_color=None,
+           dy=0.6, fontsize=11.5):
+    """Draws a connecting zig-zag line through a list of (x, y) swing points,
+    optionally labelling each point with a letter -- the schematic style used
+    to illustrate Dow Theory / Elliott Wave swing sequences."""
+    xs = [p[0] for p in points]
+    ys = [p[1] for p in points]
+    ax.plot(xs, ys, color=color, linewidth=lw, linestyle=ls, marker="o", markersize=5.5, zorder=5)
+    if letters:
+        lc = letter_color or color
+        for (x, y), letter in zip(points, letters):
+            ax.text(x, y + dy, letter, fontsize=fontsize, color=lc, fontweight="bold",
+                    ha="center", va="bottom", zorder=7)
+
+
+def channel(ax, x0, x1, y0, slope, width, color=NAVY, lw=2.0, ls="-"):
+    """Draws a price channel: two parallel lines of a given slope spanning
+    [x0, x1], `width` apart (lower line's value at x0 is y0)."""
+    xs = np.array([x0, x1], dtype=float)
+    lower = y0 + slope * (xs - x0)
+    upper = lower + width
+    ax.plot(xs, lower, color=color, linewidth=lw, linestyle=ls, zorder=4)
+    ax.plot(xs, upper, color=color, linewidth=lw, linestyle=ls, zorder=4)
+    return lower, upper
+
+
 def plot_candles(ax, opens, highs, lows, closes, width=0.6, start_x=0):
     n = len(closes)
     xs = np.arange(start_x, start_x + n)

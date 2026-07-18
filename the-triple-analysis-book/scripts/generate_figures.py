@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from figlib import (
     NAVY, NAVY_DEEP, GOLD, GOLD_LIGHT, CREAM, GREEN, RED, GREY, GRID,
     new_ax, save, synth_walk, to_ohlc, plot_candles, box, hline, arrow,
-    marker_point, set_ylim_pad, rolling_mean,
+    marker_point, set_ylim_pad, rolling_mean, regime_walk, letter_point,
+    zigzag, channel,
 )
 from matplotlib.patches import Rectangle, FancyArrowPatch, Polygon
 from matplotlib.lines import Line2D
@@ -1031,17 +1032,129 @@ def fig_26_03():
     save(fig, "fig-26-03")
 
 # ============================================================ 26.4 Support & resistance basic definition
-def fig_26_04():
-    fig, ax = new_ax()
-    n = 30
-    x = np.arange(n)
-    closes = 100 + 3 * np.sin(x / 3.2) + np.random.default_rng(264).normal(0, 0.25, n)
-    o, h, l, c = to_ohlc(closes, seed=264)
+# ============================================================ 26.1a Support (dedicated single concept)
+def fig_26_07():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([
+        (10, -0.55, 0.4), (2, 0.1, 0.2), (10, 0.6, 0.45),
+        (10, -0.5, 0.4), (2, 0.1, 0.2), (12, 0.55, 0.5),
+        (10, -0.45, 0.4), (2, 0.1, 0.2), (10, 0.6, 0.45),
+    ], start=108, seed=2607)
+    o, h, l, c = to_ohlc(closes, seed=2607)
     plot_candles(ax, o, h, l, c, width=0.55)
-    hline(ax, closes.max() - 0.3, 0, n - 1, color=RED, label="مقاومة")
-    hline(ax, closes.min() + 0.3, 0, n - 1, color=GREEN, label="دعم")
-    set_ylim_pad(ax, list(l) + list(h))
-    save(fig, "fig-26-04")
+    level = min(l[9], l[9 + 2 + 10 + 10 + 2 - 1], l[-13]) + 0.15
+    hline(ax, level, 0, len(closes) - 1, color=GREEN, lw=2.2, label="مستوى الدعم")
+    for x, letter in zip([9, 33, 56], ["A", "B", "C"]):
+        letter_point(ax, x, l[x] - 0.25, letter, color=GREEN, va="top", dy=0.9)
+    ax.text(len(closes) / 2, ax.get_ylim()[0], "الدعم: مستوى يميل الطلب عنده لتجاوز العرض فيوقف الهبوط",
+            color=GREEN, fontsize=9.5, ha="center", va="bottom", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.22)
+    save(fig, "fig-26-07")
+
+# ============================================================ 26.1b Resistance (dedicated single concept)
+def fig_26_08():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([
+        (10, 0.55, 0.4), (2, -0.1, 0.2), (10, -0.6, 0.45),
+        (10, 0.5, 0.4), (2, -0.1, 0.2), (12, -0.55, 0.5),
+        (10, 0.45, 0.4), (2, -0.1, 0.2), (10, -0.6, 0.45),
+    ], start=92, seed=2608)
+    o, h, l, c = to_ohlc(closes, seed=2608)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    level = max(h[9], h[9 + 2 + 10 + 10 + 2 - 1], h[-13]) - 0.15
+    hline(ax, level, 0, len(closes) - 1, color=RED, lw=2.2, label="مستوى المقاومة")
+    for x, letter in zip([9, 33, 56], ["A", "B", "C"]):
+        letter_point(ax, x, h[x] + 0.25, letter, color=RED, va="bottom", dy=0.9)
+    ax.text(len(closes) / 2, ax.get_ylim()[1], "المقاومة: مستوى يميل العرض عنده لتجاوز الطلب فيوقف الصعود",
+            color=RED, fontsize=9.5, ha="center", va="top", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.22)
+    save(fig, "fig-26-08")
+
+# ============================================================ 26.2 Four ways to identify S/R (reference sheet)
+def fig_26_09():
+    fig, axes = plt.subplots(2, 2, figsize=(10.5, 7), dpi=150)
+
+    def swings(ax):
+        closes = regime_walk([(10, 0.5, 0.4), (10, -0.5, 0.4), (10, 0.5, 0.4)], start=100, seed=2691)
+        o, h, l, c = to_ohlc(closes, seed=2691)
+        plot_candles(ax, o, h, l, c, width=0.5)
+        hline(ax, h[9], 0, 29, color=RED, lw=1.6)
+        hline(ax, l[19], 0, 29, color=GREEN, lw=1.6)
+        ax.set_title("١. القمم والقيعان التاريخية", fontsize=10, color=NAVY, fontweight="bold")
+
+    def ma(ax):
+        closes = synth_walk(34, drift=0.3, vol=0.6, start=100, seed=2692)
+        o, h, l, c = to_ohlc(closes, seed=2692)
+        plot_candles(ax, o, h, l, c, width=0.5)
+        ax.plot(rolling_mean(closes, 12), color=GOLD, linewidth=2.2)
+        ax.set_title("٢. المتوسطات المتحركة", fontsize=10, color=NAVY, fontweight="bold")
+
+    def tl(ax):
+        closes = regime_walk([(16, 0.55, 0.35), (16, 0.35, 0.55)], start=100, seed=2693)
+        o, h, l, c = to_ohlc(closes, seed=2693)
+        plot_candles(ax, o, h, l, c, width=0.5)
+        channel(ax, 0, 31, l[0] - 0.3, 0.42, 0)
+        ax.set_title("٣. خطوط الاتجاه", fontsize=10, color=NAVY, fontweight="bold")
+
+    def round_num(ax):
+        closes = 100 + np.cumsum(np.random.default_rng(2694).normal(0, 0.35, 32))
+        o, h, l, c = to_ohlc(closes, seed=2694)
+        plot_candles(ax, o, h, l, c, width=0.5)
+        hline(ax, 100, 0, 31, color=GOLD, lw=2.0)
+        ax.set_title("٤. المستويات النفسية المستديرة", fontsize=10, color=NAVY, fontweight="bold")
+
+    for ax, fn in zip(axes.flat, [swings, ma, tl, round_num]):
+        fn(ax)
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([])
+    fig.tight_layout(pad=1.0)
+    save(fig, "fig-26-09")
+
+# ============================================================ 26.3 Round psychological numbers (dedicated)
+def fig_26_10():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([
+        (12, 0.1, 0.25), (3, 0.35, 0.15), (10, -0.3, 0.35),
+        (3, 0.35, 0.15), (12, -0.1, 0.25),
+    ], start=1.1955, seed=2610)
+    closes = 1.19 + (closes - closes.min()) * 0.006
+    o, h, l, c = to_ohlc(closes, seed=2610, wick=0.4)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, 1.2000, 0, len(closes) - 1, color=GOLD, lw=2.2, label="1.2000 (رقم مستدير)")
+    ax.set_ylabel("EUR/USD")
+    ax.text(len(closes) / 2, ax.get_ylim()[1], "الأرقام المستديرة تجذب أوامر معلقة كثيفة → سيولة مكثفة",
+            color=GOLD, fontsize=9.5, ha="center", va="top", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.25)
+    save(fig, "fig-26-10")
+
+# ============================================================ 26.5a Bounce strategy (dedicated)
+def fig_26_11():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(14, -0.5, 0.4), (3, 0.1, 0.2), (14, 0.65, 0.5)], start=108, seed=2611)
+    o, h, l, c = to_ohlc(closes, seed=2611)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    level = l[14:17].min() + 0.1
+    hline(ax, level, 0, len(closes) - 1, color=GREEN, lw=2.0, label="دعم")
+    marker_point(ax, 16, level - 0.2, color=NAVY, label="دخول شراء (ارتداد)", va="top", dy=0.9)
+    arrow(ax, (17, c[17]), (30, c[30]), color=GREEN, label="هدف")
+    ax.axhline(level - 1.0, color=RED, linestyle=":", linewidth=1.3)
+    ax.text(2, level - 1.0, "وقف خسارة", color=RED, fontsize=8.5, va="top")
+    set_ylim_pad(ax, list(l) + list(h) + [level - 1.4])
+    save(fig, "fig-26-11")
+
+# ============================================================ 26.5b Breakout strategy (dedicated)
+def fig_26_12():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    closes = regime_walk([(16, 0.05, 0.3), (4, 0.9, 0.35), (12, 0.6, 0.5)], start=100, seed=2612)
+    o, h, l, c = to_ohlc(closes, seed=2612)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    level = h[:16].max() + 0.1
+    hline(ax, level, 0, len(closes) - 1, color=GOLD, lw=2.0, label="مقاومة")
+    marker_point(ax, 17, h[17] + 0.2, color=NAVY, label="دخول شراء (اختراق)", va="bottom", dy=0.9)
+    arrow(ax, (18, c[18]), (31, c[-1]), color=GREEN, label="هدف")
+    ax.text(4, level + 1.6, "إغلاق واضح خارج المستوى + زخم", color=GOLD, fontsize=8.5, ha="left", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [level + 2.0])
+    save(fig, "fig-26-12")
 
 # ============================================================ 26.5 Retest concept
 def fig_26_05():
@@ -1285,6 +1398,215 @@ def fig_27_04():
             ha="center", va="bottom", fontweight="bold")
     set_ylim_pad(ax, list(l) + list(h) + [closes.max() + 1.4])
     save(fig, "fig-27-04")
+
+
+def _pattern_ax():
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    ax.set_xticks([]); ax.set_yticks([])
+    for s in ax.spines.values(): s.set_visible(False)
+    return fig, ax
+
+# ============================================================ 28.5 Head & Shoulders (dedicated definition)
+def fig_28_05():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 10, 200)
+    y = (1.2 * np.exp(-((x - 2) ** 2) / 0.3) + 2.3 * np.exp(-((x - 5) ** 2) / 0.4)
+         + 1.2 * np.exp(-((x - 8) ** 2) / 0.3) + np.linspace(0, -0.3, 200) + 0.3)
+    ax.plot(x, y, color=NAVY, linewidth=2.2)
+    ax.axhline(0.45, color=GOLD, linestyle="--", linewidth=1.6)
+    ax.text(9.7, 0.45, "خط الرقبة (Neckline)", color=GOLD, fontsize=9.5, ha="right", va="bottom", fontweight="bold")
+    ax.text(2, 1.75, "الكتف الأيسر", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(5, 2.85, "الرأس", color=RED, fontsize=10, ha="center", fontweight="bold")
+    ax.text(8, 1.75, "الكتف الأيمن", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("الرأس والكتفين (Head & Shoulders) — نمط انعكاسي هابط", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-05")
+
+# ============================================================ 28.6 Inverse Head & Shoulders (dedicated)
+def fig_28_06():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 10, 200)
+    y = 3 - (1.2 * np.exp(-((x - 2) ** 2) / 0.3) + 2.3 * np.exp(-((x - 5) ** 2) / 0.4)
+             + 1.2 * np.exp(-((x - 8) ** 2) / 0.3) + np.linspace(0, -0.3, 200))
+    ax.plot(x, y, color=NAVY, linewidth=2.2)
+    ax.axhline(2.55, color=GOLD, linestyle="--", linewidth=1.6)
+    ax.text(9.7, 2.55, "خط الرقبة (Neckline)", color=GOLD, fontsize=9.5, ha="right", va="top", fontweight="bold")
+    ax.text(2, 1.25, "الكتف الأيسر", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(5, 0.15, "الرأس", color=GREEN, fontsize=10, ha="center", fontweight="bold")
+    ax.text(8, 1.25, "الكتف الأيمن", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("الرأس والكتفين المقلوب (Inverse H&S) — نمط انعكاسي صاعد", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-06")
+
+# ============================================================ 28.7 Triple Top (dedicated)
+def fig_28_07():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 10, 200)
+    y = (1.9 * np.exp(-((x - 1.8) ** 2) / 0.35) + 2.0 * np.exp(-((x - 5) ** 2) / 0.35)
+         + 1.85 * np.exp(-((x - 8.2) ** 2) / 0.35) + 0.3)
+    ax.plot(x, y, color=NAVY, linewidth=2.2)
+    ax.axhline(0.75, color=GOLD, linestyle="--", linewidth=1.6)
+    ax.text(9.7, 0.75, "الدعم", color=GOLD, fontsize=9.5, ha="right", va="bottom", fontweight="bold")
+    for xt, lab in zip([1.8, 5, 8.2], ["1", "2", "3"]):
+        ax.text(xt, 2.35, lab, color=RED, fontsize=10.5, ha="center", fontweight="bold")
+    ax.set_title("القمة الثلاثية (Triple Top) — نمط انعكاسي هابط", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-07")
+
+# ============================================================ 28.8 Triple Bottom (dedicated)
+def fig_28_08():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 10, 200)
+    y = 3 - (1.9 * np.exp(-((x - 1.8) ** 2) / 0.35) + 2.0 * np.exp(-((x - 5) ** 2) / 0.35)
+             + 1.85 * np.exp(-((x - 8.2) ** 2) / 0.35))
+    ax.plot(x, y, color=NAVY, linewidth=2.2)
+    ax.axhline(2.25, color=GOLD, linestyle="--", linewidth=1.6)
+    ax.text(9.7, 2.25, "المقاومة", color=GOLD, fontsize=9.5, ha="right", va="top", fontweight="bold")
+    for xt, lab in zip([1.8, 5, 8.2], ["1", "2", "3"]):
+        ax.text(xt, 0.65, lab, color=GREEN, fontsize=10.5, ha="center", fontweight="bold")
+    ax.set_title("القاع الثلاثي (Triple Bottom) — نمط انعكاسي صاعد", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-08")
+
+# ============================================================ 28.9 Rising Wedge (dedicated)
+def fig_28_09():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 10, 100)
+    upper = 0.8 + x * 0.18
+    lower = 0.2 + x * 0.24
+    zig_x = np.array([0.3, 1.4, 2.3, 3.5, 4.4, 5.6, 6.5, 7.7, 8.6, 9.6])
+    zig_y = np.array([0.5, 1.9, 1.15, 2.55, 1.9, 3.05, 2.5, 3.4, 3.0, 3.55])
+    ax.plot(x, upper, color=NAVY, linewidth=2.2)
+    ax.plot(x, lower, color=NAVY, linewidth=2.2)
+    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
+    ax.text(5, 4.1, "احتمال انعكاس هبوطي رغم ميل النمط للأعلى", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("الوتد الصاعد (Rising Wedge) — نمط انعكاسي هابط", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-09")
+
+# ============================================================ 28.10 Falling Wedge (dedicated)
+def fig_28_10():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 10, 100)
+    upper = 3.6 - x * 0.18
+    lower = 3.0 - x * 0.24
+    zig_x = np.array([0.3, 1.4, 2.3, 3.5, 4.4, 5.6, 6.5, 7.7, 8.6, 9.6])
+    zig_y = 3.9 - np.array([0.5, 1.9, 1.15, 2.55, 1.9, 3.05, 2.5, 3.4, 3.0, 3.55])
+    ax.plot(x, upper, color=NAVY, linewidth=2.2)
+    ax.plot(x, lower, color=NAVY, linewidth=2.2)
+    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
+    ax.text(5, -0.35, "احتمال انعكاس صعودي رغم ميل النمط للأسفل", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("الوتد الهابط (Falling Wedge) — نمط انعكاسي صاعد", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-10")
+
+# ============================================================ 28.11 Symmetrical Triangle (dedicated)
+def fig_28_11():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 8.5, 100)
+    upper = 2.4 - x * 0.2
+    lower = 0.6 + x * 0.2
+    ax.plot(x, upper, color=NAVY, linewidth=2.2)
+    ax.plot(x, lower, color=NAVY, linewidth=2.2)
+    zig_x = np.array([0.3, 1.3, 2.1, 3.1, 3.9, 4.9, 5.6, 6.4, 7.0])
+    zig_y = np.array([1.9, 1.0, 1.7, 1.2, 1.6, 1.35, 1.55, 1.4, 1.5])
+    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
+    ax.text(4, 2.7, "تضيّق تدريجي: قمم أدنى فأدنى وقيعان أعلى فأعلى", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("المثلث المتماثل (Symmetrical Triangle) — استمراري أو انعكاسي حسب الاختراق", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-11")
+
+# ============================================================ 28.12 Ascending Triangle (dedicated)
+def fig_28_12():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 8.5, 100)
+    upper = np.full_like(x, 2.3)
+    lower = 0.4 + x * 0.2
+    ax.plot(x, upper, color=RED, linewidth=2.2)
+    ax.plot(x, lower, color=GREEN, linewidth=2.2)
+    zig_x = np.array([0.3, 1.3, 2.1, 3.1, 3.9, 4.9, 5.6, 6.4, 7.0])
+    zig_y = np.array([1.9, 1.0, 2.1, 1.4, 2.15, 1.7, 2.2, 1.95, 2.25])
+    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
+    ax.text(7.6, 2.3, "مقاومة أفقية ثابتة", color=RED, fontsize=9, ha="right", va="bottom", fontweight="bold")
+    ax.text(1, 0.55, "دعم صاعد تدريجيًا", color=GREEN, fontsize=9, ha="left", fontweight="bold")
+    ax.set_title("المثلث الصاعد (Ascending Triangle) — يميل للاختراق صعودًا", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-12")
+
+# ============================================================ 28.13 Descending Triangle (dedicated)
+def fig_28_13():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 8.5, 100)
+    upper = 2.6 - x * 0.2
+    lower = np.full_like(x, 0.5)
+    ax.plot(x, upper, color=RED, linewidth=2.2)
+    ax.plot(x, lower, color=GREEN, linewidth=2.2)
+    zig_x = np.array([0.3, 1.3, 2.1, 3.1, 3.9, 4.9, 5.6, 6.4, 7.0])
+    zig_y = np.array([1.0, 1.9, 0.75, 1.55, 0.7, 1.3, 0.65, 1.05, 0.55])
+    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
+    ax.text(1, 2.4, "مقاومة هابطة تدريجيًا", color=RED, fontsize=9, ha="left", fontweight="bold")
+    ax.text(7.6, 0.5, "دعم أفقي ثابت", color=GREEN, fontsize=9, ha="right", va="top", fontweight="bold")
+    ax.set_title("المثلث الهابط (Descending Triangle) — يميل للاختراق هبوطًا", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-13")
+
+# ============================================================ 28.14 Flag (dedicated)
+def fig_28_14():
+    fig, ax = _pattern_ax()
+    x1 = np.linspace(0, 4, 40)
+    y1 = x1 * 0.9
+    x2 = np.linspace(4, 7, 30)
+    y2 = y1[-1] - (x2 - 4) * 0.2 + 0.12 * np.sin((x2 - 4) * 6)
+    x3 = np.linspace(7, 10, 30)
+    y3 = y2[-1] + (x3 - 7) * 0.95
+    ax.plot(x1, y1, color=GREEN, linewidth=2.4)
+    ax.plot(x2, y2, color=GOLD, linewidth=2.2)
+    ax.plot(x3, y3, color=GREEN, linewidth=2.4)
+    ax.text(1.8, 1.0, "العمود (Pole)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(5.5, y2.max() + 0.35, "العلم (Flag)", color=GOLD, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(8.5, y3.max() - 0.3, "استمرار الاتجاه", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("العلم (Flag) — نمط استمراري", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-14")
+
+# ============================================================ 28.15 Pennant (dedicated)
+def fig_28_15():
+    fig, ax = _pattern_ax()
+    x1 = np.linspace(0, 4, 40)
+    y1 = x1 * 0.9
+    x2 = np.linspace(4, 7, 30)
+    upper = y1[-1] - (x2 - 4) * 0.02
+    lower = y1[-1] - 0.6 + (x2 - 4) * 0.18
+    x3 = np.linspace(7, 10, 30)
+    y3 = ((upper[-1] + lower[-1]) / 2) + (x3 - 7) * 0.95
+    ax.plot(x1, y1, color=GREEN, linewidth=2.4)
+    ax.plot(x2, upper, color=GOLD, linewidth=2.2)
+    ax.plot(x2, lower, color=GOLD, linewidth=2.2)
+    ax.plot(x3, y3, color=GREEN, linewidth=2.4)
+    ax.text(1.8, 1.0, "العمود (Pole)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(5.5, upper.max() + 0.4, "الراية (Pennant)", color=GOLD, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(8.5, y3.max() - 0.3, "استمرار الاتجاه", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("الراية (Pennant) — نمط استمراري", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-15")
+
+# ============================================================ 28.16 Rectangle (dedicated)
+def fig_28_16():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 10, 140)
+    y = 1 + 0.36 * np.sin(x * 2.4)
+    ax.plot(x, y, color=NAVY, linewidth=2.0)
+    ax.axhline(1.38, color=RED, linestyle="--", linewidth=1.6)
+    ax.axhline(0.62, color=GREEN, linestyle="--", linewidth=1.6)
+    ax.set_ylim(0.3, 1.7)
+    ax.text(9.7, 1.38, "مقاومة", color=RED, fontsize=9.5, ha="right", va="bottom", fontweight="bold")
+    ax.text(9.7, 0.62, "دعم", color=GREEN, fontsize=9.5, ha="right", va="top", fontweight="bold")
+    ax.set_title("المستطيل (Rectangle) — تذبذب أفقي بين دعم ومقاومة متوازيين", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-16")
+
+# ============================================================ 28.17 Double Top (dedicated)
+def fig_28_17():
+    fig, ax = _pattern_ax()
+    x = np.linspace(0, 10, 100)
+    y = 1.8 * np.exp(-((x - 2.5) ** 2) / 0.5) + 1.8 * np.exp(-((x - 7) ** 2) / 0.5) + 0.2
+    ax.plot(x, y, color=NAVY, linewidth=2.2)
+    ax.axhline(0.5, color=GOLD, linestyle="--", linewidth=1.6)
+    ax.text(9.7, 0.5, "خط العنق (Neckline)", color=GOLD, fontsize=9.5, ha="right", va="bottom", fontweight="bold")
+    ax.text(2.5, 2.3, "القمة 1", color=RED, fontsize=10, ha="center", fontweight="bold")
+    ax.text(7, 2.3, "القمة 2", color=RED, fontsize=10, ha="center", fontweight="bold")
+    ax.set_ylim(0, 2.6)
+    ax.set_title("القمة المزدوجة (Double Top) — نمط انعكاسي هابط", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-28-17")
 
 
 if __name__ == "__main__":
