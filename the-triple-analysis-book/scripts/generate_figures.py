@@ -1694,6 +1694,52 @@ def fig_33_01():
                 arrowprops=dict(arrowstyle="->", color=GREEN))
     save(fig, "fig-33-01")
 
+# ============================================================ 33.2 Fear vs Greed behavior (dedicated)
+def fig_33_02():
+    fig, ax = new_ax(w=8.6, h=4.8)
+    closes = regime_walk([(10, 0.5, 0.4), (8, -0.4, 0.4), (14, 0.65, 0.5)], start=100, seed=3302)
+    o, h, l, c = to_ohlc(closes, seed=3302)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    marker_point(ax, 9, h[9] + 0.2, color=RED, label="خروج مبكر بدافع الخوف", va="bottom", dy=0.6, fontsize=8.5)
+    marker_point(ax, 25, l[25] - 0.2, color=GOLD, label="بقاء في الاتجاه أملًا بمزيد من الربح (طمع)", va="top", dy=0.6, fontsize=8.5)
+    arrow(ax, (9, c[9]), (17, l[17]), color=RED, ls="dashed")
+    ax.text(len(closes) / 2, h.max() + 1.0, "الخوف والطمع يشوّهان التنفيذ حتى مع تحليل صحيح", color=NAVY,
+            fontsize=9.5, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [h.max() + 1.4])
+    save(fig, "fig-33-02")
+
+# ============================================================ 33.6 Position sizing formula (dedicated)
+def fig_33_03():
+    fig, ax = plt.subplots(figsize=(8.6, 4.0), dpi=150)
+    ax.set_xlim(0, 10); ax.set_ylim(0, 4); ax.axis("off")
+    fig.patch.set_facecolor("white")
+    ax.text(5, 3.3, "حجم المركز = (رأس المال × نسبة المخاطرة) ÷ (مسافة الوقف × قيمة النقطة)", fontsize=12,
+            color=NAVY, ha="center", fontweight="bold")
+    boxes = [(0.6, "رأس المال\n10,000$", NAVY), (3.0, "نسبة المخاطرة\n1%", GOLD),
+             (5.4, "مسافة الوقف\n50 نقطة", RED), (7.8, "حجم المركز\n2 لوت", GREEN)]
+    for x, label, color in boxes:
+        ax.add_patch(Rectangle((x, 1.0), 1.8, 1.3, facecolor=color, alpha=0.15, edgecolor=color, linewidth=1.8))
+        ax.text(x + 0.9, 1.65, label, ha="center", va="center", fontsize=9.5, color=color, fontweight="bold")
+    for x0 in [0.6, 3.0, 5.4]:
+        ax.add_patch(FancyArrowPatch((x0 + 1.8, 1.65), (x0 + 2.4, 1.65), arrowstyle="-|>", color=GREY,
+                                      linewidth=2, mutation_scale=14))
+    save(fig, "fig-33-03")
+
+# ============================================================ 33.9 RRR vs breakeven win rate (dedicated)
+def fig_33_04():
+    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    win_rates = np.array([70, 50, 40, 30])
+    rrr = np.array([0.5, 1.0, 1.5, 2.5])
+    bars = ax.bar([f"{w}%" for w in win_rates], rrr, color=GOLD_LIGHT, edgecolor=GOLD, width=0.5, zorder=3)
+    for b, v in zip(bars, rrr):
+        ax.text(b.get_x() + b.get_width() / 2, v + 0.05, f"1:{v}", ha="center", fontsize=9.5, fontweight="bold", color=NAVY)
+    ax.set_xlabel("نسبة النجاح")
+    ax.set_ylabel("الحد الأدنى لـ RRR للتعادل تقريبًا")
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    save(fig, "fig-33-04")
+
 
 # ============================================================ 2.2 ICT / SMC relationship map
 def fig_02_02():
@@ -2279,6 +2325,105 @@ def fig_30_02():
     for s in ["top", "right"]: ax2.spines[s].set_visible(False)
     fig.tight_layout(pad=0.6)
     save(fig, "fig-30-02")
+
+# ============================================================ 30.2 Price-volume scenarios (dedicated)
+def fig_30_03():
+    fig = plt.figure(figsize=(9.4, 6.2), dpi=150)
+    fig.patch.set_facecolor("white")
+
+    def panel(ax_pair, drift, vol_pattern, title, color):
+        ax1, ax2 = ax_pair
+        n = 20
+        closes = 100 + np.cumsum(np.full(n, drift))
+        o, h, l, c = to_ohlc(closes, seed=abs(hash(title)) % 1000, wick=0.3)
+        plot_candles(ax1, o, h, l, c, width=0.55)
+        ax1.set_xticks([]); ax1.set_yticks([])
+        for s in ax1.spines.values(): s.set_visible(False)
+        ax1.set_title(title, fontsize=9, color=color, fontweight="bold")
+        vols = vol_pattern(n)
+        ax2.bar(np.arange(n), vols, color=color, width=0.7)
+        ax2.set_xticks([]); ax2.set_yticks([])
+        for s in ax2.spines.values(): s.set_visible(False)
+
+    gs = fig.add_gridspec(4, 2, height_ratios=[1.4, 0.6, 1.4, 0.6], hspace=0.15, wspace=0.2)
+    specs = [
+        (0.5, lambda n: np.linspace(1, 3, n), "سعر صاعد + حجم صاعد: اتجاه قوي وموثوق", GREEN),
+        (0.5, lambda n: np.linspace(3, 1, n), "سعر صاعد + حجم هابط: اتجاه ضعيف", GOLD),
+        (-0.5, lambda n: np.linspace(1, 3, n), "سعر هابط + حجم صاعد: اتجاه هابط قوي", RED),
+        (-0.5, lambda n: np.linspace(3, 1, n), "سعر هابط + حجم هابط: اتجاه هابط ضعيف", GOLD),
+    ]
+    for i, (drift, vol_pattern, title, color) in enumerate(specs):
+        row, col = divmod(i, 2)
+        ax1 = fig.add_subplot(gs[row * 2, col])
+        ax2 = fig.add_subplot(gs[row * 2 + 1, col])
+        panel((ax1, ax2), drift, vol_pattern, title, color)
+    save(fig, "fig-30-03")
+
+# ============================================================ 30.3a OBV (dedicated)
+def fig_30_04():
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8.6, 5.4), dpi=150, gridspec_kw={"height_ratios": [1.6, 1]})
+    n = 34
+    closes = 100 + 0.3 * np.arange(n) + np.random.default_rng(3004).normal(0, 0.6, n)
+    o, h, l, c = to_ohlc(closes, seed=3004)
+    plot_candles(ax1, o, h, l, c, width=0.55)
+    ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax1.spines[s].set_visible(False)
+    ax1.set_ylabel("السعر")
+    vols = np.random.default_rng(3005).uniform(5, 15, n)
+    vols[20:] += np.linspace(0, 8, n - 20)
+    directions = np.sign(np.diff(closes, prepend=closes[0]))
+    obv = np.cumsum(directions * vols)
+    ax2.plot(obv, color=GOLD, linewidth=2.2)
+    ax2.set_ylabel("OBV")
+    ax2.set_xticks([])
+    for s in ["top", "right"]: ax2.spines[s].set_visible(False)
+    fig.tight_layout(pad=0.6)
+    save(fig, "fig-30-04")
+
+# ============================================================ 30.3b VWAP (dedicated)
+def fig_30_05():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    n = 40
+    closes = 100 + np.cumsum(np.random.default_rng(3006).normal(0.05, 0.4, n))
+    o, h, l, c = to_ohlc(closes, seed=3006)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    vols = np.random.default_rng(3007).uniform(5, 20, n)
+    vwap = np.cumsum(closes * vols) / np.cumsum(vols)
+    ax.plot(vwap, color=GOLD, linewidth=2.2, label="VWAP")
+    ax.legend(frameon=False, fontsize=9, loc="upper left")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-30-05")
+
+# ============================================================ 30.4 Climax volume vs dry-up (dedicated)
+def fig_30_06():
+    fig = plt.figure(figsize=(10, 5.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.6, 1], hspace=0.15, wspace=0.25)
+
+    up = synth_walk(20, drift=0.5, vol=0.4, start=100, seed=3008)
+    climax = synth_walk(4, drift=1.3, vol=0.3, start=up[-1], seed=30081)
+    closes1 = np.concatenate([up, climax])
+    o1, h1, l1, c1 = to_ohlc(closes1, seed=3008, wick=0.7)
+    vols1 = np.concatenate([np.random.default_rng(3009).uniform(4, 8, 20), [18, 22, 20, 15]])
+
+    pull = synth_walk(20, drift=-0.05, vol=0.3, start=100, seed=3010)
+    o2, h2, l2, c2 = to_ohlc(pull, seed=3010, wick=0.4)
+    vols2 = np.random.default_rng(3011).uniform(5, 10, 20) - np.linspace(0, 6, 20)
+    vols2 = np.clip(vols2, 1, None)
+
+    specs = [(o1, h1, l1, c1, vols1, "قمة حجم عند انعكاس (Climax Volume)", RED),
+             (o2, h2, l2, c2, vols2, "جفاف الحجم أثناء تصحيح (Volume Dry-up)", GOLD)]
+    for col, (o, h, l, c, vols, title, color) in enumerate(specs):
+        ax1 = fig.add_subplot(gs[0, col])
+        ax2 = fig.add_subplot(gs[1, col])
+        plot_candles(ax1, o, h, l, c, width=0.55)
+        ax1.set_xticks([]); ax1.set_yticks([])
+        for s in ax1.spines.values(): s.set_visible(False)
+        ax1.set_title(title, fontsize=9.5, color=color, fontweight="bold")
+        ax2.bar(np.arange(len(vols)), vols, color=color, width=0.7)
+        ax2.set_xticks([]); ax2.set_yticks([])
+        for s in ax2.spines.values(): s.set_visible(False)
+    save(fig, "fig-30-06")
 
 
 # ============================================================ 3.3 Swing High (dedicated single concept)
