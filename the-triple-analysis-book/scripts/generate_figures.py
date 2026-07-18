@@ -646,75 +646,6 @@ def fig_27_01():
     fig.tight_layout(pad=0.6)
     save(fig, "fig-27-01")
 
-# ============================================================ 28.1 Chart pattern reference sheet
-def fig_28_01():
-    fig, axes = plt.subplots(2, 3, figsize=(10.5, 6.6), dpi=150)
-
-    def hs(ax):
-        x = np.linspace(0, 10, 100)
-        y = np.zeros_like(x)
-        y += 1.2 * np.exp(-((x - 2) ** 2) / 0.3)
-        y += 2.2 * np.exp(-((x - 5) ** 2) / 0.4)
-        y += 1.2 * np.exp(-((x - 8) ** 2) / 0.3)
-        y += np.linspace(0, -0.3, 100)
-        ax.plot(x, y, color=NAVY, linewidth=2)
-        ax.axhline(0.15, color=GOLD, linestyle="--", linewidth=1.4)
-        ax.set_title("الرأس والكتفين (Head & Shoulders)", fontsize=10, fontweight="bold", color=NAVY)
-
-    def dt(ax):
-        x = np.linspace(0, 10, 100)
-        y = 1.8 * np.exp(-((x - 2.5) ** 2) / 0.5) + 1.8 * np.exp(-((x - 7) ** 2) / 0.5) + 0.2
-        ax.plot(x, y, color=NAVY, linewidth=2)
-        ax.axhline(0.5, color=GOLD, linestyle="--", linewidth=1.4)
-        ax.set_title("القمة المزدوجة (Double Top)", fontsize=10, fontweight="bold", color=NAVY)
-
-    def tri(ax):
-        x_apex = (2 - 0.3) / (0.12 + 0.08)
-        x = np.linspace(0, x_apex * 0.94, 100)
-        upper = 2 - x * 0.12
-        lower = 0.3 + x * 0.08
-        ax.plot(x, upper, color=NAVY, linewidth=2)
-        ax.plot(x, lower, color=NAVY, linewidth=2)
-        zig_x = np.array([0.5, 1.8, 2.6, 3.9, 4.7, 5.9])
-        zig_y = np.array([1.55, 0.85, 1.35, 1.0, 1.2, 1.05])
-        ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.6)
-        ax.set_title("المثلث المتماثل (Symmetrical Triangle)", fontsize=10, fontweight="bold", color=NAVY)
-
-    def wedge(ax):
-        x = np.linspace(0, 10, 100)
-        upper = 0.8 + x * 0.18
-        lower = 0.2 + x * 0.22
-        ax.plot(x, upper, color=NAVY, linewidth=2)
-        ax.plot(x, lower, color=NAVY, linewidth=2)
-        ax.set_title("الوتد الصاعد (Rising Wedge)", fontsize=10, fontweight="bold", color=NAVY)
-
-    def flag(ax):
-        x1 = np.linspace(0, 4, 40)
-        y1 = x1 * 0.9
-        x2 = np.linspace(4, 7, 30)
-        y2 = y1[-1] - (x2 - 4) * 0.15 + 0.1 * np.sin((x2 - 4) * 6)
-        x3 = np.linspace(7, 10, 30)
-        y3 = y2[-1] + (x3 - 7) * 0.85
-        ax.plot(x1, y1, color=NAVY, linewidth=2)
-        ax.plot(x2, y2, color=GOLD, linewidth=2)
-        ax.plot(x3, y3, color=NAVY, linewidth=2)
-        ax.set_title("العلم الصعودي (Bull Flag)", fontsize=10, fontweight="bold", color=NAVY)
-
-    def rect(ax):
-        x = np.linspace(0, 10, 100)
-        y = 1 + 0.4 * np.sin(x * 2.2)
-        ax.plot(x, y, color=NAVY, linewidth=2)
-        ax.axhline(1.35, color=GOLD, linestyle="--", linewidth=1.2)
-        ax.axhline(0.65, color=GOLD, linestyle="--", linewidth=1.2)
-        ax.set_title("المستطيل (Rectangle)", fontsize=10, fontweight="bold", color=NAVY)
-
-    for ax, fn in zip(axes.flat, [hs, dt, tri, wedge, flag, rect]):
-        fn(ax)
-        ax.set_xticks([]); ax.set_yticks([])
-        for s in ax.spines.values(): s.set_visible(False)
-    fig.tight_layout(pad=1.0)
-    save(fig, "fig-28-01")
-
 # ============================================================ 28.2 Head & shoulders measured move
 def fig_28_02():
     fig, ax = new_ax()
@@ -1201,40 +1132,40 @@ def fig_26_06():
 
 # ============================================================ 28.3 Cup and Handle
 def fig_28_03():
-    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    n1, n2, n3 = 34, 9, 9
+    n = n1 + n2 + n3
+    i1 = np.arange(n1)
+    cup = -5.2 * np.exp(-((i1 - 17) ** 2) / 90)
+    i2 = np.arange(n2)
+    handle = cup[-1] - 1.0 * np.sin(i2 * 0.7) * np.linspace(1, 0.3, n2) - i2 * 0.1
+    i3 = np.arange(n3)
+    breakout = handle[-1] + i3 * 0.45
+    closes = 105 + np.concatenate([cup, handle, breakout])
+    o, h, l, c = to_ohlc(closes, seed=2803, wick=0.4)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
     fig.patch.set_facecolor("white")
-    x1 = np.linspace(0, 6, 60)
-    cup = 3 - 2.6 * np.exp(-((x1 - 3) ** 2) / 4)
-    x2 = np.linspace(6, 7.5, 15)
-    handle = cup[-1] - 0.5 * np.sin((x2 - 6) * 2.2) - (x2 - 6) * 0.15
-    x3 = np.linspace(7.5, 9, 15)
-    breakout = handle[-1] + (x3 - 7.5) * 1.1
-    ax.plot(x1, cup, color=NAVY, linewidth=2.2)
-    ax.plot(x2, handle, color=GOLD, linewidth=2.2)
-    ax.plot(x3, breakout, color=GREEN, linewidth=2.2)
-    ax.axhline(3.0, color=GREY, linestyle=":", linewidth=1.2)
-    ax.text(3, 3.15, "الحافة (مقاومة)", color=GREY, fontsize=9, ha="center")
-    ax.text(3, 0.2, "الكوب (Cup)", color=NAVY, fontsize=10, ha="center", fontweight="bold")
-    ax.text(6.7, cup[-1] - 0.9, "المقبض (Handle)", color=GOLD, fontsize=10, ha="center", fontweight="bold")
-    ax.set_title("الكوب والمقبض (Cup and Handle)", fontsize=11, color=NAVY, fontweight="bold")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    rim = max(h[0], h[n1 - 1]) + 0.1
+    hline(ax, rim, 0, n - 1, color=GREY, ls=":", lw=1.6, label="الحافة (مقاومة)")
+    ax.text(n1 / 2, l[:n1].min() - 0.5, "الكوب (Cup)", color=NAVY, fontsize=10, ha="center", fontweight="bold")
+    ax.text(n1 + n2 / 2, l[n1:n1 + n2].min() - 0.5, "المقبض (Handle)", color=GOLD, fontsize=10, ha="center", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
     ax.set_xticks([]); ax.set_yticks([])
-    for s in ax.spines.values(): s.set_visible(False)
+    set_ylim_pad(ax, list(l) + list(h) + [l[:n1].min() - 0.8], pad_frac=0.15)
+    ax.set_title("الكوب والمقبض (Cup and Handle)", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-03")
 
 # ============================================================ 28.4 Double Bottom
 def fig_28_04():
-    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
-    fig.patch.set_facecolor("white")
-    x = np.linspace(0, 10, 100)
-    y = 2.2 - 1.8 * np.exp(-((x - 2.5) ** 2) / 0.5) - 1.8 * np.exp(-((x - 7) ** 2) / 0.5)
-    ax.plot(x, y, color=NAVY, linewidth=2.2)
-    ax.axhline(1.9, color=GOLD, linestyle="--", linewidth=1.4)
-    ax.text(4.75, 2.0, "خط العنق (مقاومة)", color=GOLD, fontsize=9, ha="center")
-    ax.text(2.5, 0.15, "القاع 1", color=RED, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(7, 0.15, "القاع 2", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    n = 46
+    def shape(i):
+        return -3.3 * np.exp(-((i - 13) ** 2) / 22) - 3.3 * np.exp(-((i - 33) ** 2) / 22)
+    fig, ax, o, h, l, c = _pattern_candles(shape, n=n, seed=2804, base=105)
+    neck = max(h[18], h[28]) + 0.1
+    hline(ax, neck, 0, n - 1, color=GOLD, lw=2.0, label="خط العنق (مقاومة)")
+    letter_point(ax, 13, l[13] - 0.3, "القاع 1", color=RED, va="top", dy=0.4, fontsize=10.5)
+    letter_point(ax, 33, l[33] - 0.3, "القاع 2", color=RED, va="top", dy=0.4, fontsize=10.5)
     ax.set_title("القاع المزدوج (Double Bottom)", fontsize=11, color=NAVY, fontweight="bold")
-    ax.set_xticks([]); ax.set_yticks([])
-    for s in ax.spines.values(): s.set_visible(False)
     save(fig, "fig-28-04")
 
 # ============================================================ 29.4 Fibonacci retracement (generic)
@@ -1400,211 +1331,272 @@ def fig_27_04():
     save(fig, "fig-27-04")
 
 
-def _pattern_ax():
-    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+def _trendline_through(ax, p1, p2, x0, x1, color=NAVY, lw=2.0, ls="-"):
+    """Draws a straight line through two real chart points (p1, p2) and
+    extends it across [x0, x1] -- this is how trendlines/wedge & triangle
+    boundaries are actually drawn in technical analysis: anchored on two real
+    swing points, not an abstract formula."""
+    (xa, ya), (xb, yb) = p1, p2
+    slope = (yb - ya) / (xb - xa)
+    y0 = ya + slope * (x0 - xa)
+    y1 = ya + slope * (x1 - xa)
+    ax.plot([x0, x1], [y0, y1], color=color, linewidth=lw, linestyle=ls, zorder=4)
+
+def _pattern_candles(shape, n=60, seed=0, base=100.0, width=0.6, wick=0.55, figsize=(8.6, 4.6)):
+    """Renders a chart pattern as an actual realistic candlestick chart: the
+    pattern's shape is sampled at n integer bars, then passed through the
+    same synthetic-OHLC machinery used everywhere else in the book, so every
+    pattern figure is a real-looking price chart (not an idealized smooth
+    curve) -- matching the reference textbook pages (Murrey Math / Dow
+    Theory) the annotations are modeled on."""
+    fig, ax = plt.subplots(figsize=figsize, dpi=150)
     fig.patch.set_facecolor("white")
+    i = np.arange(n)
+    closes = base + shape(i)
+    o, h, l, c = to_ohlc(closes, seed=seed, wick=wick)
+    plot_candles(ax, o, h, l, c, width=width)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
     ax.set_xticks([]); ax.set_yticks([])
-    for s in ax.spines.values(): s.set_visible(False)
-    return fig, ax
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
+    return fig, ax, o, h, l, c
 
 # ============================================================ 28.5 Head & Shoulders (dedicated definition)
 def fig_28_05():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 10, 200)
-    y = (1.2 * np.exp(-((x - 2) ** 2) / 0.3) + 2.3 * np.exp(-((x - 5) ** 2) / 0.4)
-         + 1.2 * np.exp(-((x - 8) ** 2) / 0.3) + np.linspace(0, -0.3, 200) + 0.3)
-    ax.plot(x, y, color=NAVY, linewidth=2.2)
-    ax.axhline(0.45, color=GOLD, linestyle="--", linewidth=1.6)
-    ax.text(9.7, 0.45, "خط الرقبة (Neckline)", color=GOLD, fontsize=9.5, ha="right", va="bottom", fontweight="bold")
-    ax.text(2, 1.75, "الكتف الأيسر", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(5, 2.85, "الرأس", color=RED, fontsize=10, ha="center", fontweight="bold")
-    ax.text(8, 1.75, "الكتف الأيمن", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    n = 60
+    def shape(i):
+        return (2.2 * np.exp(-((i - 12) ** 2) / 22) + 4.2 * np.exp(-((i - 30) ** 2) / 30)
+                + 2.2 * np.exp(-((i - 48) ** 2) / 22) - np.linspace(0, 1.2, n))
+    fig, ax, o, h, l, c = _pattern_candles(shape, n=n, seed=2805, base=100)
+    neck = min(l[6], l[54]) - 0.1
+    hline(ax, neck, 0, n - 1, color=GOLD, lw=2.0, label="خط الرقبة (Neckline)")
+    letter_point(ax, 12, h[12] + 0.3, "الكتف الأيسر", color=NAVY, va="bottom", dy=0.5, circle=False, fontsize=9.5)
+    letter_point(ax, 30, h[30] + 0.3, "الرأس", color=RED, va="bottom", dy=0.5, circle=False, fontsize=10.5)
+    letter_point(ax, 48, h[48] + 0.3, "الكتف الأيمن", color=NAVY, va="bottom", dy=0.5, circle=False, fontsize=9.5)
     ax.set_title("الرأس والكتفين (Head & Shoulders) — نمط انعكاسي هابط", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-05")
 
 # ============================================================ 28.6 Inverse Head & Shoulders (dedicated)
 def fig_28_06():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 10, 200)
-    y = 3 - (1.2 * np.exp(-((x - 2) ** 2) / 0.3) + 2.3 * np.exp(-((x - 5) ** 2) / 0.4)
-             + 1.2 * np.exp(-((x - 8) ** 2) / 0.3) + np.linspace(0, -0.3, 200))
-    ax.plot(x, y, color=NAVY, linewidth=2.2)
-    ax.axhline(2.55, color=GOLD, linestyle="--", linewidth=1.6)
-    ax.text(9.7, 2.55, "خط الرقبة (Neckline)", color=GOLD, fontsize=9.5, ha="right", va="top", fontweight="bold")
-    ax.text(2, 1.25, "الكتف الأيسر", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(5, 0.15, "الرأس", color=GREEN, fontsize=10, ha="center", fontweight="bold")
-    ax.text(8, 1.25, "الكتف الأيمن", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    n = 60
+    def shape(i):
+        return -(2.2 * np.exp(-((i - 12) ** 2) / 22) + 4.2 * np.exp(-((i - 30) ** 2) / 30)
+                  + 2.2 * np.exp(-((i - 48) ** 2) / 22)) + np.linspace(0, 1.2, n)
+    fig, ax, o, h, l, c = _pattern_candles(shape, n=n, seed=2806, base=105)
+    neck = max(h[6], h[54]) + 0.1
+    hline(ax, neck, 0, n - 1, color=GOLD, lw=2.0, label="خط الرقبة (Neckline)")
+    letter_point(ax, 12, l[12] - 0.3, "الكتف الأيسر", color=NAVY, va="top", dy=0.5, circle=False, fontsize=9.5)
+    letter_point(ax, 30, l[30] - 0.3, "الرأس", color=GREEN, va="top", dy=0.5, circle=False, fontsize=10.5)
+    letter_point(ax, 48, l[48] - 0.3, "الكتف الأيمن", color=NAVY, va="top", dy=0.5, circle=False, fontsize=9.5)
     ax.set_title("الرأس والكتفين المقلوب (Inverse H&S) — نمط انعكاسي صاعد", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-06")
 
 # ============================================================ 28.7 Triple Top (dedicated)
 def fig_28_07():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 10, 200)
-    y = (1.9 * np.exp(-((x - 1.8) ** 2) / 0.35) + 2.0 * np.exp(-((x - 5) ** 2) / 0.35)
-         + 1.85 * np.exp(-((x - 8.2) ** 2) / 0.35) + 0.3)
-    ax.plot(x, y, color=NAVY, linewidth=2.2)
-    ax.axhline(0.75, color=GOLD, linestyle="--", linewidth=1.6)
-    ax.text(9.7, 0.75, "الدعم", color=GOLD, fontsize=9.5, ha="right", va="bottom", fontweight="bold")
-    for xt, lab in zip([1.8, 5, 8.2], ["1", "2", "3"]):
-        ax.text(xt, 2.35, lab, color=RED, fontsize=10.5, ha="center", fontweight="bold")
+    n = 56
+    def shape(i):
+        return (3.4 * np.exp(-((i - 9) ** 2) / 20) + 3.6 * np.exp(-((i - 27) ** 2) / 20)
+                + 3.3 * np.exp(-((i - 45) ** 2) / 20))
+    fig, ax, o, h, l, c = _pattern_candles(shape, n=n, seed=2807, base=100)
+    support = min(l[17], l[35]) - 0.1
+    hline(ax, support, 0, n - 1, color=GOLD, lw=2.0, label="الدعم")
+    for xt, lab in zip([9, 27, 45], ["1", "2", "3"]):
+        letter_point(ax, xt, h[xt] + 0.3, lab, color=RED, va="bottom", dy=0.4, fontsize=11)
     ax.set_title("القمة الثلاثية (Triple Top) — نمط انعكاسي هابط", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-07")
 
 # ============================================================ 28.8 Triple Bottom (dedicated)
 def fig_28_08():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 10, 200)
-    y = 3 - (1.9 * np.exp(-((x - 1.8) ** 2) / 0.35) + 2.0 * np.exp(-((x - 5) ** 2) / 0.35)
-             + 1.85 * np.exp(-((x - 8.2) ** 2) / 0.35))
-    ax.plot(x, y, color=NAVY, linewidth=2.2)
-    ax.axhline(2.25, color=GOLD, linestyle="--", linewidth=1.6)
-    ax.text(9.7, 2.25, "المقاومة", color=GOLD, fontsize=9.5, ha="right", va="top", fontweight="bold")
-    for xt, lab in zip([1.8, 5, 8.2], ["1", "2", "3"]):
-        ax.text(xt, 0.65, lab, color=GREEN, fontsize=10.5, ha="center", fontweight="bold")
+    n = 56
+    def shape(i):
+        return -(3.4 * np.exp(-((i - 9) ** 2) / 20) + 3.6 * np.exp(-((i - 27) ** 2) / 20)
+                  + 3.3 * np.exp(-((i - 45) ** 2) / 20))
+    fig, ax, o, h, l, c = _pattern_candles(shape, n=n, seed=2808, base=106)
+    resist = max(h[17], h[35]) + 0.1
+    hline(ax, resist, 0, n - 1, color=GOLD, lw=2.0, label="المقاومة")
+    for xt, lab in zip([9, 27, 45], ["1", "2", "3"]):
+        letter_point(ax, xt, l[xt] - 0.3, lab, color=GREEN, va="top", dy=0.4, fontsize=11)
     ax.set_title("القاع الثلاثي (Triple Bottom) — نمط انعكاسي صاعد", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-08")
 
 # ============================================================ 28.9 Rising Wedge (dedicated)
 def fig_28_09():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 10, 100)
-    upper = 0.8 + x * 0.18
-    lower = 0.2 + x * 0.24
-    zig_x = np.array([0.3, 1.4, 2.3, 3.5, 4.4, 5.6, 6.5, 7.7, 8.6, 9.6])
-    zig_y = np.array([0.5, 1.9, 1.15, 2.55, 1.9, 3.05, 2.5, 3.4, 3.0, 3.55])
-    ax.plot(x, upper, color=NAVY, linewidth=2.2)
-    ax.plot(x, lower, color=NAVY, linewidth=2.2)
-    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
-    ax.text(5, 4.1, "احتمال انعكاس هبوطي رغم ميل النمط للأعلى", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    n = 46
+    closes = regime_walk([(6, 0.5, 0.3), (6, -0.35, 0.25), (6, 0.4, 0.25), (6, -0.3, 0.2),
+                           (6, 0.35, 0.2), (6, -0.25, 0.18), (6, 0.3, 0.18), (4, -0.2, 0.15)],
+                          start=100, seed=2809)
+    o, h, l, c = to_ohlc(closes, seed=2809, wick=0.4)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    _trendline_through(ax, (5, h[5]), (41, h[41]), 2, 44, color=NAVY, lw=2.0)
+    _trendline_through(ax, (11, l[11]), (45, l[45]), 2, 44, color=NAVY, lw=2.0)
+    for x, letter in zip([5, 17, 29, 41], ["A", "B", "C", "D"]):
+        letter_point(ax, x, h[x] + 0.25, letter, color=NAVY, va="bottom", dy=0.35, fontsize=9.5)
+    ax.text(n / 2, h.max() + 1.0, "احتمال انعكاس هبوطي رغم ميل النمط للأعلى", color=RED, fontsize=9.5,
+            ha="center", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, list(l) + list(h) + [h.max() + 1.3], pad_frac=0.1)
     ax.set_title("الوتد الصاعد (Rising Wedge) — نمط انعكاسي هابط", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-09")
 
 # ============================================================ 28.10 Falling Wedge (dedicated)
 def fig_28_10():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 10, 100)
-    upper = 3.6 - x * 0.18
-    lower = 3.0 - x * 0.24
-    zig_x = np.array([0.3, 1.4, 2.3, 3.5, 4.4, 5.6, 6.5, 7.7, 8.6, 9.6])
-    zig_y = 3.9 - np.array([0.5, 1.9, 1.15, 2.55, 1.9, 3.05, 2.5, 3.4, 3.0, 3.55])
-    ax.plot(x, upper, color=NAVY, linewidth=2.2)
-    ax.plot(x, lower, color=NAVY, linewidth=2.2)
-    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
-    ax.text(5, -0.35, "احتمال انعكاس صعودي رغم ميل النمط للأسفل", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    n = 46
+    closes = regime_walk([(6, -0.5, 0.3), (6, 0.35, 0.25), (6, -0.4, 0.25), (6, 0.3, 0.2),
+                           (6, -0.35, 0.2), (6, 0.25, 0.18), (6, -0.3, 0.18), (4, 0.2, 0.15)],
+                          start=106, seed=2810)
+    o, h, l, c = to_ohlc(closes, seed=2810, wick=0.4)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    _trendline_through(ax, (5, l[5]), (41, l[41]), 2, 44, color=NAVY, lw=2.0)
+    _trendline_through(ax, (11, h[11]), (45, h[45]), 2, 44, color=NAVY, lw=2.0)
+    for x, letter in zip([5, 17, 29, 41], ["A", "B", "C", "D"]):
+        letter_point(ax, x, l[x] - 0.25, letter, color=NAVY, va="top", dy=0.35, fontsize=9.5)
+    ax.text(n / 2, l.min() - 1.0, "احتمال انعكاس صعودي رغم ميل النمط للأسفل", color=GREEN, fontsize=9.5,
+            ha="center", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, list(l) + list(h) + [l.min() - 1.3], pad_frac=0.1)
     ax.set_title("الوتد الهابط (Falling Wedge) — نمط انعكاسي صاعد", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-10")
 
 # ============================================================ 28.11 Symmetrical Triangle (dedicated)
 def fig_28_11():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 8.5, 100)
-    upper = 2.4 - x * 0.2
-    lower = 0.6 + x * 0.2
-    ax.plot(x, upper, color=NAVY, linewidth=2.2)
-    ax.plot(x, lower, color=NAVY, linewidth=2.2)
-    zig_x = np.array([0.3, 1.3, 2.1, 3.1, 3.9, 4.9, 5.6, 6.4, 7.0])
-    zig_y = np.array([1.9, 1.0, 1.7, 1.2, 1.6, 1.35, 1.55, 1.4, 1.5])
-    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
-    ax.text(4, 2.7, "تضيّق تدريجي: قمم أدنى فأدنى وقيعان أعلى فأعلى", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    n = 42
+    closes = regime_walk([(5, 0.55, 0.3), (5, -0.6, 0.3), (5, 0.45, 0.28), (5, -0.5, 0.28),
+                           (5, 0.35, 0.22), (5, -0.4, 0.22), (5, 0.25, 0.18), (7, -0.05, 0.15)],
+                          start=100, seed=2811)
+    o, h, l, c = to_ohlc(closes, seed=2811, wick=0.4)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    _trendline_through(ax, (4, h[4]), (34, h[34]), 1, 40, color=RED, lw=2.0)
+    _trendline_through(ax, (9, l[9]), (29, l[29]), 1, 40, color=GREEN, lw=2.0)
+    ax.text(n / 2, h.max() + 1.1, "تضيّق تدريجي: قمم أدنى فأدنى وقيعان أعلى فأعلى", color=NAVY, fontsize=9.5,
+            ha="center", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, list(l) + list(h) + [h.max() + 1.4], pad_frac=0.1)
     ax.set_title("المثلث المتماثل (Symmetrical Triangle) — استمراري أو انعكاسي حسب الاختراق", fontsize=10.5, color=NAVY, fontweight="bold")
     save(fig, "fig-28-11")
 
 # ============================================================ 28.12 Ascending Triangle (dedicated)
 def fig_28_12():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 8.5, 100)
-    upper = np.full_like(x, 2.3)
-    lower = 0.4 + x * 0.2
-    ax.plot(x, upper, color=RED, linewidth=2.2)
-    ax.plot(x, lower, color=GREEN, linewidth=2.2)
-    zig_x = np.array([0.3, 1.3, 2.1, 3.1, 3.9, 4.9, 5.6, 6.4, 7.0])
-    zig_y = np.array([1.9, 1.0, 2.1, 1.4, 2.15, 1.7, 2.2, 1.95, 2.25])
-    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
-    ax.text(7.6, 2.3, "مقاومة أفقية ثابتة", color=RED, fontsize=9, ha="right", va="bottom", fontweight="bold")
-    ax.text(1, 0.55, "دعم صاعد تدريجيًا", color=GREEN, fontsize=9, ha="left", fontweight="bold")
+    n = 40
+    top = 106.0
+    closes = np.array([top - 5 + (i % 8) * 0.6 + i * 0.05 for i in range(n)]) + \
+        np.random.default_rng(2812).normal(0, 0.15, n)
+    closes = np.minimum(closes, top - 0.05 * (n - np.arange(n)))
+    o, h, l, c = to_ohlc(closes, seed=2812, wick=0.35)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, top, 0, n - 1, color=RED, lw=2.0, label="مقاومة أفقية ثابتة")
+    ax.plot([0, n - 1], [l.min(), h[-1] - 0.3], color=GREEN, linewidth=2.0)
+    ax.text(2, l.min() + 0.3, "دعم صاعد تدريجيًا", color=GREEN, fontsize=9, ha="left", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, list(l) + list(h) + [top + 0.6], pad_frac=0.12)
     ax.set_title("المثلث الصاعد (Ascending Triangle) — يميل للاختراق صعودًا", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-12")
 
 # ============================================================ 28.13 Descending Triangle (dedicated)
 def fig_28_13():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 8.5, 100)
-    upper = 2.6 - x * 0.2
-    lower = np.full_like(x, 0.5)
-    ax.plot(x, upper, color=RED, linewidth=2.2)
-    ax.plot(x, lower, color=GREEN, linewidth=2.2)
-    zig_x = np.array([0.3, 1.3, 2.1, 3.1, 3.9, 4.9, 5.6, 6.4, 7.0])
-    zig_y = np.array([1.0, 1.9, 0.75, 1.55, 0.7, 1.3, 0.65, 1.05, 0.55])
-    ax.plot(zig_x, zig_y, color=GOLD, linewidth=1.8)
-    ax.text(1, 2.4, "مقاومة هابطة تدريجيًا", color=RED, fontsize=9, ha="left", fontweight="bold")
-    ax.text(7.6, 0.5, "دعم أفقي ثابت", color=GREEN, fontsize=9, ha="right", va="top", fontweight="bold")
+    n = 40
+    bot = 96.0
+    closes = np.array([bot + 5 - (i % 8) * 0.6 - i * 0.05 for i in range(n)]) + \
+        np.random.default_rng(2813).normal(0, 0.15, n)
+    closes = np.maximum(closes, bot + 0.05 * (n - np.arange(n)))
+    o, h, l, c = to_ohlc(closes, seed=2813, wick=0.35)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, bot, 0, n - 1, color=GREEN, lw=2.0, label="دعم أفقي ثابت")
+    ax.plot([0, n - 1], [h.max(), l[-1] + 0.3], color=RED, linewidth=2.0)
+    ax.text(2, h.max() - 0.3, "مقاومة هابطة تدريجيًا", color=RED, fontsize=9, ha="left", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, list(l) + list(h) + [bot - 0.6], pad_frac=0.12)
     ax.set_title("المثلث الهابط (Descending Triangle) — يميل للاختراق هبوطًا", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-13")
 
 # ============================================================ 28.14 Flag (dedicated)
 def fig_28_14():
-    fig, ax = _pattern_ax()
-    x1 = np.linspace(0, 4, 40)
-    y1 = x1 * 0.9
-    x2 = np.linspace(4, 7, 30)
-    y2 = y1[-1] - (x2 - 4) * 0.2 + 0.12 * np.sin((x2 - 4) * 6)
-    x3 = np.linspace(7, 10, 30)
-    y3 = y2[-1] + (x3 - 7) * 0.95
-    ax.plot(x1, y1, color=GREEN, linewidth=2.4)
-    ax.plot(x2, y2, color=GOLD, linewidth=2.2)
-    ax.plot(x3, y3, color=GREEN, linewidth=2.4)
-    ax.text(1.8, 1.0, "العمود (Pole)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(5.5, y2.max() + 0.35, "العلم (Flag)", color=GOLD, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(8.5, y3.max() - 0.3, "استمرار الاتجاه", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    pole = synth_walk(16, drift=0.75, vol=0.35, start=100, seed=28141)
+    flag = synth_walk(14, drift=-0.18, vol=0.35, start=pole[-1], seed=28142)
+    cont = synth_walk(16, drift=0.7, vol=0.4, start=flag[-1], seed=28143)
+    closes = np.concatenate([pole, flag, cont])
+    n = len(closes)
+    o, h, l, c = to_ohlc(closes, seed=2814, wick=0.4)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    channel(ax, 16, 30, h[16:30].max() + 0.1, -0.11, -(h[16:30].max() - l[16:30].min() + 0.3), color=GOLD, lw=2.0)
+    ax.text(8, l[:16].min() - 0.6, "العمود (Pole)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(23, h[16:30].max() + 1.0, "العلم (Flag)", color=GOLD, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(39, c[-1], "استمرار الاتجاه", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, list(l) + list(h) + [h[16:30].max() + 1.3, l[:16].min() - 0.9], pad_frac=0.08)
     ax.set_title("العلم (Flag) — نمط استمراري", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-14")
 
 # ============================================================ 28.15 Pennant (dedicated)
 def fig_28_15():
-    fig, ax = _pattern_ax()
-    x1 = np.linspace(0, 4, 40)
-    y1 = x1 * 0.9
-    x2 = np.linspace(4, 7, 30)
-    upper = y1[-1] - (x2 - 4) * 0.02
-    lower = y1[-1] - 0.6 + (x2 - 4) * 0.18
-    x3 = np.linspace(7, 10, 30)
-    y3 = ((upper[-1] + lower[-1]) / 2) + (x3 - 7) * 0.95
-    ax.plot(x1, y1, color=GREEN, linewidth=2.4)
-    ax.plot(x2, upper, color=GOLD, linewidth=2.2)
-    ax.plot(x2, lower, color=GOLD, linewidth=2.2)
-    ax.plot(x3, y3, color=GREEN, linewidth=2.4)
-    ax.text(1.8, 1.0, "العمود (Pole)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(5.5, upper.max() + 0.4, "الراية (Pennant)", color=GOLD, fontsize=9.5, ha="center", fontweight="bold")
-    ax.text(8.5, y3.max() - 0.3, "استمرار الاتجاه", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    pole = synth_walk(16, drift=0.75, vol=0.35, start=100, seed=28151)
+    n2 = 14
+    mid = (pole[-1] + pole[-1] - 1.6) / 2
+    upper = pole[-1] - np.arange(n2) * 0.06
+    lower = pole[-1] - 1.6 + np.arange(n2) * 0.09
+    pennant = (upper + lower) / 2 + np.random.default_rng(28152).normal(0, 0.12, n2)
+    cont = synth_walk(16, drift=0.7, vol=0.4, start=pennant[-1], seed=28153)
+    closes = np.concatenate([pole, pennant, cont])
+    o, h, l, c = to_ohlc(closes, seed=2815, wick=0.4)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    ax.plot([16, 16 + n2 - 1], [upper[0] + 0.2, upper[-1] + 0.2], color=GOLD, linewidth=2.0)
+    ax.plot([16, 16 + n2 - 1], [lower[0] - 0.2, lower[-1] - 0.2], color=GOLD, linewidth=2.0)
+    ax.text(8, pole.min() - 0.6, "العمود (Pole)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(23, upper[0] + 0.9, "الراية (Pennant)", color=GOLD, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(39, c[-1], "استمرار الاتجاه", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, list(l) + list(h) + [upper[0] + 1.2, pole.min() - 0.9], pad_frac=0.08)
     ax.set_title("الراية (Pennant) — نمط استمراري", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-15")
 
 # ============================================================ 28.16 Rectangle (dedicated)
 def fig_28_16():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 10, 140)
-    y = 1 + 0.36 * np.sin(x * 2.4)
-    ax.plot(x, y, color=NAVY, linewidth=2.0)
-    ax.axhline(1.38, color=RED, linestyle="--", linewidth=1.6)
-    ax.axhline(0.62, color=GREEN, linestyle="--", linewidth=1.6)
-    ax.set_ylim(0.3, 1.7)
-    ax.text(9.7, 1.38, "مقاومة", color=RED, fontsize=9.5, ha="right", va="bottom", fontweight="bold")
-    ax.text(9.7, 0.62, "دعم", color=GREEN, fontsize=9.5, ha="right", va="top", fontweight="bold")
+    n = 40
+    top, bot = 103.4, 100.6
+    i = np.arange(n)
+    closes = (top + bot) / 2 + (top - bot) / 2 * 0.85 * np.sin(i * 0.85) + \
+        np.random.default_rng(2816).normal(0, 0.12, n)
+    o, h, l, c = to_ohlc(closes, seed=2816, wick=0.35)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, top, 0, n - 1, color=RED, lw=2.0, label="مقاومة")
+    hline(ax, bot, 0, n - 1, color=GREEN, lw=2.0, label="دعم")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_yticks([])
+    set_ylim_pad(ax, [bot - 0.6] + [top + 0.6] + list(l) + list(h), pad_frac=0.08)
     ax.set_title("المستطيل (Rectangle) — تذبذب أفقي بين دعم ومقاومة متوازيين", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-16")
 
 # ============================================================ 28.17 Double Top (dedicated)
 def fig_28_17():
-    fig, ax = _pattern_ax()
-    x = np.linspace(0, 10, 100)
-    y = 1.8 * np.exp(-((x - 2.5) ** 2) / 0.5) + 1.8 * np.exp(-((x - 7) ** 2) / 0.5) + 0.2
-    ax.plot(x, y, color=NAVY, linewidth=2.2)
-    ax.axhline(0.5, color=GOLD, linestyle="--", linewidth=1.6)
-    ax.text(9.7, 0.5, "خط العنق (Neckline)", color=GOLD, fontsize=9.5, ha="right", va="bottom", fontweight="bold")
-    ax.text(2.5, 2.3, "القمة 1", color=RED, fontsize=10, ha="center", fontweight="bold")
-    ax.text(7, 2.3, "القمة 2", color=RED, fontsize=10, ha="center", fontweight="bold")
-    ax.set_ylim(0, 2.6)
+    n = 46
+    def shape(i):
+        return 3.3 * np.exp(-((i - 13) ** 2) / 22) + 3.3 * np.exp(-((i - 33) ** 2) / 22)
+    fig, ax, o, h, l, c = _pattern_candles(shape, n=n, seed=2817, base=100)
+    neck = min(l[18], l[28]) - 0.1
+    hline(ax, neck, 0, n - 1, color=GOLD, lw=2.0, label="خط العنق (Neckline)")
+    letter_point(ax, 13, h[13] + 0.3, "القمة 1", color=RED, va="bottom", dy=0.4, fontsize=10.5)
+    letter_point(ax, 33, h[33] + 0.3, "القمة 2", color=RED, va="bottom", dy=0.4, fontsize=10.5)
     ax.set_title("القمة المزدوجة (Double Top) — نمط انعكاسي هابط", fontsize=11, color=NAVY, fontweight="bold")
     save(fig, "fig-28-17")
 
