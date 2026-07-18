@@ -994,6 +994,28 @@ def fig_17_01():
     ax.set_ylabel("مؤشر الدولار")
     save(fig, "fig-17-01")
 
+# ============================================================ 17.5 Participation rate vs unemployment (dedicated)
+def fig_17_02():
+    fig, ax1 = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    months = np.arange(12)
+    unemployment = 5.5 - months * 0.15 + np.random.default_rng(1702).normal(0, 0.05, 12)
+    participation = 63.0 - months * 0.12 + np.random.default_rng(1703).normal(0, 0.04, 12)
+    ax1.plot(months, unemployment, color=RED, linewidth=2.2, marker="o", markersize=4, label="معدل البطالة")
+    ax1.set_ylabel("معدل البطالة (%)", color=RED)
+    ax1.tick_params(axis="y", labelcolor=RED)
+    for s in ["top"]: ax1.spines[s].set_visible(False)
+    ax2 = ax1.twinx()
+    ax2.plot(months, participation, color=NAVY, linewidth=2.2, linestyle="--", marker="s", markersize=4, label="معدل المشاركة")
+    ax2.set_ylabel("معدل المشاركة (%)", color=NAVY)
+    ax2.tick_params(axis="y", labelcolor=NAVY)
+    for s in ["top"]: ax2.spines[s].set_visible(False)
+    ax1.set_xlabel("الشهر")
+    ax1.grid(axis="y", color=GRID)
+    ax1.text(6, unemployment.max() + 0.3, "انخفاض البطالة مع تراجع المشاركة معًا:\nانسحاب من سوق العمل، لا تحسّن حقيقي بالضرورة",
+              color=NAVY, fontsize=8.5, ha="center", fontweight="bold")
+    save(fig, "fig-17-02")
+
 # ============================================================ 18.1 GDP components pie
 def fig_18_01():
     fig, ax = plt.subplots(figsize=(6.4, 6.4), dpi=150)
@@ -1010,6 +1032,25 @@ def fig_18_01():
             t.set_fontweight("bold")
     ax.set_aspect("equal")
     save(fig, "fig-18-01")
+
+# ============================================================ 18.4 Technical recession (dedicated)
+def fig_18_02():
+    fig, ax = plt.subplots(figsize=(8.6, 4.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    quarters = ["ر1", "ر2", "ر3", "ر4", "ر5", "ر6"]
+    growth = [1.8, 0.9, -0.4, -0.6, 0.3, 1.1]
+    colors = [RED if v < 0 else GREEN for v in growth]
+    bars = ax.bar(quarters, growth, color=colors, width=0.55, zorder=3)
+    ax.axhline(0, color=NAVY, linewidth=1.2)
+    ax.axvspan(1.5, 3.5, color=RED, alpha=0.08)
+    ax.text(2.5, 1.6, "ركود فني (ربعان سلبيان متتاليان)", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    for b, v in zip(bars, growth):
+        ax.text(b.get_x() + b.get_width() / 2, v + (0.1 if v >= 0 else -0.2), f"{v}%", ha="center",
+                fontsize=9, fontweight="bold", color=NAVY)
+    ax.set_ylabel("نمو الناتج المحلي (ربع سنوي %)")
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    save(fig, "fig-18-02")
 
 # ============================================================ 19.1 PMI leading GDP
 def fig_19_01():
@@ -1052,6 +1093,26 @@ def fig_20_01():
     ax1.set_xlabel("الشهر")
     save(fig, "fig-20-01")
 
+# ============================================================ 20.3 Current account deficit financed by capital inflows (dedicated)
+def fig_20_02():
+    fig, ax = plt.subplots(figsize=(8.6, 4.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    cats = ["عجز الحساب الجاري", "فائض حساب رأس المال"]
+    vals = [-4.2, 4.2]
+    colors = [RED, GREEN]
+    bars = ax.bar(cats, vals, color=colors, width=0.45, zorder=3)
+    ax.axhline(0, color=NAVY, linewidth=1.3)
+    for b, v in zip(bars, vals):
+        ax.text(b.get_x() + b.get_width() / 2, v + (0.2 if v >= 0 else -0.3), f"{v:+.1f} مليار", ha="center",
+                fontsize=9.5, fontweight="bold", color=NAVY)
+    ax.text(0.5, 3.0, "يجب تمويل العجز بتدفقات استثمارية داخلة مساوية تقريبًا", color=NAVY, fontsize=9,
+            ha="center", fontweight="bold")
+    ax.set_ylabel("مليار دولار")
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.set_xticks([]); ax.set_xticklabels([])
+    ax.legend(bars, cats, frameon=False, fontsize=9, loc="lower center")
+    save(fig, "fig-20-02")
+
 # ============================================================ 21.1 Earnings beat, weak guidance
 def fig_21_01():
     fig, ax = new_ax()
@@ -1066,6 +1127,23 @@ def fig_21_01():
     arrow(ax, (12, c[12]), (26, c[-1]), color=RED, label="توجيهات ضعيفة ← بيع مكثف")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-21-01")
+
+# ============================================================ 21.6 P/E comparable valuation (dedicated)
+def fig_21_02():
+    fig, ax = plt.subplots(figsize=(8.6, 4.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    cats = ["الشركة A", "الشركة B", "الشركة C", "متوسط القطاع"]
+    vals = [28, 15, 34, 22]
+    colors = [RED if v > 22 else GREEN for v in vals[:3]] + [GREY]
+    bars = ax.bar(cats, vals, color=colors, width=0.5, zorder=3)
+    ax.axhline(22, color=NAVY, linestyle="--", linewidth=1.4)
+    for b, v in zip(bars, vals):
+        ax.text(b.get_x() + b.get_width() / 2, v + 0.6, f"{v}x", ha="center", fontsize=9.5, fontweight="bold", color=NAVY)
+    ax.text(1.5, 37, "مضاعف الربحية (P/E) مقارنة بمتوسط القطاع", color=NAVY, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_ylabel("مضاعف P/E")
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    save(fig, "fig-21-02")
 
 # ============================================================ 22.1 Weekly calendar impact
 def fig_22_01():
@@ -1084,6 +1162,29 @@ def fig_22_01():
     for i, (d, lab) in enumerate(zip(days, labels)):
         ax.text(impact[i] + 0.1, i, lab, va="center", fontsize=9, color=NAVY)
     save(fig, "fig-22-01")
+
+# ============================================================ 22.3 Three news-trading strategies (dedicated)
+def fig_22_02():
+    fig, axes = plt.subplots(1, 3, figsize=(11.5, 4.0), dpi=150)
+    pre = synth_walk(10, drift=0.0, vol=0.15, start=100, seed=2202)
+    spike = synth_walk(4, drift=1.6, vol=0.6, start=pre[-1], seed=22021)
+    settle = synth_walk(10, drift=0.4, vol=0.3, start=spike[-1], seed=22022)
+    closes = np.concatenate([pre, spike, settle])
+    o, h, l, c = to_ohlc(closes, seed=2202, wick=0.6)
+
+    titles = ["التداول اللحظي عند الصدور", "انتظار الاستقرار", "التموضع المسبق"]
+    colors = [RED, GOLD, GREEN]
+    for ax, title, color in zip(axes, titles, colors):
+        plot_candles(ax, o, h, l, c, width=0.55)
+        ax.axvline(10, color=GREY, linestyle=":", linewidth=1.2)
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(title, fontsize=9.5, color=color, fontweight="bold")
+    marker_point(axes[0], 11, h[11] + 0.2, color=RED, label="دخول خطر", va="bottom", dy=0.5, fontsize=8)
+    marker_point(axes[1], 16, l[16] - 0.2, color=GOLD, label="دخول بعد استقرار", va="top", dy=0.5, fontsize=8)
+    marker_point(axes[2], 3, l[3] - 0.2, color=GREEN, label="تموضع مسبق", va="top", dy=0.5, fontsize=8)
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-22-02")
 
 # ============================================================ 23.1 Dow theory primary/secondary
 def fig_23_01():
