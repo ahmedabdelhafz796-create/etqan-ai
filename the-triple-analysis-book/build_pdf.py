@@ -62,6 +62,14 @@ md = markdown.Markdown(extensions=[TocExtension(toc_depth="1-2"), "tables"])
 body_html = md.convert(full_md)
 toc_tokens = md.toc_tokens  # list of {level, id, name, children}
 
+# Mark figure-caption paragraphs (a standalone bold "الشكل X.Y — ..." line)
+# so they can be styled distinctly from regular bold text.
+body_html = re.sub(
+    r'<p><strong>(الشكل [^<]+)</strong></p>',
+    r'<p class="fig-caption"><strong>\1</strong></p>',
+    body_html,
+)
+
 # Insert page-break-before on h1/h2 tags (skip the very first tag in the doc)
 def add_page_breaks(html):
     parts = re.split(r'(<h[12] id="[^"]+">)', html)
@@ -336,6 +344,27 @@ html_doc = f"""<!DOCTYPE html>
     padding: 1px 5px;
     border-radius: 3px;
     font-size: 10pt;
+  }}
+  p > img {{
+    display: block;
+    margin: 1.1em auto 0.4em;
+    max-width: 94%;
+    border: 1px solid #e3ded0;
+    border-radius: 6px;
+    padding: 8px;
+    background: #ffffff;
+    page-break-inside: avoid;
+  }}
+  p.fig-caption {{
+    text-align: center;
+    font-size: 9.5pt;
+    color: #5b6472;
+    margin: 0 0 1.6em;
+    page-break-before: avoid;
+  }}
+  p.fig-caption strong {{
+    color: #5b6472;
+    font-weight: 700;
   }}
 </style>
 </head>
