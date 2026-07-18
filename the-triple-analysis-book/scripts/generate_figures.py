@@ -234,6 +234,43 @@ def fig_05_02():
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-05-02")
 
+# ============================================================ 5.6 Mitigation block (dedicated)
+def fig_05_04():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    up = synth_walk(12, drift=0.6, vol=0.5, start=100, seed=5041)
+    ob_seg = synth_walk(4, drift=-0.15, vol=0.3, start=up[-1], seed=5042)
+    cont = synth_walk(10, drift=0.7, vol=0.5, start=ob_seg[-1], seed=5043)
+    pull = synth_walk(8, drift=-0.4, vol=0.4, start=cont[-1], seed=5044)
+    resume = synth_walk(10, drift=0.75, vol=0.5, start=pull[-1], seed=5045)
+    closes = np.concatenate([up, ob_seg, cont, pull, resume])
+    o, h, l, c = to_ohlc(closes, seed=5041)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    ob_x = 13
+    y0, y1 = min(o[ob_x], c[ob_x]) - 0.15, max(o[ob_x], c[ob_x]) + 0.15
+    box(ax, ob_x - 0.6, ob_x + 0.6, y0, y1, color=GOLD_LIGHT, edge=GOLD)
+    arrow(ax, (27, c[27]), (33, (y0 + y1) / 2), color=NAVY, ls="dashed", label="عودة لتخفيف أوامر سابقة")
+    arrow(ax, (33, (y0 + y1) / 2), (44, c[-1]), color=GREEN, label="استئناف نفس الاتجاه")
+    ax.text(ob_x, y1 + 0.8, "بلوك التخفيف (Mitigation Block)", color=GOLD, fontsize=9.5, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [y1 + 1.2])
+    save(fig, "fig-05-04")
+
+# ============================================================ 5.7 Rejection block (dedicated)
+def fig_05_05():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    pre = synth_walk(14, drift=0.1, vol=0.3, start=100, seed=505)
+    o, h, l, c = to_ohlc(pre, seed=505, wick=0.4)
+    level = h[6:10].max() + 0.2
+    for x in [6, 8, 10]:
+        h[x] = level - np.random.default_rng(505 + x).uniform(0, 0.05)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, level, 0, len(pre) - 1, color=RED, lw=2.0)
+    for x in [6, 8, 10]:
+        letter_point(ax, x, h[x] + 0.15, "رفض", color=RED, va="bottom", dy=0.4, circle=False, fontsize=8)
+    ax.text(len(pre) / 2, level + 1.0, "بلوك الرفض: فتائل متكررة تدافع عن نفس المستوى", color=RED, fontsize=9.5,
+            ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [level + 1.4])
+    save(fig, "fig-05-05")
+
 # ============================================================ 6.1 FVG + OB confluence
 def fig_06_01():
     fig, ax = new_ax()
@@ -525,6 +562,86 @@ def fig_09_01():
     set_ylim_pad(ax, list(l) + list(h) + [c[news_x] + 4.5])
     save(fig, "fig-09-01")
 
+# ============================================================ 9.3 Bank/news candle BCD (dedicated)
+def fig_09_02():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    pre = synth_walk(18, drift=0.02, vol=0.15, start=100, seed=902)
+    news = synth_walk(1, drift=4.2, vol=0.15, start=pre[-1], seed=9021)
+    post = synth_walk(18, drift=0.6, vol=0.6, start=news[-1], seed=9022)
+    closes = np.concatenate([pre, news, post])
+    o, h, l, c = to_ohlc(closes, seed=902)
+    plot_candles(ax, o, h, l, c, width=0.6)
+    news_x = 18
+    ax.axvline(news_x, color=GREY, linestyle=":", linewidth=1.3)
+    ax.annotate("شمعة أخبار (BCD): توقيت حدث عالي التأثير", xy=(news_x, c[news_x]), xytext=(news_x - 8, c[news_x] + 3.5),
+                fontsize=9.5, color=RED, fontweight="bold",
+                arrowprops=dict(arrowstyle="-|>", color=RED, linewidth=1.8))
+    ax.text(news_x + 10, c[-1] + 0.5, "يحدد اتجاه الأيام التالية", color=NAVY, fontsize=9, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [c[news_x] + 4.5])
+    save(fig, "fig-09-02")
+
+# ============================================================ 9.4 Flip zone (dedicated)
+def fig_09_03():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    approach = synth_walk(16, drift=0.15, vol=0.4, start=100, seed=903)
+    level = approach.max() + 0.4
+    ifc = synth_walk(2, drift=1.6, vol=0.2, start=approach[-1], seed=9031)
+    cont = synth_walk(8, drift=0.5, vol=0.4, start=ifc[-1], seed=9032)
+    retest = synth_walk(6, drift=-0.35, vol=0.3, start=cont[-1], seed=9033)
+    bounce = synth_walk(12, drift=0.6, vol=0.5, start=retest[-1], seed=9034)
+    closes = np.concatenate([approach, ifc, cont, retest, bounce])
+    o, h, l, c = to_ohlc(closes, seed=903)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, level, 0, len(closes) - 1, color=GOLD, lw=2.0, label="منطقة الفليب (Flip Zone)")
+    box(ax, 16, 18, min(o[17], c[17]) - 0.15, max(o[17], c[17]) + 0.15, color=GOLD_LIGHT, edge=GOLD)
+    ax.text(17, max(o[17], c[17]) + 1.0, "شمعة تدفق أوامر (IFC)", color=GOLD, fontsize=8.5, ha="center", fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h) + [max(o[17], c[17]) + 1.4])
+    save(fig, "fig-09-03")
+
+# ============================================================ 9.5a Accumulation -> Expansion (dedicated)
+def fig_09_04():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    accum = synth_walk(20, drift=0.0, vol=0.35, start=100, seed=904)
+    expand = synth_walk(16, drift=0.9, vol=0.6, start=accum[-1], seed=9041)
+    closes = np.concatenate([accum, expand])
+    o, h, l, c = to_ohlc(closes, seed=904)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    box(ax, 0, 19, l[:20].min() - 0.15, h[:20].max() + 0.15, color="#DDE7EE", edge=NAVY, alpha=0.3, label="تراكم (Accumulation)")
+    arrow(ax, (20, c[20]), (35, c[-1]), color=GREEN, label="اندفاع (Expansion)")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-09-04")
+
+# ============================================================ 9.5b Expansion -> Re-balance (dedicated)
+def fig_09_05():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    expand = synth_walk(12, drift=1.0, vol=0.5, start=100, seed=905)
+    rebalance = synth_walk(14, drift=-0.35, vol=0.35, start=expand[-1], seed=9051)
+    cont = synth_walk(10, drift=0.7, vol=0.5, start=rebalance[-1], seed=9052)
+    closes = np.concatenate([expand, rebalance, cont])
+    o, h, l, c = to_ohlc(closes, seed=905)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    x1, x3 = 10, 12
+    fvg_lo, fvg_hi = h[x1], l[x3]
+    if fvg_hi < fvg_lo: fvg_lo, fvg_hi = fvg_hi, fvg_lo
+    box(ax, x1 + 0.3, x3 - 0.3, fvg_lo, fvg_hi, color="#F2D98A", edge="#B7791F", label="FVG")
+    arrow(ax, (12, c[12]), (25, fvg_hi), color=NAVY, ls="dashed", label="إعادة توازن نحو الاختلال")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-09-05")
+
+# ============================================================ 9.5c Distribution (dedicated)
+def fig_09_06():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    up = synth_walk(18, drift=0.6, vol=0.5, start=100, seed=906)
+    dist = synth_walk(16, drift=0.0, vol=0.4, start=up[-1], seed=9061)
+    down = synth_walk(14, drift=-0.8, vol=0.55, start=dist[-1], seed=9062)
+    closes = np.concatenate([up, dist, down])
+    o, h, l, c = to_ohlc(closes, seed=906)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    box(ax, 18, 33, l[18:34].min() - 0.15, h[18:34].max() + 0.15, color="#F4A6A6", edge=RED, alpha=0.3, label="توزيع (Distribution)")
+    arrow(ax, (34, c[34]), (47, c[-1]), color=RED, label="انعكاس هبوطي")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-09-06")
+
 # ============================================================ 10.1 Multi-timeframe triptych
 def fig_10_01():
     fig, axes = plt.subplots(1, 3, figsize=(11.5, 4.2), dpi=150)
@@ -542,6 +659,28 @@ def fig_10_01():
         set_ylim_pad(ax, list(l) + list(h))
     fig.tight_layout(pad=0.6)
     save(fig, "fig-10-01")
+
+# ============================================================ 10.5 HTF/LTF conflict resolution (dedicated)
+def fig_10_02():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.4), dpi=150)
+    htf = regime_walk([(20, 0.6, 0.45), (8, -0.2, 0.3), (14, 0.6, 0.45)], start=100, seed=1002)
+    o1, h1, l1, c1 = to_ohlc(htf, seed=1002, wick=0.4)
+    plot_candles(axes[0], o1, h1, l1, c1, width=0.55)
+    axes[0].text(len(htf) / 2, h1.max() + 0.5, "انحياز صاعد واضح على الفريم الأعلى", color=GREEN, fontsize=9,
+                 ha="center", fontweight="bold")
+    axes[0].set_title("الإطار الأعلى (HTF): الحكم الفصل", fontsize=10, color=NAVY, fontweight="bold")
+
+    ltf = synth_walk(30, drift=-0.15, vol=0.4, start=100, seed=1003)
+    o2, h2, l2, c2 = to_ohlc(ltf, seed=1003, wick=0.4)
+    plot_candles(axes[1], o2, h2, l2, c2, width=0.55)
+    axes[1].text(15, h2.max() + 0.4, "تصحيح هابط بسيط فقط — ليس انعكاسًا", color=RED, fontsize=9,
+                 ha="center", fontweight="bold")
+    axes[1].set_title("الإطار الأصغر (LTF): تصحيح مؤقت", fontsize=10, color=NAVY, fontweight="bold")
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([])
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-10-02")
 
 # ============================================================ 11.1 Confluence entry composite
 def fig_11_01():
