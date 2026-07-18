@@ -13,6 +13,15 @@
       font-size: 8.5pt;
       color: #8a7a55;
     }
+    @bottom-left {
+      content: "\00a9 2026 Ahmed Abdelhafez & Ahmed Abu Omran. All Rights Reserved.";
+      font-family: "Noto Sans Arabic", sans-serif;
+      font-size: 6.7pt;
+      color: #aaaaaa;
+      direction: ltr;
+      unicode-bidi: bidi-override;
+      text-align: left;
+    }
     @bottom-center {
       content: counter(page);
       font-family: "Noto Naskh Arabic";
@@ -23,11 +32,21 @@
   @page cover {
     margin: 0;
     @top-center { content: none; }
+    @bottom-left { content: none; }
     @bottom-center { content: none; }
   }
   @page toc {
     margin: 2.4cm 2cm;
     @top-center { content: none; }
+    @bottom-left {
+      content: "\00a9 2026 Ahmed Abdelhafez & Ahmed Abu Omran. All Rights Reserved.";
+      font-family: "Noto Sans Arabic", sans-serif;
+      font-size: 6.7pt;
+      color: #aaaaaa;
+      direction: ltr;
+      unicode-bidi: bidi-override;
+      text-align: left;
+    }
     @bottom-center {
       content: counter(page, lower-roman);
       font-family: "Noto Naskh Arabic";
@@ -257,6 +276,79 @@
     color: #5b6472;
     font-weight: 700;
   }
+
+  /* ---------- ENGLISH FRONT/BACK MATTER ---------- */
+  .en-page {
+    page: toc;
+    page-break-after: always;
+    direction: ltr;
+    text-align: left;
+    font-family: Georgia, "Times New Roman", serif;
+    padding-top: 1.5cm;
+  }
+  .en-page.legal-page {
+    page: auto;
+  }
+  .en-page h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 20pt;
+    color: #1F2937;
+    text-align: left;
+    border-bottom: 3px solid #B7791F;
+    padding-bottom: 12px;
+    margin: 0 0 22px;
+  }
+  .en-page h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 14pt;
+    color: #B7791F;
+    margin: 1.6em 0 0.5em;
+  }
+  .en-page p {
+    font-size: 10.5pt;
+    line-height: 1.75;
+    color: #2A2420;
+    margin: 0 0 0.9em;
+  }
+  .en-page ul {
+    padding-left: 1.4em;
+    font-size: 10.5pt;
+    line-height: 1.75;
+    color: #2A2420;
+  }
+  .en-page li {
+    margin: 0.35em 0;
+  }
+  .authors-page {
+    text-align: center;
+    padding-top: 4.5cm;
+  }
+  .authors-page h1 {
+    text-align: center;
+    border-bottom: none;
+    font-size: 13pt;
+    letter-spacing: 3px;
+    color: #B7791F;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  .authors-page .author-name {
+    font-size: 20pt;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 26px 0 0;
+  }
+  .authors-page .author-role {
+    font-size: 10.5pt;
+    color: #8a7a55;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  .message-signoff {
+    margin-top: 2em;
+    font-style: italic;
+    color: #1F2937;
+  }
 </style>
 </head>
 <body>
@@ -273,6 +365,81 @@
   </div>
   <span class="edition">33 فصلًا &middot; مسرد مصطلحات &middot; ملاحق مرجعية</span>
 </div>
+
+
+<div class="en-page">
+  <h1>Copyright</h1>
+  <p><strong>THE TRIPLE ANALYSIS</strong><br>
+  A Complete Guide to Smart Money Concepts, Fundamental Analysis, and Technical Analysis</p>
+  <p>First Edition &mdash; 2026</p>
+  <p>Copyright &copy; 2026 by Ahmed Abdelhafez and Ahmed Abu Omran. All rights reserved.</p>
+  <p>No part of this publication may be reproduced, distributed, or transmitted in any form or by any
+  means &mdash; including photocopying, recording, or other electronic or mechanical methods, or by any
+  information storage and retrieval system &mdash; without the prior written permission of the authors,
+  except in the case of brief quotations embodied in critical reviews and certain other noncommercial
+  uses permitted by copyright law.</p>
+  <p>The Triple Analysis, and all associated diagrams, figures, charts, and illustrations contained
+  within this book, are original works created by the authors and are protected under applicable
+  intellectual property and copyright laws. Unauthorized reproduction or distribution of this work, or
+  any portion of it, may result in civil and criminal penalties, and will be prosecuted to the maximum
+  extent possible under the law.</p>
+  <h2>Disclaimer</h2>
+  <p>This book is intended for educational and informational purposes only. Trading and investing in
+  financial markets involve substantial risk of loss and are not suitable for every individual. Nothing
+  contained in this book should be construed as financial, investment, legal, or tax advice, nor as a
+  recommendation or solicitation to buy or sell any financial instrument.</p>
+  <p>All charts, figures, and price examples presented throughout this book are illustrative and based
+  on synthetic or simulated data created solely to demonstrate the concepts discussed; they do not
+  represent the performance of any real financial instrument, strategy, product, or account, whether
+  past or future.</p>
+  <p>The authors and publisher make no representations or warranties with respect to the accuracy or
+  completeness of the contents of this book and specifically disclaim any implied warranties. Trading
+  decisions are the sole responsibility of the reader. The authors and publisher shall not be held liable
+  for any loss or damage, financial or otherwise, arising directly or indirectly from the use or
+  application of any information contained in this book.</p>
+  <p>Readers should conduct their own due diligence and consult a licensed financial professional before
+  making any investment or trading decision.</p>
+  <h2>Publication Information</h2>
+  <p>Title: The Triple Analysis<br>
+  Authors: Ahmed Abdelhafez, Ahmed Abu Omran<br>
+  Edition: First Edition, 2026<br>
+  Language: Arabic (with English terminology)</p>
+</div>
+
+
+<div class="en-page authors-page">
+  <h1>Authors</h1>
+  <div class="author-name">Ahmed Abdelhafez</div>
+  <div class="author-role">Co-Author</div>
+  <div class="author-name" style="margin-top:52px;">Ahmed Abu Omran</div>
+  <div class="author-role">Co-Author</div>
+</div>
+
+
+<div class="en-page">
+  <h1>A Message from the Authors</h1>
+  <p>This book is the product of a long road &mdash; years spent inside the charts, inside our own
+  losing trades as much as our winning ones, and inside the slow, often humbling process of turning
+  scattered experience into something that could actually be taught.</p>
+  <p>We did not set out to write a book of shortcuts. What follows is closer to a working record: the
+  frameworks we kept coming back to, the mistakes that cost us before they taught us anything, and the
+  slow refinement of a process that finally held together under real market conditions. If you study it
+  seriously and apply it with patience, it will give you a genuine foundation &mdash; one built for the
+  long run, not for the next trade.</p>
+  <p>But we want to be honest with you about something before you turn the next page: none of this
+  &mdash; not the market structure, not the smart money concepts, not the indicators &mdash; is the real
+  lesson. The real lesson is quieter than that. It is composure. It is discipline. It is the ability to
+  sit with a losing trade without letting it dictate your next decision.</p>
+  <p>You will go through stretches where your strategy feels unstoppable, where every setup seems to
+  work and every instinct seems right. Do not mistake that for mastery. Without risk management and
+  psychological discipline behind it, no edge survives contact with enough trades. We have watched it
+  happen to others, and early in our own journeys, we watched it happen to us.</p>
+  <p>So take the frameworks in this book seriously &mdash; they work, and we built them to last. But
+  take the discipline more seriously still. Real professionalism in this business does not begin with
+  controlling the market. It begins with controlling yourself.</p>
+  <p class="message-signoff">&mdash; Ahmed Abdelhafez &amp; Ahmed Abu Omran</p>
+</div>
+
 
 <div class="toc-page">
   <h1>المحتويات</h1>
@@ -303,6 +470,7 @@
 <li class="toc-chapter"><a href="#25"><span class="toc-title">2.5 عقلية المؤسسات</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#26"><span class="toc-title">2.6 التلاعب بالسوق: حقيقة أم خيال؟</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#27"><span class="toc-title">2.7 دور السيولة في الأسواق</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#28-smc-ict"><span class="toc-title">2.8 SMC وعلاقتها بمصطلح ICT</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#_9"><span class="toc-title">ملخص الفصل</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#_10"><span class="toc-title">نقاط رئيسية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#_11"><span class="toc-title">تمرين عملي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
@@ -551,6 +719,7 @@
 <li class="toc-chapter"><a href="#244-heikin-ashi"><span class="toc-title">24.4 مخططات هايكن أشي (Heikin Ashi)</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#245247"><span class="toc-title">24.5–24.7 مخططات النقاط والأشكال، رينكو، وكاغي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#248"><span class="toc-title">24.8 الأطر الزمنية للمخططات</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#249"><span class="toc-title">24.9 المقياس الحسابي مقابل المقياس اللوغاريتمي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#_99"><span class="toc-title">ملخص الفصل</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#_100"><span class="toc-title">نقاط رئيسية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#_101"><span class="toc-title">تمرين عملي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
@@ -1423,6 +1592,10 @@
 <p>من المهم التمييز هنا بدقة: SMC لا يفترض وجود "مؤامرة" منظمة تستهدف متداولي التجزئة تحديدًا، بل يفترض أن كبار المتداولين — بحكم حجم أوامرهم — يبحثون بشكل طبيعي وقانوني عن السيولة الأكثر توفرًا لتنفيذ صفقاتهم، وهذا يتسبب أحيانًا في حركات سعرية تبدو "مفاجئة" لمن لا يفهم آلية تكوّنها. فهم هذه الآلية لا يعني اتهام السوق بالفساد، بل يعني ببساطة قراءة القواعد الحقيقية للعبة بدلًا من الاعتماد فقط على افتراضات مبسطة.</p>
 <div class="chapter-break"></div><h2 id="27">2.7 دور السيولة في الأسواق</h2>
 <p>السيولة هي المحرك الأساسي الذي يفسر معظم سلوك السعر في إطار SMC، وسيُخصَّص لها الفصل الرابع كاملًا. لكن كمقدمة: كل أمر وقف خسارة، وكل أمر معلق (Pending Order)، يمثل سيولة كامنة. وكلما تجمعت هذه الأوامر عند مستوى سعري واحد (مثل قمة أو قاع واضح تكرر اختباره)، أصبح ذلك المستوى هدفًا جاذبًا لحركة سعرية تسعى لتفعيل تلك الأوامر قبل الانعكاس أو الاستمرار.</p>
+<div class="chapter-break"></div><h2 id="28-smc-ict">2.8 SMC وعلاقتها بمصطلح ICT</h2>
+<p>كثيرًا ما يصادف القارئ مصطلح <strong>ICT</strong> (اختصار Inner Circle Trader) أثناء بحثه عن مفاهيم الأموال الذكية على الإنترنت. ICT هو الاسم الذي اشتهرت به المدرسة التي صاغت أصلًا معظم المصطلحات المستخدمة في هذا الجزء من الكتاب (كتلة الطلب، FVG، السيولة، الحافز...). أما "Smart Money Concepts" فهو الاسم الذي شاع لاحقًا لوصف التنظيم والتبسيط التعليمي لهذه المفاهيم نفسها، بهدف تقديمها بشكل أكثر منهجية للمتداولين الجدد. بعبارة أخرى: ICT وSMC يتحدثان عن نفس الأفكار الجوهرية تقريبًا، والفرق بينهما أقرب إلى فرق التسمية والتقديم منه إلى فرق جوهري في المحتوى.</p>
+<p><img alt="الشكل 2.2" src="figures/fig-02-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 2.2 — العلاقة بين ICT وSMC والمفاهيم الفرعية التي يغطيها هذا الجزء من الكتاب</strong></p>
 <hr />
 <div class="chapter-break"></div><h2 id="_9">ملخص الفصل</h2>
 <ul>
@@ -1450,6 +1623,8 @@
 <p>يتكون الهيكل الصاعد من تتابع منتظم لقمم أعلى (HH) وقيعان أعلى (HL). طالما استمر هذا النمط، يُعتبر الانحياز العام صاعدًا، وتكون استراتيجية SMC الافتراضية هي البحث عن فرص شراء عند العودة لمناطق اهتمام (كتل الطلب) بدلًا من محاولة توقع القمة.</p>
 <div class="chapter-break"></div><h2 id="33">3.3 هيكل السوق الهابط</h2>
 <p>على النقيض، يتكون الهيكل الهابط من تتابع قمم أدنى (LH) وقيعان أدنى (LL). الانحياز هنا هابط، والاستراتيجية الافتراضية هي البحث عن فرص بيع عند الارتدادات نحو مناطق العرض.</p>
+<p><img alt="الشكل 3.2" src="figures/fig-03-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.2 — التعريف البصري الواضح لكل من HH وHL في الاتجاه الصاعد، وLH وLL في الاتجاه الهابط</strong></p>
 <div class="chapter-break"></div><h2 id="34">3.4 هيكل السوق العرضي</h2>
 <p>يحدث عندما يتوقف السعر عن تكوين قمم/قيعان متتابعة بوضوح، ويتحرك بين مستويي دعم ومقاومة أفقيين تقريبًا. هذه المرحلة غالبًا ما تمثل تجميعًا (Accumulation) أو توزيعًا (Distribution) تستعد فيه المؤسسات لحركة الاتجاه القادمة، وهي من أخطر المراحل على متداولي التجزئة لكثرة الإشارات الكاذبة فيها.</p>
 <div class="chapter-break"></div><h2 id="35-break-of-structure-bos">3.5 كسر الهيكل (Break of Structure – BOS)</h2>
@@ -1639,6 +1814,8 @@
 </table>
 <div class="chapter-break"></div><h2 id="59">5.9 كتلة الطلب مقابل مناطق العرض والطلب التقليدية</h2>
 <p>يتشابه مفهوم كتلة الطلب مع "مناطق العرض والطلب" في التحليل الفني الكلاسيكي، لكن الفرق الجوهري أن كتلة الطلب في SMC تُحدَّد بدقة أكبر (شمعة أو شمعتان محددتان مرتبطتان مباشرة بكسر هيكلي)، بينما تُرسم مناطق العرض/الطلب التقليدية غالبًا كنطاق أوسع وأقل دقة.</p>
+<p><img alt="الشكل 5.3" src="figures/fig-05-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 5.3 — مناطق العرض والطلب الكلاسيكية: نطاق أوسع مقارنة بدقة كتلة الطلب في SMC</strong></p>
 <div class="chapter-break"></div><h2 id="510">5.10 قاعدة اللمسات الثلاث</h2>
 <p>قاعدة إرشادية شائعة (وليست مطلقة): كلما زاد عدد مرات اختبار كتلة الطلب لنفس المنطقة، ضعفت احتمالية نجاحها في المرة التالية، لأن جزءًا من الأوامر الكامنة فيها يكون قد نُفِّذ بالفعل. بعد نحو ثلاث لمسات، يُنصح غالبًا بالبحث عن كتلة أحدث بدلًا من الاعتماد المتكرر على نفس المنطقة.</p>
 <div class="chapter-break"></div><h2 id="511">5.11 استراتيجيات تداول كتل الطلب</h2>
@@ -2687,8 +2864,12 @@
 <div class="part-break"></div><h1 id="24_1">الفصل 24: أنواع المخططات وبناؤها</h1>
 <div class="chapter-break"></div><h2 id="241-line-charts">24.1 المخططات الخطية (Line Charts)</h2>
 <p>أبسط أنواع المخططات، تربط بين أسعار الإغلاق فقط عبر خط مستمر. مفيدة لرؤية الاتجاه العام بوضوح دون تشتت بصري، لكنها تفقد معلومات مهمة (الافتتاح، الأعلى، الأدنى) داخل كل فترة.</p>
+<p><img alt="الشكل 24.3" src="figures/fig-24-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 24.3 — مخطط خطي يعرض أسعار الإغلاق فقط</strong></p>
 <div class="chapter-break"></div><h2 id="242-bar-charts-ohlc">24.2 المخططات الشريطية (Bar Charts – OHLC)</h2>
 <p>كل شريط يمثل فترة زمنية ويعرض أربع نقاط: الافتتاح (Open)، الأعلى (High)، الأدنى (Low)، والإغلاق (Close)، عبر خط رأسي مع شرطتين أفقيتين صغيرتين (يسار للافتتاح، يمين للإغلاق).</p>
+<p><img alt="الشكل 24.2" src="figures/fig-24-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 24.2 — مخطط شريطي (Bar Chart) يعرض بيانات OHLC الكاملة لكل فترة</strong></p>
 <div class="chapter-break"></div><h2 id="243-candlestick-charts">24.3 مخططات الشموع اليابانية (Candlestick Charts)</h2>
 <p>الأكثر استخدامًا حاليًا في التحليل الفني وSMC معًا، لأنها تعرض نفس بيانات OHLC لكن بطريقة بصرية أوضح: "جسم" الشمعة يمثل المسافة بين الافتتاح والإغلاق (ملوّن حسب اتجاه الحركة)، و"الفتائل" (Wicks/Shadows) تمثل أعلى وأدنى نقطة وصل إليها السعر خلال الفترة.</p>
 <table>
@@ -2723,6 +2904,15 @@
 <p>أنواع متخصصة تُبنى على حركة السعر فقط بغض النظر عن الزمن (بعكس كل الأنواع السابقة التي تُبنى على فترات زمنية ثابتة)، وتُستخدم غالبًا لتصفية الضوضاء قصيرة المدى والتركيز على الاتجاهات الجوهرية فقط. أقل شيوعًا في تطبيقات SMC الحديثة نظرًا لغياب مفهوم "الزمن" الذي تعتمد عليه مفاهيم مثل كسر الهيكل بشكل دقيق.</p>
 <div class="chapter-break"></div><h2 id="248">24.8 الأطر الزمنية للمخططات</h2>
 <p>يمكن بناء أي من الأنواع أعلاه (باستثناء رينكو والنقاط والأشكال) على أي إطار زمني: من 1 دقيقة وحتى الشهري، حسب أفق التداول المستهدف (مضاربة يومية، تداول متأرجح، أو استثمار طويل الأجل).</p>
+<div class="chapter-break"></div><h2 id="249">24.9 المقياس الحسابي مقابل المقياس اللوغاريتمي</h2>
+<p>عنصر إضافي مهم عند إعداد أي مخطط هو اختيار طريقة توزيع المحور السعري (المحور الرأسي):</p>
+<ul>
+<li><strong>المقياس الحسابي (Arithmetic Scale):</strong> المسافة بين كل وحدتين سعريتين متساوية دائمًا (مثلًا المسافة بين 10 و20 مساوية للمسافة بين 90 و100). مناسب لتحركات سعرية قصيرة المدى ونطاقات ضيقة نسبيًا.</li>
+<li><strong>المقياس اللوغاريتمي (Logarithmic Scale):</strong> المسافة بين نقطتين تعكس <strong>النسبة المئوية</strong> للتغير، وليس القيمة المطلقة (فالمسافة بين 10 و20 تساوي المسافة بين 50 و100، لأن كليهما يمثل تضاعفًا بنسبة 100%). هذا المقياس أكثر واقعية عند تحليل حركة سعرية تمتد لسنوات طويلة أو تتضمن نموًا كبيرًا نسبيًا (كأسهم النمو أو العملات المشفرة).</li>
+</ul>
+<p><img alt="الشكل 24.4" src="figures/fig-24-04.svg" /></p>
+<p class="fig-caption"><strong>الشكل 24.4 — نفس حركة السعر معروضة على مقياس حسابي (يسار) ومقياس لوغاريتمي (يمين)</strong></p>
+<p>القاعدة العملية: استخدم المقياس الحسابي للتحليل قصير المدى ضمن نطاق سعري ضيق، وانتقل للمقياس اللوغاريتمي عند تحليل مخططات طويلة المدى (سنوات) أو أصول شهدت نموًا كبيرًا نسبيًا.</p>
 <hr />
 <div class="chapter-break"></div><h2 id="_99">ملخص الفصل</h2>
 <ul>
@@ -2886,6 +3076,8 @@
 <div class="part-break"></div><h1 id="26_1">الفصل 26: الدعم والمقاومة</h1>
 <div class="chapter-break"></div><h2 id="261">26.1 ما هما الدعم والمقاومة؟</h2>
 <p><strong>الدعم</strong> مستوى سعري يميل الطلب عنده لتجاوز العرض، مما يوقف الهبوط مؤقتًا أو دائمًا. <strong>المقاومة</strong> مستوى سعري يميل العرض عنده لتجاوز الطلب، مما يوقف الصعود. هذان المفهومان من أقدم وأهم ركائز التحليل الفني، وهما يتقاطعان مباشرة مع مفهومي كتلة الطلب/العرض في SMC (الفصل 5) رغم اختلاف طريقة تحديدهما بدقة.</p>
+<p><img alt="الشكل 26.4" src="figures/fig-26-04.svg" /></p>
+<p class="fig-caption"><strong>الشكل 26.4 — التعريف البصري الأساسي للدعم والمقاومة</strong></p>
 <div class="chapter-break"></div><h2 id="262">26.2 تحديد مستويات الدعم والمقاومة</h2>
 <p>تُحدَّد عادة عبر: القمم والقيعان التاريخية الواضحة، المتوسطات المتحركة الرئيسية، خطوط الاتجاه، والمستويات النفسية المستديرة (كالأرقام الصحيحة الكبيرة).</p>
 <div class="chapter-break"></div><h2 id="263">26.3 المستويات النفسية</h2>
@@ -2898,8 +3090,17 @@
 <li><strong>الارتداد (Bounce):</strong> الدخول عند وصول السعر للمستوى مع توقع ارتداده، مناسب في الأسواق العرضية أو ضمن اتجاه واضح عند العودة لمستوى داعم له.</li>
 <li><strong>الاختراق (Breakout):</strong> الدخول عند كسر المستوى بقوة وإغلاق واضح خارجه، مناسب عند بداية اتجاهات جديدة أو خروج من نطاقات التماسك الطويلة.</li>
 </ul>
+<p>بعد أي اختراق، غالبًا ما يعاود السعر زيارة المستوى المكسور قبل استئناف حركته — وهذا ما يُعرف بـ"إعادة الاختبار" (Retest):</p>
+<p><img alt="الشكل 26.5" src="figures/fig-26-05.svg" /></p>
+<p class="fig-caption"><strong>الشكل 26.5 — إعادة اختبار (Retest) للمستوى المكسور قبل استمرار الحركة</strong></p>
+<p>ومن أهم المهارات العملية هنا التمييز بين الاختراق الحقيقي والاختراق الكاذب:</p>
+<p><img alt="الشكل 26.6" src="figures/fig-26-06.svg" /></p>
+<p class="fig-caption"><strong>الشكل 26.6 — الاختراق الحقيقي (يستمر بعده الاتجاه) مقابل الاختراق الكاذب (يرتد السعر بسرعة)</strong></p>
 <div class="chapter-break"></div><h2 id="266-trendlines">26.6 خطوط الاتجاه (Trendlines)</h2>
 <p>خط مستقيم يربط بين قمتين متتاليتين (خط اتجاه هابط) أو قاعين متتاليين (خط اتجاه صاعد)، ويعمل كدعم أو مقاومة ديناميكية متحركة مع الزمن، بعكس المستويات الأفقية الثابتة.</p>
+<p>يوضّح الشكل 26.3 الخطوات العملية الثلاث لرسم خط اتجاه صحيح:</p>
+<p><img alt="الشكل 26.3" src="figures/fig-26-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 26.3 — خطوات رسم خط الاتجاه: تحديد نقطتي تأرجح، ثم وصلهما، ثم امتداد الخط للمستقبل</strong></p>
 <div class="chapter-break"></div><h2 id="267-price-channels">26.7 القنوات السعرية (Price Channels)</h2>
 <p>عند رسم خط اتجاه مواز للخط الأصلي على الجانب الآخر من حركة السعر، يتشكل "قناة سعرية" تحصر تحرك السعر بين حدين متوازيين، وتُستخدم لتحديد مناطق شراء (عند الحد السفلي في قناة صاعدة) وبيع (عند الحد العلوي).</p>
 <p><img alt="الشكل 26.2" src="figures/fig-26-02.svg" /></p>
@@ -2996,8 +3197,17 @@
 <td>خطا اتجاه متقاربان بميل هابط</td>
 <td>عرض بداية الوتد مضافًا لنقطة الاختراق</td>
 </tr>
+<tr>
+<td>الكوب والعروة (Cup and Handle)</td>
+<td>تصحيح تدريجي بشكل قوس (الكوب) يتبعه تماسك صغير (العروة)</td>
+<td>عمق الكوب مضافًا لنقطة اختراق العروة</td>
+</tr>
 </tbody>
 </table>
+<p><img alt="الشكل 28.4" src="figures/fig-28-04.svg" /></p>
+<p class="fig-caption"><strong>الشكل 28.4 — نموذج القاع المزدوج (Double Bottom)</strong></p>
+<p><img alt="الشكل 28.3" src="figures/fig-28-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 28.3 — نموذج الكوب والعروة (Cup and Handle)</strong></p>
 <div class="chapter-break"></div><h2 id="283-285">28.3 و28.5 أنماط الانعكاس الهابطة</h2>
 <table>
 <thead>
@@ -3153,8 +3363,12 @@
 <li><strong>ارتداد فيبوناتشي:</strong> يُستخدم لتحديد مناطق تصحيح محتملة أثناء اتجاه قائم (كما نوقش بالتفصيل في الفصل 8 ضمن مفهوم الخصم والعلاوة في SMC).</li>
 <li><strong>امتداد فيبوناتشي:</strong> يُستخدم لتوقع أهداف محتملة <em>بعد</em> تجاوز السعر لنقطة سابقة، عبر نسب مثل 127% و161.8%.</li>
 </ul>
+<p><img alt="الشكل 29.4" src="figures/fig-29-04.svg" /></p>
+<p class="fig-caption"><strong>الشكل 29.4 — مستويات ارتداد فيبوناتشي الرئيسية (23.6%، 38.2%، 50%، 61.8%، 78.6%) على حركة تصحيحية</strong></p>
 <div class="chapter-break"></div><h2 id="2916">29.16 نظرية إليوت الموجية (لمحة تمهيدية)</h2>
 <p>نظرية تصف حركة السعر كسلسلة موجات دافعة (خمس موجات مع الاتجاه العام) وموجات تصحيحية (ثلاث موجات معاكسة)، وتُستخدم لوضع الحركة الحالية ضمن سياق دورة أكبر. تتطلب ممارسة طويلة لإتقان تطبيقها بثبات نظرًا للتفسيرات المتعددة الممكنة لنفس الحركة.</p>
+<p><img alt="الشكل 29.5" src="figures/fig-29-05.svg" /></p>
+<p class="fig-caption"><strong>الشكل 29.5 — هيكل موجات إليوت: خمس موجات دافعة (1-5) تليها ثلاث موجات تصحيحية (A-B-C)</strong></p>
 <div class="chapter-break"></div><h2 id="2917-atr">29.17 متوسط المدى الحقيقي (ATR)</h2>
 <p>يقيس متوسط مدى التقلب (وليس الاتجاه)، ويُستخدم عمليًا بشكل واسع لتحديد مسافة وقف الخسارة بما يتناسب مع التقلب الطبيعي الحالي للأصل، بدلًا من استخدام مسافة ثابتة بالنقاط لكل الأصول والظروف.</p>
 <hr />
@@ -3212,6 +3426,9 @@
 <li><strong>التوازن الحجمي (On-Balance Volume – OBV):</strong> يجمع أو يطرح الحجم تراكميًا حسب اتجاه إغلاق كل شمعة، ويُستخدم لرصد تراكم أو تصريف خفي قد لا يظهر بوضوح على السعر وحده.</li>
 <li><strong>متوسط السعر المرجح بالحجم (VWAP):</strong> متوسط سعري يعطي وزنًا أكبر للفترات ذات الحجم الأعلى، ويُستخدم كثيرًا كمرجع نشط خلال جلسة التداول اليومية.</li>
 </ul>
+<p><strong>الفائدة المفتوحة (Open Interest):</strong> مقياس خاص بأسواق العقود الآجلة والخيارات، يختلف عن الحجم في أنه لا يقيس عدد الصفقات المنفذة خلال فترة معينة، بل <strong>إجمالي عدد العقود المفتوحة (غير المغلقة بعد)</strong> في السوق في لحظة معينة. ارتفاع السعر مصحوبًا بارتفاع الفائدة المفتوحة يشير عادة لدخول أموال جديدة فعليًا تدعم الاتجاه، بينما ارتفاع السعر مع تراجع الفائدة المفتوحة قد يشير إلى أن الحركة ناتجة عن إغلاق مراكز بيع سابقة (تغطية) أكثر من كونها اقتناعًا شرائيًا جديدًا.</p>
+<p><img alt="الشكل 30.2" src="figures/fig-30-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 30.2 — تطور الفائدة المفتوحة (Open Interest) مقارنة بحركة السعر</strong></p>
 <div class="chapter-break"></div><h2 id="304">30.4 أنماط الحجم</h2>
 <ul>
 <li><strong>قمة حجم عند انعكاس (Climax Volume):</strong> حجم استثنائي الارتفاع عند نهاية حركة قوية، غالبًا يشير لاستنفاد الاتجاه (شراء ذعري أو بيع ذعري أخير).</li>
@@ -3632,6 +3849,32 @@
 </ul>
 <hr />
 <p><strong>نهاية كتاب The Triple Analysis.</strong></p>
+
+
+<div class="en-page legal-page">
+  <div class="part-break"></div>
+  <h1>Legal Notice</h1>
+  <p>This book, <strong>The Triple Analysis</strong>, including its text, structure, and all original
+  diagrams, figures, and illustrations, is the intellectual property of its authors, Ahmed Abdelhafez
+  and Ahmed Abu Omran, and is protected under national and international copyright law.</p>
+  <p>The following actions are strictly prohibited without prior written consent from the authors:</p>
+  <ul>
+    <li>Reselling this book, in whole or in part, in any format.</li>
+    <li>Republishing this book, or any portion of it, under any name.</li>
+    <li>Copying, duplicating, or uploading this book to any website, file-sharing service, forum, or
+    social media platform.</li>
+    <li>Using any text, diagram, figure, or illustration from this book for commercial purposes.</li>
+    <li>Translating, adapting, or creating derivative works based on this book without authorization.</li>
+  </ul>
+  <p>All rights not expressly granted herein are reserved by the authors. Any violation of these terms
+  may expose the responsible party to civil and criminal liability under applicable copyright laws, and
+  the authors reserve the right to pursue all available legal remedies against any individual or entity
+  found to be in breach of this notice.</p>
+  <p>For permissions, licensing inquiries, or authorized use of any material from this book, please
+  contact the authors directly.</p>
+  <p style="margin-top:2em;">&copy; 2026 Ahmed Abdelhafez &amp; Ahmed Abu Omran. All Rights Reserved.</p>
+</div>
+
 
 </body>
 </html>

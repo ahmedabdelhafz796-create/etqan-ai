@@ -105,6 +105,109 @@ def render_toc(tokens, depth=0):
 
 toc_html = render_toc(toc_tokens)
 
+COPYRIGHT_HTML = """
+<div class="en-page">
+  <h1>Copyright</h1>
+  <p><strong>THE TRIPLE ANALYSIS</strong><br>
+  A Complete Guide to Smart Money Concepts, Fundamental Analysis, and Technical Analysis</p>
+  <p>First Edition &mdash; 2026</p>
+  <p>Copyright &copy; 2026 by Ahmed Abdelhafez and Ahmed Abu Omran. All rights reserved.</p>
+  <p>No part of this publication may be reproduced, distributed, or transmitted in any form or by any
+  means &mdash; including photocopying, recording, or other electronic or mechanical methods, or by any
+  information storage and retrieval system &mdash; without the prior written permission of the authors,
+  except in the case of brief quotations embodied in critical reviews and certain other noncommercial
+  uses permitted by copyright law.</p>
+  <p>The Triple Analysis, and all associated diagrams, figures, charts, and illustrations contained
+  within this book, are original works created by the authors and are protected under applicable
+  intellectual property and copyright laws. Unauthorized reproduction or distribution of this work, or
+  any portion of it, may result in civil and criminal penalties, and will be prosecuted to the maximum
+  extent possible under the law.</p>
+  <h2>Disclaimer</h2>
+  <p>This book is intended for educational and informational purposes only. Trading and investing in
+  financial markets involve substantial risk of loss and are not suitable for every individual. Nothing
+  contained in this book should be construed as financial, investment, legal, or tax advice, nor as a
+  recommendation or solicitation to buy or sell any financial instrument.</p>
+  <p>All charts, figures, and price examples presented throughout this book are illustrative and based
+  on synthetic or simulated data created solely to demonstrate the concepts discussed; they do not
+  represent the performance of any real financial instrument, strategy, product, or account, whether
+  past or future.</p>
+  <p>The authors and publisher make no representations or warranties with respect to the accuracy or
+  completeness of the contents of this book and specifically disclaim any implied warranties. Trading
+  decisions are the sole responsibility of the reader. The authors and publisher shall not be held liable
+  for any loss or damage, financial or otherwise, arising directly or indirectly from the use or
+  application of any information contained in this book.</p>
+  <p>Readers should conduct their own due diligence and consult a licensed financial professional before
+  making any investment or trading decision.</p>
+  <h2>Publication Information</h2>
+  <p>Title: The Triple Analysis<br>
+  Authors: Ahmed Abdelhafez, Ahmed Abu Omran<br>
+  Edition: First Edition, 2026<br>
+  Language: Arabic (with English terminology)</p>
+</div>
+"""
+
+AUTHORS_HTML = """
+<div class="en-page authors-page">
+  <h1>Authors</h1>
+  <div class="author-name">Ahmed Abdelhafez</div>
+  <div class="author-role">Co-Author</div>
+  <div class="author-name" style="margin-top:52px;">Ahmed Abu Omran</div>
+  <div class="author-role">Co-Author</div>
+</div>
+"""
+
+MESSAGE_HTML = """
+<div class="en-page">
+  <h1>A Message from the Authors</h1>
+  <p>This book is the product of a long road &mdash; years spent inside the charts, inside our own
+  losing trades as much as our winning ones, and inside the slow, often humbling process of turning
+  scattered experience into something that could actually be taught.</p>
+  <p>We did not set out to write a book of shortcuts. What follows is closer to a working record: the
+  frameworks we kept coming back to, the mistakes that cost us before they taught us anything, and the
+  slow refinement of a process that finally held together under real market conditions. If you study it
+  seriously and apply it with patience, it will give you a genuine foundation &mdash; one built for the
+  long run, not for the next trade.</p>
+  <p>But we want to be honest with you about something before you turn the next page: none of this
+  &mdash; not the market structure, not the smart money concepts, not the indicators &mdash; is the real
+  lesson. The real lesson is quieter than that. It is composure. It is discipline. It is the ability to
+  sit with a losing trade without letting it dictate your next decision.</p>
+  <p>You will go through stretches where your strategy feels unstoppable, where every setup seems to
+  work and every instinct seems right. Do not mistake that for mastery. Without risk management and
+  psychological discipline behind it, no edge survives contact with enough trades. We have watched it
+  happen to others, and early in our own journeys, we watched it happen to us.</p>
+  <p>So take the frameworks in this book seriously &mdash; they work, and we built them to last. But
+  take the discipline more seriously still. Real professionalism in this business does not begin with
+  controlling the market. It begins with controlling yourself.</p>
+  <p class="message-signoff">&mdash; Ahmed Abdelhafez &amp; Ahmed Abu Omran</p>
+</div>
+"""
+
+LEGAL_HTML = """
+<div class="en-page legal-page">
+  <div class="part-break"></div>
+  <h1>Legal Notice</h1>
+  <p>This book, <strong>The Triple Analysis</strong>, including its text, structure, and all original
+  diagrams, figures, and illustrations, is the intellectual property of its authors, Ahmed Abdelhafez
+  and Ahmed Abu Omran, and is protected under national and international copyright law.</p>
+  <p>The following actions are strictly prohibited without prior written consent from the authors:</p>
+  <ul>
+    <li>Reselling this book, in whole or in part, in any format.</li>
+    <li>Republishing this book, or any portion of it, under any name.</li>
+    <li>Copying, duplicating, or uploading this book to any website, file-sharing service, forum, or
+    social media platform.</li>
+    <li>Using any text, diagram, figure, or illustration from this book for commercial purposes.</li>
+    <li>Translating, adapting, or creating derivative works based on this book without authorization.</li>
+  </ul>
+  <p>All rights not expressly granted herein are reserved by the authors. Any violation of these terms
+  may expose the responsible party to civil and criminal liability under applicable copyright laws, and
+  the authors reserve the right to pursue all available legal remedies against any individual or entity
+  found to be in breach of this notice.</p>
+  <p>For permissions, licensing inquiries, or authorized use of any material from this book, please
+  contact the authors directly.</p>
+  <p style="margin-top:2em;">&copy; 2026 Ahmed Abdelhafez &amp; Ahmed Abu Omran. All Rights Reserved.</p>
+</div>
+"""
+
 # target-counter needs the href value quoted as attr(href) works only same-origin;
 # WeasyPrint supports target-counter(attr(href), page) directly.
 html_doc = f"""<!DOCTYPE html>
@@ -122,6 +225,15 @@ html_doc = f"""<!DOCTYPE html>
       font-size: 8.5pt;
       color: #8a7a55;
     }}
+    @bottom-left {{
+      content: "\\00a9 2026 Ahmed Abdelhafez & Ahmed Abu Omran. All Rights Reserved.";
+      font-family: "Noto Sans Arabic", sans-serif;
+      font-size: 6.7pt;
+      color: #aaaaaa;
+      direction: ltr;
+      unicode-bidi: bidi-override;
+      text-align: left;
+    }}
     @bottom-center {{
       content: counter(page);
       font-family: "Noto Naskh Arabic";
@@ -132,11 +244,21 @@ html_doc = f"""<!DOCTYPE html>
   @page cover {{
     margin: 0;
     @top-center {{ content: none; }}
+    @bottom-left {{ content: none; }}
     @bottom-center {{ content: none; }}
   }}
   @page toc {{
     margin: 2.4cm 2cm;
     @top-center {{ content: none; }}
+    @bottom-left {{
+      content: "\\00a9 2026 Ahmed Abdelhafez & Ahmed Abu Omran. All Rights Reserved.";
+      font-family: "Noto Sans Arabic", sans-serif;
+      font-size: 6.7pt;
+      color: #aaaaaa;
+      direction: ltr;
+      unicode-bidi: bidi-override;
+      text-align: left;
+    }}
     @bottom-center {{
       content: counter(page, lower-roman);
       font-family: "Noto Naskh Arabic";
@@ -366,6 +488,79 @@ html_doc = f"""<!DOCTYPE html>
     color: #5b6472;
     font-weight: 700;
   }}
+
+  /* ---------- ENGLISH FRONT/BACK MATTER ---------- */
+  .en-page {{
+    page: toc;
+    page-break-after: always;
+    direction: ltr;
+    text-align: left;
+    font-family: Georgia, "Times New Roman", serif;
+    padding-top: 1.5cm;
+  }}
+  .en-page.legal-page {{
+    page: auto;
+  }}
+  .en-page h1 {{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 20pt;
+    color: #1F2937;
+    text-align: left;
+    border-bottom: 3px solid #B7791F;
+    padding-bottom: 12px;
+    margin: 0 0 22px;
+  }}
+  .en-page h2 {{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 14pt;
+    color: #B7791F;
+    margin: 1.6em 0 0.5em;
+  }}
+  .en-page p {{
+    font-size: 10.5pt;
+    line-height: 1.75;
+    color: #2A2420;
+    margin: 0 0 0.9em;
+  }}
+  .en-page ul {{
+    padding-left: 1.4em;
+    font-size: 10.5pt;
+    line-height: 1.75;
+    color: #2A2420;
+  }}
+  .en-page li {{
+    margin: 0.35em 0;
+  }}
+  .authors-page {{
+    text-align: center;
+    padding-top: 4.5cm;
+  }}
+  .authors-page h1 {{
+    text-align: center;
+    border-bottom: none;
+    font-size: 13pt;
+    letter-spacing: 3px;
+    color: #B7791F;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }}
+  .authors-page .author-name {{
+    font-size: 20pt;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 26px 0 0;
+  }}
+  .authors-page .author-role {{
+    font-size: 10.5pt;
+    color: #8a7a55;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }}
+  .message-signoff {{
+    margin-top: 2em;
+    font-style: italic;
+    color: #1F2937;
+  }}
 </style>
 </head>
 <body>
@@ -383,6 +578,10 @@ html_doc = f"""<!DOCTYPE html>
   <span class="edition">33 فصلًا &middot; مسرد مصطلحات &middot; ملاحق مرجعية</span>
 </div>
 
+{COPYRIGHT_HTML}
+{AUTHORS_HTML}
+{MESSAGE_HTML}
+
 <div class="toc-page">
   <h1>المحتويات</h1>
   <ul>
@@ -391,6 +590,8 @@ html_doc = f"""<!DOCTYPE html>
 </div>
 
 {body_html}
+
+{LEGAL_HTML}
 
 </body>
 </html>

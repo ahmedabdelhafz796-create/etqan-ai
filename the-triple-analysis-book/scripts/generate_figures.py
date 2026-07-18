@@ -891,6 +891,293 @@ def fig_33_01():
     save(fig, "fig-33-01")
 
 
+# ============================================================ 2.2 ICT / SMC relationship map
+def fig_02_02():
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    ax.set_xlim(0, 10); ax.set_ylim(0, 6); ax.axis("off")
+    fig.patch.set_facecolor("white")
+    box_ict = Rectangle((3.3, 4.3), 3.4, 1.1, facecolor=NAVY, edgecolor=NAVY)
+    ax.add_patch(box_ict)
+    ax.text(5, 4.85, "ICT (Inner Circle Trader)", color="white", ha="center", va="center", fontsize=11, fontweight="bold")
+    ax.text(5, 3.85, "Original source of the terms & concepts", color=GREY, ha="center", fontsize=9)
+    box_smc = Rectangle((3.3, 2.5), 3.4, 1.1, facecolor=GOLD, edgecolor=GOLD)
+    ax.add_patch(box_smc)
+    ax.text(5, 3.05, "Smart Money Concepts (SMC)", color="white", ha="center", va="center", fontsize=11, fontweight="bold")
+    arrow(ax, (5, 4.3), (5, 3.6), color=NAVY)
+    ax.text(5, 2.05, "Educational organization & simplification of ICT concepts", color=GREY, ha="center", fontsize=9)
+    labels = ["BOS / CHOCH", "Order Blocks", "FVG", "Liquidity", "Premium/Discount"]
+    xs = np.linspace(1.0, 9.0, len(labels))
+    for x, lab in zip(xs, labels):
+        ax.add_patch(Rectangle((x - 0.75, 0.3), 1.5, 0.8, facecolor="#F7F4EE", edgecolor=GOLD, linewidth=1.2))
+        ax.text(x, 0.7, lab, ha="center", va="center", fontsize=8, color=NAVY, fontweight="bold")
+        arrow(ax, (x, 1.1), (5, 2.5), color=GOLD_LIGHT, lw=1.2, style="-")
+    save(fig, "fig-02-02")
+
+# ============================================================ 3.2 HH/HL/LH/LL clean definitions
+def fig_03_02():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.4), dpi=150)
+    up = np.array([100, 102, 101.3, 104, 103.2, 106, 105.3, 108])
+    o, h, l, c = to_ohlc(up, seed=302)
+    plot_candles(axes[0], o, h, l, c, width=0.5)
+    marker_point(axes[0], 1, h[1] + 0.2, color=NAVY, label="HH", va="bottom", dy=0.5)
+    marker_point(axes[0], 2, l[2] - 0.2, color=NAVY, label="HL", va="top", dy=0.5)
+    marker_point(axes[0], 3, h[3] + 0.2, color=NAVY, label="HH", va="bottom", dy=0.5)
+    marker_point(axes[0], 4, l[4] - 0.2, color=NAVY, label="HL", va="top", dy=0.5)
+    marker_point(axes[0], 5, h[5] + 0.2, color=NAVY, label="HH", va="bottom", dy=0.5)
+    marker_point(axes[0], 6, l[6] - 0.2, color=NAVY, label="HL", va="top", dy=0.5)
+    axes[0].set_title("Uptrend: Higher Highs / Higher Lows", fontsize=10, color=NAVY, fontweight="bold")
+
+    down = np.array([108, 106, 106.8, 104, 104.7, 102, 102.6, 100])
+    o2, h2, l2, c2 = to_ohlc(down, seed=303)
+    plot_candles(axes[1], o2, h2, l2, c2, width=0.5)
+    marker_point(axes[1], 1, l2[1] - 0.2, color=RED, label="LL", va="top", dy=0.5)
+    marker_point(axes[1], 2, h2[2] + 0.2, color=RED, label="LH", va="bottom", dy=0.5)
+    marker_point(axes[1], 3, l2[3] - 0.2, color=RED, label="LL", va="top", dy=0.5)
+    marker_point(axes[1], 4, h2[4] + 0.2, color=RED, label="LH", va="bottom", dy=0.5)
+    marker_point(axes[1], 5, l2[5] - 0.2, color=RED, label="LL", va="top", dy=0.5)
+    marker_point(axes[1], 6, h2[6] + 0.2, color=RED, label="LH", va="bottom", dy=0.5)
+    axes[1].set_title("Downtrend: Lower Highs / Lower Lows", fontsize=10, color=NAVY, fontweight="bold")
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([])
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-03-02")
+
+# ============================================================ 5.3 Classic supply & demand zones
+def fig_05_03():
+    fig, ax = new_ax()
+    seg1 = synth_walk(10, drift=-0.1, vol=0.4, start=105, seed=531)
+    seg2 = synth_walk(8, drift=0.9, vol=0.5, start=seg1[-1], seed=532)
+    seg3 = synth_walk(10, drift=-0.5, vol=0.5, start=seg2[-1], seed=533)
+    seg4 = synth_walk(8, drift=0.85, vol=0.5, start=seg3[-1], seed=534)
+    closes = np.concatenate([seg1, seg2, seg3, seg4])
+    o, h, l, c = to_ohlc(closes, seed=531)
+    plot_candles(ax, o, h, l, c)
+    box(ax, -0.5, 9.5, min(o[:10].min(), c[:10].min()) - 0.2, max(o[:10].max(), c[:10].max()) + 0.2,
+        color="#DDEBDD", edge=GREEN, alpha=0.35, label="Demand Zone")
+    box(ax, 17.5, 25.5, min(o[18:26].min(), c[18:26].min()) - 0.2, max(o[18:26].max(), c[18:26].max()) + 0.2,
+        color="#F4D9D9", edge=RED, alpha=0.35, label="Supply Zone")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-05-03")
+
+# ============================================================ 24.2 Bar chart sample
+def fig_24_02():
+    fig, ax = new_ax()
+    closes = synth_walk(20, drift=0.3, vol=0.6, start=100, seed=242)
+    o, h, l, c = to_ohlc(closes, seed=242)
+    for x, (oo, hh, ll, cc) in enumerate(zip(o, h, l, c)):
+        color = GREEN if cc >= oo else RED
+        ax.plot([x, x], [ll, hh], color=color, linewidth=1.6)
+        ax.plot([x - 0.18, x], [oo, oo], color=color, linewidth=1.6)
+        ax.plot([x, x + 0.18], [cc, cc], color=color, linewidth=1.6)
+    ax.set_title("Bar Chart (OHLC)", fontsize=11, color=NAVY, fontweight="bold")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-24-02")
+
+# ============================================================ 24.3 Line chart sample
+def fig_24_03():
+    fig, ax = new_ax()
+    closes = synth_walk(30, drift=0.25, vol=0.6, start=100, seed=243)
+    ax.plot(closes, color=NAVY, linewidth=2)
+    ax.fill_between(np.arange(30), closes, closes.min() - 1, color=GOLD_LIGHT, alpha=0.15)
+    ax.set_title("Line Chart (Closing Prices Only)", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-24-03")
+
+# ============================================================ 24.4 Arithmetic vs logarithmic scale
+def fig_24_04():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.4), dpi=150)
+    n = 40
+    closes = 10 * np.exp(np.linspace(0, 2.3, n)) + np.random.default_rng(244).normal(0, 3, n)
+    closes = np.clip(closes, 8, None)
+    axes[0].plot(closes, color=NAVY, linewidth=2)
+    axes[0].set_yscale("linear")
+    axes[0].set_title("Arithmetic Scale", fontsize=10.5, color=NAVY, fontweight="bold")
+    axes[0].set_ylabel("Price")
+    axes[1].plot(closes, color=GOLD, linewidth=2)
+    axes[1].set_yscale("log")
+    axes[1].set_title("Logarithmic Scale", fontsize=10.5, color=NAVY, fontweight="bold")
+    axes[1].set_ylabel("Price (log)")
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([])
+        ax.grid(axis="y", color=GRID)
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-24-04")
+
+# ============================================================ 26.3 How to draw a trendline (steps)
+def fig_26_03():
+    fig, axes = plt.subplots(1, 3, figsize=(11, 4), dpi=150)
+    closes = synth_walk(24, drift=0.35, vol=0.6, start=100, seed=263)
+    o, h, l, c = to_ohlc(closes, seed=263)
+    swing_xs = [2, 9, 16]
+
+    for i, ax in enumerate(axes):
+        plot_candles(ax, o, h, l, c, width=0.5)
+        for sx in swing_xs:
+            ax.plot([sx], [l[sx] - 0.3], marker="^", color=GOLD, markersize=8, zorder=6)
+        if i >= 1:
+            ax.plot([swing_xs[0], swing_xs[1]], [l[swing_xs[0]] - 0.3, l[swing_xs[1]] - 0.3],
+                     color=NAVY, linewidth=2)
+        if i == 2:
+            ax.plot([swing_xs[1], 23], [l[swing_xs[1]] - 0.3, l[swing_xs[1]] - 0.3 + (23 - swing_xs[1]) *
+                     ((l[swing_xs[1]] - 0.3 - (l[swing_xs[0]] - 0.3)) / (swing_xs[1] - swing_xs[0]))],
+                     color=NAVY, linewidth=2, linestyle="--")
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([])
+    axes[0].set_title("1. Identify two swing lows", fontsize=9.5, color=NAVY, fontweight="bold")
+    axes[1].set_title("2. Connect them with a line", fontsize=9.5, color=NAVY, fontweight="bold")
+    axes[2].set_title("3. Extend it forward", fontsize=9.5, color=NAVY, fontweight="bold")
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-26-03")
+
+# ============================================================ 26.4 Support & resistance basic definition
+def fig_26_04():
+    fig, ax = new_ax()
+    n = 30
+    x = np.arange(n)
+    closes = 100 + 3 * np.sin(x / 3.2) + np.random.default_rng(264).normal(0, 0.25, n)
+    o, h, l, c = to_ohlc(closes, seed=264)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, closes.max() - 0.3, 0, n - 1, color=RED, label="Resistance")
+    hline(ax, closes.min() + 0.3, 0, n - 1, color=GREEN, label="Support")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-26-04")
+
+# ============================================================ 26.5 Retest concept
+def fig_26_05():
+    fig, ax = new_ax()
+    pre = synth_walk(12, drift=0.1, vol=0.4, start=100, seed=265)
+    level = pre.max() + 0.4
+    brk = synth_walk(4, drift=0.9, vol=0.3, start=pre[-1], seed=266)
+    back = synth_walk(4, drift=-0.5, vol=0.25, start=brk[-1], seed=267)
+    cont = synth_walk(10, drift=0.7, vol=0.5, start=back[-1], seed=268)
+    closes = np.concatenate([pre, brk, back, cont])
+    o, h, l, c = to_ohlc(closes, seed=265)
+    plot_candles(ax, o, h, l, c)
+    hline(ax, level, 0, len(closes) - 1, color=GOLD, label="Broken level")
+    arrow(ax, (15, c[15]), (19, level + 0.1), color=NAVY, ls="dashed", label="Retest")
+    arrow(ax, (19, level), (29, c[-1]), color=GREEN, label="Continuation")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-26-05")
+
+# ============================================================ 26.6 Breakout vs false breakout
+def fig_26_06():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.3), dpi=150)
+    pre = synth_walk(12, drift=0.05, vol=0.35, start=100, seed=269)
+    level = pre.max() + 0.3
+
+    real = synth_walk(10, drift=0.9, vol=0.4, start=pre[-1], seed=270)
+    closes1 = np.concatenate([pre, real])
+    o1, h1, l1, c1 = to_ohlc(closes1, seed=269)
+    plot_candles(axes[0], o1, h1, l1, c1, width=0.55)
+    axes[0].axhline(level, color=GOLD, linestyle="--", linewidth=1.4)
+    axes[0].set_title("Real Breakout", fontsize=10.5, color=GREEN, fontweight="bold")
+
+    fake_up = synth_walk(3, drift=1.0, vol=0.3, start=pre[-1], seed=271)
+    fake_down = synth_walk(9, drift=-0.6, vol=0.4, start=fake_up[-1], seed=272)
+    closes2 = np.concatenate([pre, fake_up, fake_down])
+    o2, h2, l2, c2 = to_ohlc(closes2, seed=269)
+    plot_candles(axes[1], o2, h2, l2, c2, width=0.55)
+    axes[1].axhline(level, color=GOLD, linestyle="--", linewidth=1.4)
+    axes[1].set_title("False Breakout", fontsize=10.5, color=RED, fontweight="bold")
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([])
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-26-06")
+
+# ============================================================ 28.3 Cup and Handle
+def fig_28_03():
+    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    x1 = np.linspace(0, 6, 60)
+    cup = 3 - 2.6 * np.exp(-((x1 - 3) ** 2) / 4)
+    x2 = np.linspace(6, 7.5, 15)
+    handle = cup[-1] - 0.5 * np.sin((x2 - 6) * 2.2) - (x2 - 6) * 0.15
+    x3 = np.linspace(7.5, 9, 15)
+    breakout = handle[-1] + (x3 - 7.5) * 1.1
+    ax.plot(x1, cup, color=NAVY, linewidth=2.2)
+    ax.plot(x2, handle, color=GOLD, linewidth=2.2)
+    ax.plot(x3, breakout, color=GREEN, linewidth=2.2)
+    ax.axhline(3.0, color=GREY, linestyle=":", linewidth=1.2)
+    ax.text(3, 3.15, "Rim (Resistance)", color=GREY, fontsize=9, ha="center")
+    ax.text(3, 0.2, "Cup", color=NAVY, fontsize=10, ha="center", fontweight="bold")
+    ax.text(6.7, cup[-1] - 0.9, "Handle", color=GOLD, fontsize=10, ha="center", fontweight="bold")
+    ax.set_title("Cup and Handle", fontsize=11, color=NAVY, fontweight="bold")
+    ax.set_xticks([]); ax.set_yticks([])
+    for s in ax.spines.values(): s.set_visible(False)
+    save(fig, "fig-28-03")
+
+# ============================================================ 28.4 Double Bottom
+def fig_28_04():
+    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    x = np.linspace(0, 10, 100)
+    y = 2.2 - 1.8 * np.exp(-((x - 2.5) ** 2) / 0.5) - 1.8 * np.exp(-((x - 7) ** 2) / 0.5)
+    ax.plot(x, y, color=NAVY, linewidth=2.2)
+    ax.axhline(1.9, color=GOLD, linestyle="--", linewidth=1.4)
+    ax.text(4.75, 2.0, "Neckline (Resistance)", color=GOLD, fontsize=9, ha="center")
+    ax.text(2.5, 0.15, "Bottom 1", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(7, 0.15, "Bottom 2", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_title("Double Bottom", fontsize=11, color=NAVY, fontweight="bold")
+    ax.set_xticks([]); ax.set_yticks([])
+    for s in ax.spines.values(): s.set_visible(False)
+    save(fig, "fig-28-04")
+
+# ============================================================ 29.4 Fibonacci retracement (generic)
+def fig_29_04():
+    fig, ax = new_ax()
+    up = synth_walk(20, drift=0.7, vol=0.5, start=100, seed=294)
+    pull = synth_walk(16, drift=-0.35, vol=0.4, start=up[-1], seed=295)
+    closes = np.concatenate([up, pull])
+    o, h, l, c = to_ohlc(closes, seed=294)
+    plot_candles(ax, o, h, l, c)
+    swing_low, swing_high = l[:20].min(), h[:20].max()
+    rng = swing_high - swing_low
+    levels = {"0%": 1.0, "23.6%": 0.764, "38.2%": 0.618, "50%": 0.5, "61.8%": 0.382, "78.6%": 0.214, "100%": 0.0}
+    for label, frac in levels.items():
+        y = swing_low + rng * frac
+        hline(ax, y, 0, 35, color=GREY, ls=":", lw=1.0, label=label, label_side="right")
+    set_ylim_pad(ax, list(l) + list(h))
+    save(fig, "fig-29-04")
+
+# ============================================================ 29.5 Elliott Wave (5-3)
+def fig_29_05():
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    pts_x = [0, 1, 1.6, 2.6, 3.2, 4.4, 5, 6.2, 6.8, 8]
+    pts_y = [0, 2.2, 1.4, 3.6, 2.6, 5.0, 3.8, 4.6, 3.0, 1.6]
+    ax.plot(pts_x, pts_y, color=NAVY, linewidth=2.2, marker="o", markersize=4)
+    wave_labels = ["1", "2", "3", "4", "5", "A", "B", "C"]
+    for i, lab in enumerate(wave_labels):
+        ax.text(pts_x[i + 1], pts_y[i + 1] + 0.25, lab, fontsize=10, color=GOLD, fontweight="bold", ha="center")
+    ax.axvspan(0, 5, color=GREEN, alpha=0.05)
+    ax.axvspan(5, 8, color=RED, alpha=0.05)
+    ax.text(2.5, -0.6, "Impulse Waves (1-5)", color=GREEN, fontsize=9.5, ha="center", fontweight="bold")
+    ax.text(6.5, -0.6, "Corrective Waves (A-B-C)", color=RED, fontsize=9.5, ha="center", fontweight="bold")
+    ax.set_xticks([]); ax.set_yticks([])
+    for s in ax.spines.values(): s.set_visible(False)
+    save(fig, "fig-29-05")
+
+# ============================================================ 30.2 Open Interest
+def fig_30_02():
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8.6, 5.6), dpi=150, gridspec_kw={"height_ratios": [1.6, 1]})
+    n = 30
+    closes = synth_walk(n, drift=0.4, vol=0.5, start=100, seed=302)
+    o, h, l, c = to_ohlc(closes, seed=302)
+    plot_candles(ax1, o, h, l, c, width=0.55)
+    for s in ["top", "right"]: ax1.spines[s].set_visible(False)
+    ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
+    oi = 1000 + np.cumsum(np.random.default_rng(303).normal(35, 15, n))
+    ax2.plot(oi, color=GOLD, linewidth=2)
+    ax2.fill_between(np.arange(n), oi.min() - 50, oi, color=GOLD_LIGHT, alpha=0.2)
+    ax2.set_ylabel("Open Interest")
+    ax2.set_xlabel("Time →")
+    for s in ["top", "right"]: ax2.spines[s].set_visible(False)
+    fig.tight_layout(pad=0.6)
+    save(fig, "fig-30-02")
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("fig_")]
     for fn in fns:
