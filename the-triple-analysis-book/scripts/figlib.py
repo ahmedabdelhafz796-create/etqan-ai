@@ -47,12 +47,21 @@ plt.rcParams.update({
 # correctly by the bidi algorithm automatically -- no special-casing needed.
 _ARABIC_RE = re.compile(r'[؀-ۿ]')
 
+# matplotlib (esp. Legend) sometimes calls Text.set_text(...) more than once
+# on the same artist -- reshaping+bidi-reordering an already-processed string
+# corrupts it (arabic_reshaper expects unshaped input). A leading zero-width
+# space marks text this function has already produced, so a second call is a
+# no-op instead of re-mangling it.
+_PROCESSED_MARK = "​"
+
 
 def ar(text):
     text = str(text)
+    if text.startswith(_PROCESSED_MARK):
+        return text
     if not _ARABIC_RE.search(text):
         return text
-    return get_display(arabic_reshaper.reshape(text))
+    return _PROCESSED_MARK + get_display(arabic_reshaper.reshape(text))
 
 
 _orig_set_text = matplotlib.text.Text.set_text

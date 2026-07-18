@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-18T23:48:59.312981</dc:date>
+    <dc:date>2026-07-18T23:55:06.867540</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -35,17 +35,17 @@ L 255.275325 285.24158
 L 255.275325 138.06644 
 L 172.58355 138.06644 
 z
-" clip-path="url(#p4722531886)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#p45522c6077)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="line2d_1">
     <path d="M 213.929437 334.29996 
 L 213.929437 285.24158 
-" clip-path="url(#p4722531886)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p45522c6077)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: square"/>
    </g>
    <g id="line2d_2">
     <path d="M 213.929437 138.06644 
 L 213.929437 81.99972 
-" clip-path="url(#p4722531886)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p45522c6077)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: square"/>
    </g>
    <g id="patch_3">
     <path d="M 332.452684 62.531218 
@@ -58,7 +58,7 @@ z
 " style="fill: #1f2937; stroke: #1f2937; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
    <g id="text_1">
-    <!-- (ﺮﻌﺳ ﻰﻠﻋﺃ) ﻱﻮﻠﻌﻟﺍ ﻞﻴﺘﻔﻟﺍ -->
+    <!-- ​(ﺮﻌﺳ ﻰﻠﻋﺃ) ﻱﻮﻠﻌﻟﺍ ﻞﻴﺘﻔﻟﺍ -->
     <g style="fill: #1f2937" transform="translate(327.630628 53.96636) scale(0.095 -0.095)">
      <defs>
       <path id="NotoNaskhArabic-Regular-3" d="M 666 0 
@@ -659,6 +659,7 @@ z
      <use xlink:href="#NotoNaskhArabic-Regular-135" transform="translate(772.890625 0)"/>
      <use xlink:href="#NotoNaskhArabic-Regular-d4" transform="translate(814.296875 0)"/>
      <use xlink:href="#DejaVuSans-c" transform="translate(854.703125 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Regular-554" transform="translate(893.71875 0)"/>
     </g>
    </g>
    <g id="patch_4">
@@ -672,7 +673,7 @@ z
 " style="fill: #1f2937; stroke: #1f2937; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
    <g id="text_2">
-    <!-- (ﻕﻼﻏﻹﺍﻭ ﺡﺎﺘﺘﻓﻻﺍ ﻦﻴﺑ) ﺔﻌﻤﺸﻟﺍ ﻢﺴﺟ -->
+    <!-- ​(ﻕﻼﻏﻹﺍﻭ ﺡﺎﺘﺘﻓﻻﺍ ﻦﻴﺑ) ﺔﻌﻤﺸﻟﺍ ﻢﺴﺟ -->
     <g style="fill: #1f2937" transform="translate(327.630628 180.11648) scale(0.095 -0.095)">
      <defs>
       <path id="NotoNaskhArabic-Regular-74" d="M 0 0 
@@ -1471,6 +1472,7 @@ z
      <use xlink:href="#NotoNaskhArabic-Regular-2df" transform="translate(1124.15625 0)"/>
      <use xlink:href="#NotoNaskhArabic-Regular-167" transform="translate(1185.15625 0)"/>
      <use xlink:href="#DejaVuSans-c" transform="translate(1249.859375 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Regular-554" transform="translate(1288.875 0)"/>
     </g>
    </g>
    <g id="patch_5">
@@ -1484,7 +1486,7 @@ z
 " style="fill: #1f2937; stroke: #1f2937; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
    <g id="text_3">
-    <!-- (ﺮﻌﺳ ﻰﻧﺩﺃ) ﻲﻠﻔﺴﻟﺍ ﻞﻴﺘﻔﻟﺍ -->
+    <!-- ​(ﺮﻌﺳ ﻰﻧﺩﺃ) ﻲﻠﻔﺴﻟﺍ ﻞﻴﺘﻔﻟﺍ -->
     <g style="fill: #1f2937" transform="translate(327.630628 341.3083) scale(0.095 -0.095)">
      <defs>
       <path id="NotoNaskhArabic-Regular-23f" d="M 1811 -1670 
@@ -1614,10 +1616,11 @@ z
      <use xlink:href="#NotoNaskhArabic-Regular-135" transform="translate(790.5 0)"/>
      <use xlink:href="#NotoNaskhArabic-Regular-d4" transform="translate(831.90625 0)"/>
      <use xlink:href="#DejaVuSans-c" transform="translate(872.3125 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Regular-554" transform="translate(911.328125 0)"/>
     </g>
    </g>
    <g id="text_4">
-    <!-- ﻕﻼﻏﺇ -->
+    <!-- ​ﻕﻼﻏﺇ -->
     <g style="fill: #ffffff" transform="translate(205.072172 132.67744) scale(0.085 -0.085)">
      <defs>
       <path id="NotoNaskhArabic-Bold-a" d="M 774 58 
@@ -1791,15 +1794,17 @@ Q 2311 3475 2592 3212
 Q 2432 2982 2202 2764 
 z
 " transform="scale(0.015625)"/>
+      <path id="NotoNaskhArabic-Bold-554" transform="scale(0.015625)"/>
      </defs>
      <use xlink:href="#NotoNaskhArabic-Bold-a"/>
      <use xlink:href="#NotoNaskhArabic-Bold-13e" transform="translate(28.40625 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-2df" transform="translate(80.109375 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-167" transform="translate(143.203125 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Bold-554" transform="translate(208.40625 0)"/>
     </g>
    </g>
    <g id="text_5">
-    <!-- ﺡﺎﺘﺘﻓﺍ -->
+    <!-- ​ﺡﺎﺘﺘﻓﺍ -->
     <g style="fill: #ffffff" transform="translate(203.839672 294.32808) scale(0.085 -0.085)">
      <defs>
       <path id="NotoNaskhArabic-Bold-3" d="M 774 58 
@@ -1966,10 +1971,11 @@ z
      <use xlink:href="#NotoNaskhArabic-Bold-37" transform="translate(107.109375 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-4" transform="translate(143.109375 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-89" transform="translate(171.90625 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Bold-554" transform="translate(237.40625 0)"/>
     </g>
    </g>
    <g id="text_6">
-    <!-- (Bullish Candle) ﺓﺪﻋﺎﺻ ﺔﻌﻤﺷ ﺢﻳﺮﺸﺗ -->
+    <!-- ​(Bullish Candle) ﺓﺪﻋﺎﺻ ﺔﻌﻤﺷ ﺢﻳﺮﺸﺗ -->
     <g style="fill: #1f2937" transform="translate(123.306625 18.959) scale(0.11 -0.11)">
      <defs>
       <path id="DejaVuSans-Bold-b" d="M 2413 -844 
@@ -2113,7 +2119,6 @@ Q 3428 3584 3742 3212
 Q 4056 2841 4056 2131 
 z
 " transform="scale(0.015625)"/>
-      <path id="NotoNaskhArabic-Bold-554" transform="scale(0.015625)"/>
       <path id="DejaVuSans-Bold-26" d="M 4288 256 
 Q 3956 84 3597 -3 
 Q 3238 -91 2847 -91 
@@ -2819,6 +2824,7 @@ Q 1056 3373 826 3155
 z
 " transform="scale(0.015625)"/>
      </defs>
+     <use xlink:href="#NotoNaskhArabic-Bold-554"/>
      <use xlink:href="#DejaVuSans-Bold-b"/>
      <use xlink:href="#DejaVuSans-Bold-25" transform="translate(45.703125 0)"/>
      <use xlink:href="#DejaVuSans-Bold-58" transform="translate(121.921875 0)"/>
@@ -2857,7 +2863,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p4722531886">
+  <clipPath id="p45522c6077">
    <rect x="7.2" y="25.933" width="413.458875" height="350.417"/>
   </clipPath>
  </defs>

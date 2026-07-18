@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-18T23:48:57.471975</dc:date>
+    <dc:date>2026-07-18T23:55:05.051596</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -70,7 +70,7 @@ z
    <g id="matplotlib.axis_1"/>
    <g id="matplotlib.axis_2"/>
    <g id="text_1">
-    <!-- ﻙﻼﻬﺘﺳﻻﺍ -->
+    <!-- ​ﻙﻼﻬﺘﺳﻻﺍ -->
     <g style="fill: #1f2937" transform="translate(7.2 282.114192) scale(0.1 -0.1)">
      <defs>
       <path id="NotoNaskhArabic-Bold-3" d="M 774 58 
@@ -362,6 +362,7 @@ Q 1875 1626 1699 1533
 Q 1523 1440 1370 1440 
 z
 " transform="scale(0.015625)"/>
+      <path id="NotoNaskhArabic-Bold-554" transform="scale(0.015625)"/>
      </defs>
      <use xlink:href="#NotoNaskhArabic-Bold-3"/>
      <use xlink:href="#NotoNaskhArabic-Bold-2de" transform="translate(28.40625 0)"/>
@@ -370,10 +371,11 @@ z
      <use xlink:href="#NotoNaskhArabic-Bold-1ff" transform="translate(189 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-2df" transform="translate(228.703125 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-173" transform="translate(291.796875 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Bold-554" transform="translate(353.59375 0)"/>
     </g>
    </g>
    <g id="text_2">
-    <!-- ﺭﺎﻤﺜﺘﺳﻻﺍ -->
+    <!-- ​ﺭﺎﻤﺜﺘﺳﻻﺍ -->
     <g style="fill: #1f2937" transform="translate(411.463811 316.985929) scale(0.1 -0.1)">
      <defs>
       <path id="NotoNaskhArabic-Bold-43" d="M 0 58 
@@ -512,10 +514,11 @@ z
      <use xlink:href="#NotoNaskhArabic-Bold-1e4" transform="translate(225 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-4" transform="translate(266.296875 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-d3" transform="translate(295.09375 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Bold-554" transform="translate(332.796875 0)"/>
     </g>
    </g>
    <g id="text_3">
-    <!-- ﻕﺎﻔﻧﻹﺍ -->
+    <!-- ​ﻕﺎﻔﻧﻹﺍ -->
     <g style="fill: #1f2937" transform="translate(380.997759 94.405292) scale(0.1 -0.1)">
      <defs>
       <path id="NotoNaskhArabic-Bold-2ea" d="M 896 0 
@@ -720,6 +723,7 @@ z
      <use xlink:href="#NotoNaskhArabic-Bold-145" transform="translate(110.5 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-4" transform="translate(151.703125 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-167" transform="translate(180.5 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Bold-554" transform="translate(245.703125 0)"/>
     </g>
     <!-- ﻲﻣﻮﻜﺤﻟﺍ -->
     <g style="fill: #1f2937" transform="translate(380.997759 111.435292) scale(0.1 -0.1)">
@@ -961,7 +965,7 @@ z
     </g>
    </g>
    <g id="text_4">
-    <!-- ﺕﺍﺭﺩﺎﺼﻟﺍ ﻲﻓﺎﺻ -->
+    <!-- ​ﺕﺍﺭﺩﺎﺼﻟﺍ ﻲﻓﺎﺻ -->
     <g style="fill: #1f2937" transform="translate(264.09334 38.651544) scale(0.1 -0.1)">
      <defs>
       <path id="NotoNaskhArabic-Bold-112" d="M 2592 0 
@@ -1048,7 +1052,6 @@ Q 1760 3732 1648 3604
 Q 1536 3476 1388 3328 
 z
 " transform="scale(0.015625)"/>
-      <path id="NotoNaskhArabic-Bold-554" transform="scale(0.015625)"/>
       <path id="NotoNaskhArabic-Bold-111" d="M 2592 0 
 Q 2163 0 1699 80 
 Q 1235 160 851 339 
@@ -1181,6 +1184,7 @@ z
      <use xlink:href="#NotoNaskhArabic-Bold-d3" transform="translate(449.09375 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-3" transform="translate(486.796875 0)"/>
      <use xlink:href="#NotoNaskhArabic-Bold-35" transform="translate(515.203125 0)"/>
+     <use xlink:href="#NotoNaskhArabic-Bold-554" transform="translate(595.796875 0)"/>
     </g>
    </g>
    <g id="text_5">
