@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-18T23:34:51.413085</dc:date>
+    <dc:date>2026-07-18T23:42:01.306149</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -43,7 +43,7 @@ L 128.484375 158.85826
 L 128.484375 60.0164 
 L 76.165625 60.0164 
 z
-" clip-path="url(#p09a32047a6)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#pb76a66badc)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 171.290625 148.63324 
@@ -51,7 +51,7 @@ L 223.609375 148.63324
 L 223.609375 131.59154 
 L 171.290625 131.59154 
 z
-" clip-path="url(#p09a32047a6)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#pb76a66badc)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 266.415625 134.99988 
@@ -59,7 +59,7 @@ L 318.734375 134.99988
 L 318.734375 117.95818 
 L 266.415625 117.95818 
 z
-" clip-path="url(#p09a32047a6)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#pb76a66badc)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="patch_6">
     <path d="M 361.540625 121.36652 
@@ -67,7 +67,7 @@ L 413.859375 121.36652
 L 413.859375 107.73316 
 L 361.540625 107.73316 
 z
-" clip-path="url(#p09a32047a6)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#pb76a66badc)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
     <path d="M 456.665625 189.53332 
@@ -75,34 +75,34 @@ L 508.984375 189.53332
 L 508.984375 111.1415 
 L 456.665625 111.1415 
 z
-" clip-path="url(#p09a32047a6)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#pb76a66badc)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="matplotlib.axis_1"/>
    <g id="matplotlib.axis_2"/>
    <g id="line2d_1">
     <path d="M 102.325 162.2666 
 L 102.325 56.60806 
-" clip-path="url(#p09a32047a6)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pb76a66badc)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="line2d_2">
     <path d="M 197.45 152.04158 
 L 197.45 128.1832 
-" clip-path="url(#p09a32047a6)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pb76a66badc)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="line2d_3">
     <path d="M 292.575 138.40822 
 L 292.575 114.54984 
-" clip-path="url(#p09a32047a6)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pb76a66badc)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="line2d_4">
     <path d="M 387.7 124.77486 
 L 387.7 104.32482 
-" clip-path="url(#p09a32047a6)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pb76a66badc)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="line2d_5">
     <path d="M 482.825 196.35 
 L 482.825 107.73316 
-" clip-path="url(#p09a32047a6)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pb76a66badc)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="text_1">
     <!-- ﻲﻃﻮﺒﻫ ﺭﺍﺮﻤﺘﺳﺍ — (Falling Three Methods) ﺔﻄﺑﺎﻬﻟﺍ ﻕﺮﻃ ﺙﻼﺜﻟﺍ -->
@@ -1332,7 +1332,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p09a32047a6">
+  <clipPath id="pb76a66badc">
    <rect x="7.2" y="25.933" width="570.75" height="170.417"/>
   </clipPath>
  </defs>

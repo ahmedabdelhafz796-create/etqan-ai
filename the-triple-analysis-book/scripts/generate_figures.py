@@ -1576,6 +1576,83 @@ def fig_31_01():
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-31-01")
 
+# ============================================================ 31.1 Harmonic pattern XABCD (dedicated)
+def fig_31_02():
+    fig, ax = plt.subplots(figsize=(8.0, 5.0), dpi=150)
+    fig.patch.set_facecolor("white")
+    pts = {"X": (0, 1.0), "A": (1.5, 4.5), "B": (2.6, 2.4), "C": (3.8, 3.8), "D": (5.0, 0.6)}
+    xs = [p[0] for p in pts.values()]
+    ys = [p[1] for p in pts.values()]
+    ax.plot(xs, ys, color=NAVY, linewidth=2.2, marker="o", markersize=6)
+    for name, (x, y) in pts.items():
+        ax.text(x, y + 0.25, name, fontsize=12, color=GOLD, fontweight="bold", ha="center")
+    ax.text(0.75, 3.0, "XA", color=GREY, fontsize=8.5, ha="center")
+    ax.text(2.05, 3.7, "AB (61.8% XA)", color=GREY, fontsize=8.5, ha="center")
+    ax.text(3.2, 2.9, "BC", color=GREY, fontsize=8.5, ha="center")
+    ax.text(4.4, 2.4, "CD", color=GREY, fontsize=8.5, ha="center")
+    ax.text(2.5, -0.4, "منطقة D: عكس محتمل عند تطابق نسب فيبوناتشي الدقيقة", color=NAVY, fontsize=9,
+            ha="center", fontweight="bold")
+    ax.set_xlim(-0.5, 5.5); ax.set_ylim(-0.8, 5.2)
+    ax.set_xticks([]); ax.set_yticks([])
+    for s in ax.spines.values(): s.set_visible(False)
+    ax.set_title("النمط التوافقي (Harmonic Pattern) — تسلسل X-A-B-C-D", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-31-02")
+
+# ============================================================ 31.2 Gann angles (dedicated)
+def fig_31_03():
+    fig, ax = new_ax(w=8.6, h=4.8)
+    closes = synth_walk(40, drift=0.4, vol=0.5, start=100, seed=3103)
+    o, h, l, c = to_ohlc(closes, seed=3103)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    x0, y0 = 0, l.min()
+    for slope, label, color in [(0.5, "1x2", GREY), (1.0, "1x1 (زاوية جان الأساسية)", GOLD), (2.0, "2x1", RED)]:
+        xs = np.array([x0, 39])
+        ax.plot(xs, y0 + slope * (xs - x0), color=color, linewidth=1.8, linestyle="--")
+        ax.text(39.3, y0 + slope * 39, label, color=color, fontsize=8.5, va="center")
+    set_ylim_pad(ax, list(l) + list(h) + [y0 + 2.0 * 39], pad_frac=0.05)
+    ax.set_title("زوايا جان (Gann Angles): علاقة هندسية بين السعر والزمن", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-31-03")
+
+# ============================================================ 31.4 Market Profile / Value Area (dedicated)
+def fig_31_04():
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.4, 4.8), dpi=150, gridspec_kw={"width_ratios": [2.6, 1]})
+    n = 40
+    closes = 100 + 3 * np.sin(np.arange(n) / 5) + np.random.default_rng(3104).normal(0, 0.3, n)
+    o, h, l, c = to_ohlc(closes, seed=3104)
+    plot_candles(ax1, o, h, l, c, width=0.55)
+    for s in ["top", "right"]: ax1.spines[s].set_visible(False)
+    ax1.set_xticks([])
+    price_bins = np.linspace(l.min(), h.max(), 20)
+    counts = np.exp(-((price_bins - np.median(closes)) ** 2) / 1.2) * 40 + np.random.default_rng(3105).uniform(0, 3, 20)
+    ax2.barh(price_bins, counts, height=(price_bins[1] - price_bins[0]) * 0.9, color=GOLD_LIGHT, edgecolor=GOLD)
+    va_lo, va_hi = np.percentile(price_bins, 30), np.percentile(price_bins, 70)
+    ax2.axhspan(va_lo, va_hi, color=GREEN, alpha=0.12)
+    ax2.text(counts.max() * 0.5, (va_lo + va_hi) / 2, "منطقة القيمة\n(Value Area)", color=GREEN, fontsize=8.5,
+              ha="center", va="center", fontweight="bold")
+    ax2.set_ylim(ax1.get_ylim())
+    ax2.set_xlabel("حجم عند كل مستوى")
+    for s in ["top", "right"]: ax2.spines[s].set_visible(False)
+    ax2.set_yticks([])
+    fig.suptitle("بروفايل السوق (Market Profile): توزيع الحجم عبر المستويات السعرية", fontsize=10.5, color=NAVY, fontweight="bold")
+    fig.tight_layout(pad=0.8, rect=[0, 0, 1, 0.93])
+    save(fig, "fig-31-04")
+
+# ============================================================ 31.6 Pivot points (dedicated)
+def fig_31_05():
+    fig, ax = new_ax(w=8.6, h=4.8)
+    closes = synth_walk(30, drift=0.1, vol=0.5, start=100, seed=3106)
+    o, h, l, c = to_ohlc(closes, seed=3106)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    pp = (h.max() + l.min() + c[-1]) / 3
+    rng = h.max() - l.min()
+    levels = {"R2": pp + rng, "R1": pp + rng * 0.5, "PP": pp, "S1": pp - rng * 0.5, "S2": pp - rng}
+    colors_map = {"R2": RED, "R1": RED, "PP": NAVY, "S1": GREEN, "S2": GREEN}
+    for label, y in levels.items():
+        hline(ax, y, 0, len(closes) - 1, color=colors_map[label], ls="--", lw=1.4, label=label, label_side="right")
+    set_ylim_pad(ax, list(l) + list(h) + [levels["R2"] + 1, levels["S2"] - 1])
+    ax.set_title("نقاط البيفوت (Pivot Points): PP وR1/R2 وS1/S2", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-31-05")
+
 # ============================================================ 32.1 Triple analysis composite
 def fig_32_01():
     fig, ax = new_ax()
@@ -2068,6 +2145,122 @@ def fig_29_05():
     ax.set_xticks([]); ax.set_yticks([])
     for s in ax.spines.values(): s.set_visible(False)
     save(fig, "fig-29-05")
+
+# ============================================================ 29.10 RSI overbought/oversold (dedicated)
+def fig_29_06():
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8.6, 5.4), dpi=150, gridspec_kw={"height_ratios": [2, 1]})
+    n = 40
+    closes = 100 + np.cumsum(np.random.default_rng(2906).normal(0.15, 0.5, n))
+    o, h, l, c = to_ohlc(closes, seed=2906)
+    plot_candles(ax1, o, h, l, c, width=0.55)
+    ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax1.spines[s].set_visible(False)
+    ax1.set_ylabel("السعر")
+    r = rsi(closes)
+    ax2.plot(r, color=GOLD, linewidth=2)
+    ax2.axhline(70, color=RED, linestyle="--", linewidth=1.3)
+    ax2.axhline(30, color=GREEN, linestyle="--", linewidth=1.3)
+    ax2.fill_between(np.arange(n), 70, 100, color=RED, alpha=0.08)
+    ax2.fill_between(np.arange(n), 0, 30, color=GREEN, alpha=0.08)
+    ax2.text(n - 1, 72, "تشبع شرائي", color=RED, fontsize=8.5, ha="right", fontweight="bold")
+    ax2.text(n - 1, 24, "تشبع بيعي", color=GREEN, fontsize=8.5, ha="right", fontweight="bold")
+    ax2.set_ylabel("RSI")
+    ax2.set_ylim(0, 100)
+    ax2.set_xticks([])
+    for s in ["top", "right"]: ax2.spines[s].set_visible(False)
+    fig.tight_layout(pad=0.6)
+    save(fig, "fig-29-06")
+
+# ============================================================ 29.11 Stochastic (dedicated)
+def fig_29_07():
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8.6, 5.4), dpi=150, gridspec_kw={"height_ratios": [2, 1]})
+    n = 40
+    closes = 100 + 3 * np.sin(np.arange(n) / 4) + np.random.default_rng(2907).normal(0, 0.3, n)
+    o, h, l, c = to_ohlc(closes, seed=2907)
+    plot_candles(ax1, o, h, l, c, width=0.55)
+    ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax1.spines[s].set_visible(False)
+    ax1.set_ylabel("السعر")
+    k = 50 + 45 * np.sin(np.arange(n) / 3.2)
+    dline = rolling_mean(k, 3)
+    ax2.plot(k, color=NAVY, linewidth=1.8, label="%K")
+    ax2.plot(dline, color=GOLD, linewidth=1.6, linestyle="--", label="%D")
+    ax2.axhline(80, color=RED, linestyle=":", linewidth=1.2)
+    ax2.axhline(20, color=GREEN, linestyle=":", linewidth=1.2)
+    ax2.set_ylabel("ستوكاستيك")
+    ax2.set_ylim(0, 100)
+    ax2.set_xticks([])
+    ax2.legend(frameon=False, fontsize=8.5, loc="upper right")
+    for s in ["top", "right"]: ax2.spines[s].set_visible(False)
+    fig.tight_layout(pad=0.6)
+    save(fig, "fig-29-07")
+
+# ============================================================ 29.13 Ichimoku Cloud (dedicated, simplified)
+def fig_29_08():
+    fig, ax = new_ax(w=8.6, h=4.8)
+    n = 50
+    closes = synth_walk(n, drift=0.35, vol=0.5, start=100, seed=2908)
+    o, h, l, c = to_ohlc(closes, seed=2908)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    tenkan = rolling_mean(closes, 5)
+    kijun = rolling_mean(closes, 12)
+    span_a = (tenkan + kijun) / 2 + 2.5
+    span_b = rolling_mean(closes, 20) + 2.5
+    ax.plot(tenkan, color=RED, linewidth=1.4, label="خط التحويل (Tenkan)")
+    ax.plot(kijun, color=NAVY, linewidth=1.6, label="خط الأساس (Kijun)")
+    ax.fill_between(np.arange(n), span_a, span_b, color=GOLD_LIGHT, alpha=0.3,
+                     where=(span_a >= span_b), interpolate=True)
+    ax.fill_between(np.arange(n), span_a, span_b, color="#B0C4DE", alpha=0.3,
+                     where=(span_a < span_b), interpolate=True)
+    ax.text(n / 2, max(span_a.max(), span_b.max()) + 1.5, "السحابة المستقبلية (Kumo)", color=GOLD,
+            fontsize=9, ha="center", fontweight="bold")
+    ax.legend(frameon=False, fontsize=8.5, loc="upper left")
+    set_ylim_pad(ax, list(l) + list(h) + list(span_a) + list(span_b) + [max(span_a.max(), span_b.max()) + 2])
+    save(fig, "fig-29-08")
+
+# ============================================================ 29.15 Fibonacci extension (dedicated)
+def fig_29_09():
+    fig, ax = new_ax(w=8.6, h=4.6)
+    up1 = synth_walk(16, drift=0.65, vol=0.5, start=100, seed=2909)
+    pull = synth_walk(10, drift=-0.35, vol=0.4, start=up1[-1], seed=29091)
+    ext = synth_walk(14, drift=0.7, vol=0.5, start=pull[-1], seed=29092)
+    closes = np.concatenate([up1, pull, ext])
+    o, h, l, c = to_ohlc(closes, seed=2909)
+    plot_candles(ax, o, h, l, c, width=0.5)
+    swing_low, swing_high = l[:16].min(), h[:16].max()
+    rng = swing_high - swing_low
+    levels = {"100%": swing_high, "127%": swing_low + rng * 1.27, "161.8%": swing_low + rng * 1.618}
+    for label, y in levels.items():
+        hline(ax, y, 16, len(closes) - 1, color=GOLD, ls=":", lw=1.2, label=label, label_side="right")
+    set_ylim_pad(ax, list(l) + list(h) + [levels["161.8%"] + 1.0])
+    ax.set_title("امتداد فيبوناتشي: أهداف محتملة بعد تجاوز نقطة سابقة", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-29-09")
+
+# ============================================================ 29.17 ATR-based stop distance (dedicated)
+def fig_29_10():
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8.6, 5.4), dpi=150, gridspec_kw={"height_ratios": [2, 1]})
+    n = 40
+    vol = np.concatenate([np.full(20, 0.3), np.linspace(0.3, 1.2, 10), np.full(10, 1.1)])
+    closes = 100 + np.cumsum(np.random.default_rng(2910).normal(0.1, vol))
+    o, h, l, c = to_ohlc(closes, seed=2910)
+    plot_candles(ax1, o, h, l, c, width=0.55)
+    atr_est = np.array([np.mean(h[max(0, i - 14):i + 1] - l[max(0, i - 14):i + 1]) for i in range(n)])
+    entry_x = 30
+    stop_narrow = c[entry_x] - atr_est[10] * 1.5
+    stop_wide = c[entry_x] - atr_est[entry_x] * 1.5
+    ax1.axhline(stop_narrow, color=RED, linestyle=":", linewidth=1.3)
+    ax1.axhline(stop_wide, color=GREEN, linestyle="--", linewidth=1.6)
+    ax1.text(n - 1, stop_narrow, "وقف ثابت (ضيق جدًا هنا)", color=RED, fontsize=8, ha="right", va="bottom")
+    ax1.text(n - 1, stop_wide, "وقف مبني على ATR الحالي", color=GREEN, fontsize=8, ha="right", va="top")
+    ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax1.spines[s].set_visible(False)
+    ax1.set_ylabel("السعر")
+    ax2.plot(atr_est, color=NAVY, linewidth=2)
+    ax2.set_ylabel("ATR")
+    ax2.set_xticks([])
+    for s in ["top", "right"]: ax2.spines[s].set_visible(False)
+    fig.tight_layout(pad=0.6)
+    save(fig, "fig-29-10")
 
 # ============================================================ 30.2 Open Interest
 def fig_30_02():
