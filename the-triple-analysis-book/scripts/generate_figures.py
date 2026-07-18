@@ -1632,6 +1632,77 @@ def fig_24_02():
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-24-02")
 
+# ============================================================ 24.3 Candlestick anatomy (dedicated)
+def fig_24_05():
+    fig, ax = plt.subplots(figsize=(6.4, 5.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    ax.set_xlim(0, 4); ax.set_ylim(0, 10); ax.axis("off")
+    ax.plot([2, 2], [1.2, 2.6], color=GREEN, linewidth=2)
+    ax.add_patch(Rectangle((1.6, 2.6), 0.8, 4.2, facecolor=GREEN, edgecolor=GREEN))
+    ax.plot([2, 2], [6.8, 8.4], color=GREEN, linewidth=2)
+    ax.annotate("الفتيل العلوي (أعلى سعر)", xy=(2, 8.0), xytext=(3.1, 9.2), fontsize=9.5, color=NAVY,
+                ha="left", arrowprops=dict(arrowstyle="-|>", color=NAVY, linewidth=1.4))
+    ax.annotate("جسم الشمعة (بين الافتتاح والإغلاق)", xy=(2.4, 4.7), xytext=(3.1, 5.6), fontsize=9.5, color=NAVY,
+                ha="left", arrowprops=dict(arrowstyle="-|>", color=NAVY, linewidth=1.4))
+    ax.annotate("الفتيل السفلي (أدنى سعر)", xy=(2, 1.8), xytext=(3.1, 1.0), fontsize=9.5, color=NAVY,
+                ha="left", arrowprops=dict(arrowstyle="-|>", color=NAVY, linewidth=1.4))
+    ax.text(2, 6.8, "إغلاق", color="white", fontsize=8.5, ha="center", va="bottom", fontweight="bold")
+    ax.text(2, 2.6, "افتتاح", color="white", fontsize=8.5, ha="center", va="top", fontweight="bold")
+    ax.set_title("تشريح شمعة صاعدة (Bullish Candle)", fontsize=11, color=NAVY, fontweight="bold")
+    save(fig, "fig-24-05")
+
+# ============================================================ 24.5-24.7 Renko, Kagi, Point & Figure (reference sheet)
+def fig_24_06():
+    fig, axes = plt.subplots(1, 3, figsize=(10.5, 3.8), dpi=150)
+
+    def renko(ax):
+        rng = np.random.default_rng(2406)
+        y = 0
+        ys = [0]
+        for i in range(10):
+            step = rng.choice([-1, 1]) * 0.5
+            color = GREEN if step > 0 else RED
+            ax.add_patch(Rectangle((i, min(y, y + step)), 0.9, abs(step), facecolor=color, edgecolor=color))
+            y += step
+            ys.append(y)
+        ax.set_xlim(-0.5, 10.5)
+        ax.set_ylim(min(ys) - 0.5, max(ys) + 0.5)
+        ax.set_title("رينكو (Renko)", fontsize=10, color=NAVY, fontweight="bold")
+
+    def kagi(ax):
+        pts_x = [0, 1, 1, 2, 2, 3, 3, 4]
+        pts_y = [0, 0, 1.4, 1.4, 0.6, 0.6, 2.0, 2.0]
+        ax.plot(pts_x, pts_y, color=NAVY, linewidth=2.4)
+        ax.set_xlim(-0.5, 4.5)
+        ax.set_ylim(-0.5, 2.5)
+        ax.set_title("كاغي (Kagi)", fontsize=10, color=NAVY, fontweight="bold")
+
+    def pnf(ax):
+        rng = np.random.default_rng(2407)
+        col_x = 0
+        y = 0
+        ys = [0]
+        for i in range(6):
+            up = rng.random() > 0.4
+            marker = "x" if up else "o"
+            color = GREEN if up else RED
+            n = rng.integers(2, 5)
+            for j in range(n):
+                y += 1 if up else -1
+                ax.text(col_x, y, marker, color=color, ha="center", va="center", fontsize=11, fontweight="bold")
+                ys.append(y)
+            col_x += 1
+        ax.set_xlim(-1, 6)
+        ax.set_ylim(min(ys) - 1, max(ys) + 1)
+        ax.set_title("النقاط والأشكال (P&F)", fontsize=10, color=NAVY, fontweight="bold")
+
+    for ax, fn in zip(axes, [renko, kagi, pnf]):
+        fn(ax)
+        for s in ax.spines.values(): s.set_visible(False)
+        ax.set_xticks([]); ax.set_yticks([])
+    fig.tight_layout(pad=1.0)
+    save(fig, "fig-24-06")
+
 # ============================================================ 24.3 Line chart sample
 def fig_24_03():
     fig, ax = new_ax()
