@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="628.35pt" height="263.450838pt" viewBox="0 0 628.35 263.450838" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-19T15:23:26.674931</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.1, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 263.450838 
+L 628.35 263.450838 
+L 628.35 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 54.100484 186.170609 
+L 621.15 186.170609 
+L 621.15 52.490609 
+L 54.100484 52.490609 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="FillBetweenPolyCollection_1">
+    <defs>
+     <path id="m76651ea099" d="M 79.875462 -153.807186 
+L 79.875462 -153.807186 
+L 126.739059 -136.194538 
+L 173.602655 -118.581889 
+L 220.466251 -100.969241 
+L 267.329848 -83.356593 
+L 314.193444 -136.194538 
+L 361.05704 -145.000862 
+L 407.920637 -127.388213 
+L 454.784233 -134.433273 
+L 501.647829 -116.820625 
+L 548.511426 -99.207976 
+L 595.375022 -204.883866 
+L 595.375022 -204.883866 
+L 595.375022 -204.883866 
+L 548.511426 -153.807186 
+L 501.647829 -153.807186 
+L 454.784233 -153.807186 
+L 407.920637 -153.807186 
+L 361.05704 -153.807186 
+L 314.193444 -153.807186 
+L 267.329848 -153.807186 
+L 220.466251 -153.807186 
+L 173.602655 -153.807186 
+L 126.739059 -153.807186 
+L 79.875462 -153.807186 
+z
+" style="stroke: #b91c1c; stroke-opacity: 0.15"/>
+    </defs>
+    <g clip-path="url(#p56d95a3622)">
+     <use xlink:href="#m76651ea099" x="0" y="263.450838" style="fill: #b91c1c; fill-opacity: 0.15; stroke: #b91c1c; stroke-opacity: 0.15"/>
+    </g>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="ma3ab42035e" d="M 0 0 
+L 0 3.5 
+" style="stroke: #555555; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#ma3ab42035e" x="79.875462" y="186.170609" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="79.875462" y="204.395109" transform="rotate(-0 79.875462 204.395109)">0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#ma3ab42035e" x="173.602655" y="186.170609" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="173.602655" y="204.395109" transform="rotate(-0 173.602655 204.395109)">2</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#ma3ab42035e" x="267.329848" y="186.170609" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="267.329848" y="204.395109" transform="rotate(-0 267.329848 204.395109)">4</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#ma3ab42035e" x="361.05704" y="186.170609" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="361.05704" y="204.395109" transform="rotate(-0 361.05704 204.395109)">6</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#ma3ab42035e" x="454.784233" y="186.170609" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="454.784233" y="204.395109" transform="rotate(-0 454.784233 204.395109)">8</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#ma3ab42035e" x="548.511426" y="186.170609" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="548.511426" y="204.395109" transform="rotate(-0 548.511426 204.395109)">10</text>
+     </g>
+    </g>
+    <g id="text_7">
+     <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #1f2937" x="337.625242" y="226.276609" transform="rotate(-0 337.625242 226.276609)">​ﺔﻘﻔﺼﻟﺍ ﻢﻗﺭ</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_7">
+      <path d="M 54.100484 162.481597 
+L 621.15 162.481597 
+" clip-path="url(#p56d95a3622)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_8">
+      <defs>
+       <path id="mfc2a23e979" d="M 0 0 
+L -3.5 0 
+" style="stroke: #555555; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mfc2a23e979" x="54.100484" y="162.481597" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: end; fill: #555555" x="47.100484" y="168.093847" transform="rotate(-0 47.100484 168.093847)">96</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_9">
+      <path d="M 54.100484 127.2563 
+L 621.15 127.2563 
+" clip-path="url(#p56d95a3622)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#mfc2a23e979" x="54.100484" y="127.2563" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: end; fill: #555555" x="47.100484" y="132.86855" transform="rotate(-0 47.100484 132.86855)">98</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_11">
+      <path d="M 54.100484 92.031004 
+L 621.15 92.031004 
+" clip-path="url(#p56d95a3622)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#mfc2a23e979" x="54.100484" y="92.031004" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: end; fill: #555555" x="47.100484" y="97.643254" transform="rotate(-0 47.100484 97.643254)">100</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_13">
+      <path d="M 54.100484 56.805708 
+L 621.15 56.805708 
+" clip-path="url(#p56d95a3622)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#mfc2a23e979" x="54.100484" y="56.805708" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: end; fill: #555555" x="47.100484" y="62.417958" transform="rotate(-0 47.100484 62.417958)">102</text>
+     </g>
+    </g>
+    <g id="text_12">
+     <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #1f2937" x="18.4245" y="119.330609" transform="rotate(-90 18.4245 119.330609)">​(Equity) ﻝﺎﻤﻟﺍ ﺱﺃﺭ</text>
+    </g>
+   </g>
+   <g id="line2d_15">
+    <path d="M 79.875462 109.643652 
+L 126.739059 127.2563 
+L 173.602655 144.868949 
+L 220.466251 162.481597 
+L 267.329848 180.094245 
+L 314.193444 127.2563 
+L 361.05704 118.449976 
+L 407.920637 136.062625 
+L 454.784233 129.017565 
+L 501.647829 146.630213 
+L 548.511426 164.242862 
+L 595.375022 58.566972 
+" clip-path="url(#p56d95a3622)" style="fill: none; stroke: #1f2937; stroke-width: 2.2; stroke-linecap: square"/>
+    <defs>
+     <path id="me0f2256df1" d="M 0 2.5 
+C 0.663008 2.5 1.29895 2.236584 1.767767 1.767767 
+C 2.236584 1.29895 2.5 0.663008 2.5 0 
+C 2.5 -0.663008 2.236584 -1.29895 1.767767 -1.767767 
+C 1.29895 -2.236584 0.663008 -2.5 0 -2.5 
+C -0.663008 -2.5 -1.29895 -2.236584 -1.767767 -1.767767 
+C -2.236584 -1.29895 -2.5 -0.663008 -2.5 0 
+C -2.5 0.663008 -2.236584 1.29895 -1.767767 1.767767 
+C -1.29895 2.236584 -0.663008 2.5 0 2.5 
+z
+" style="stroke: #1f2937"/>
+    </defs>
+    <g clip-path="url(#p56d95a3622)">
+     <use xlink:href="#me0f2256df1" x="79.875462" y="109.643652" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="126.739059" y="127.2563" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="173.602655" y="144.868949" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="220.466251" y="162.481597" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="267.329848" y="180.094245" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="314.193444" y="127.2563" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="361.05704" y="118.449976" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="407.920637" y="136.062625" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="454.784233" y="129.017565" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="501.647829" y="146.630213" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="548.511426" y="164.242862" style="fill: #1f2937; stroke: #1f2937"/>
+     <use xlink:href="#me0f2256df1" x="595.375022" y="58.566972" style="fill: #1f2937; stroke: #1f2937"/>
+    </g>
+   </g>
+   <g id="patch_3">
+    <path d="M 54.100484 186.170609 
+L 54.100484 52.490609 
+" style="fill: none; stroke: #1f2937; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 54.100484 186.170609 
+L 621.15 186.170609 
+" style="fill: none; stroke: #1f2937; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 199.082251 222.542846 
+Q 232.358369 201.845785 264.685111 181.739217 
+" style="fill: none; stroke: #b91c1c; stroke-linecap: round"/>
+    <path d="M 260.677498 182.112101 
+L 264.685111 181.739217 
+L 262.57885 185.169037 
+" style="fill: none; stroke: #b91c1c; stroke-linecap: round"/>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; fill: #b91c1c" transform="translate(126.739059 235.217838)">​ﺓﺮﺳﺎﺧ ﺕﺎﻘﻔﺻ 5</text>
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; fill: #b91c1c" transform="translate(126.739059 250.544838)">(ﺔﻘﻔﺻ ﻞﻜﻟ %1 ﺓﺮﻃﺎﺨﻣ)</text>
+   </g>
+   <g id="patch_6">
+    <path d="M 539.815125 40.4732 
+Q 566.643868 49.210314 592.40953 57.601223 
+" style="fill: none; stroke: #1f8a56; stroke-linecap: round"/>
+    <path d="M 589.543855 54.774934 
+L 592.40953 57.601223 
+L 588.429094 58.19799 
+" style="fill: none; stroke: #1f8a56; stroke-linecap: round"/>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; fill: #1f8a56" transform="translate(431.352435 16.821)">​ﻊﻔﺗﺮﻣ ﺓﺮﻃﺎﺨﻣ ﺪﺋﺎﻌﺑ ﺔﺤﺑﺍﺭ ﺔﻘﻔﺻ</text>
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; fill: #1f8a56" transform="translate(431.352435 32.148)">ﻊﺟﺍﺮﺘﻟﺍ ﺽﻮﻌﺗ</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p56d95a3622">
+   <rect x="54.100484" y="52.490609" width="567.049516" height="133.68"/>
+  </clipPath>
+ </defs>
+</svg>
