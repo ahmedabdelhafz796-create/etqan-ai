@@ -2758,6 +2758,57 @@ def fig_03_08():
     set_ylim_pad(ax, list(l) + list(h), pad_frac=0.3)
     save(fig, "fig-03-08")
 
+# ============================================================ 3.4 Sideways/range structure (dedicated single concept)
+def fig_03_09():
+    fig, ax = new_ax(w=8.6, h=4.4)
+    n = 34
+    top, bot = 103.6, 100.4
+    i = np.arange(n)
+    closes = (top + bot) / 2 + (top - bot) / 2 * 0.8 * np.sin(i * 0.95) + \
+        np.random.default_rng(339).normal(0, 0.12, n)
+    o, h, l, c = to_ohlc(closes, seed=339, wick=0.35)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    hline(ax, top, 0, n - 1, color=RED, lw=2.0, label="مقاومة النطاق")
+    hline(ax, bot, 0, n - 1, color=GREEN, lw=2.0, label="دعم النطاق")
+    ax.text((n - 1) / 2, top + 0.9, "هيكل عرضي: لا قمم/قيعان متتابعة واضحة، تذبذب بين مستويين",
+            color=NAVY, fontsize=9, ha="center", fontweight="bold")
+    set_ylim_pad(ax, [bot - 0.6, top + 1.3] + list(l) + list(h), pad_frac=0.05)
+    save(fig, "fig-03-09")
+
+# ============================================================ 3.5 Break of Structure (BOS) (dedicated single concept)
+def fig_03_10():
+    fig, ax = new_ax(w=8.2, h=4.4)
+    pre = synth_walk(9, drift=0.35, vol=0.25, start=100, seed=3101)
+    pull = synth_walk(5, drift=-0.15, vol=0.2, start=pre[-1], seed=3102)
+    brk = synth_walk(9, drift=0.5, vol=0.25, start=pull[-1], seed=3103)
+    closes = np.concatenate([pre, pull, brk])
+    o, h, l, c = to_ohlc(closes, seed=310, wick=0.45)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    prior_high = h[8]
+    hline(ax, prior_high, 0, len(closes) - 1, color=GREY, ls=":", lw=1.3, label="قمة تأرجح سابقة")
+    break_x = 17
+    marker_point(ax, break_x, h[break_x] + 0.2, color=GREEN, label="BOS: كسر بإغلاق واضح مع الاتجاه", va="bottom", dy=0.5, fontsize=8.5)
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.22)
+    ax.set_title("كسر الهيكل (BOS): يؤكد استمرار الاتجاه الصاعد", fontsize=10.5, color=GREEN, fontweight="bold")
+    save(fig, "fig-03-10")
+
+# ============================================================ 3.6 Change of Character (CHOCH) (dedicated single concept)
+def fig_03_11():
+    fig, ax = new_ax(w=8.2, h=4.4)
+    pre = synth_walk(8, drift=0.4, vol=0.2, start=100, seed=3111)
+    pre2 = synth_walk(7, drift=0.35, vol=0.2, start=pre[-1], seed=3112)
+    down = synth_walk(11, drift=-0.55, vol=0.25, start=pre2[-1], seed=3113)
+    closes = np.concatenate([pre, pre2, down])
+    o, h, l, c = to_ohlc(closes, seed=311, wick=0.45)
+    plot_candles(ax, o, h, l, c, width=0.55)
+    last_hl = l[14]
+    hline(ax, last_hl, 0, len(closes) - 1, color=GREY, ls=":", lw=1.3, label="آخر قاع أعلى (HL)")
+    break_x = 21
+    marker_point(ax, break_x, l[break_x] - 0.2, color=RED, label="CHOCH: كسر هابط يخالف الاتجاه الصاعد", va="top", dy=0.5, fontsize=8.5)
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.22)
+    ax.set_title("تغيّر الشخصية (CHOCH): إنذار مبكر باحتمال انعكاس الاتجاه", fontsize=10.5, color=RED, fontweight="bold")
+    save(fig, "fig-03-11")
+
 # ============================================================ 27.2a Uptrend (dedicated single concept)
 def fig_27_02():
     fig, ax = new_ax(w=7.4, h=4.0)
