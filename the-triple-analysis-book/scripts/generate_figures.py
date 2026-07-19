@@ -1998,6 +1998,58 @@ def fig_31_05():
     ax.set_title("نقاط البيفوت (Pivot Points): PP وR1/R2 وS1/S2", fontsize=10.5, color=NAVY, fontweight="bold")
     save(fig, "fig-31-05")
 
+# ============================================================ 31.3 Full Wyckoff cycle: 4 phases (dedicated)
+def fig_31_06():
+    fig, ax = new_ax(w=9.4, h=4.8)
+    accum = synth_walk(18, drift=0.0, vol=0.4, start=100, seed=3161)
+    markup = synth_walk(16, drift=0.85, vol=0.5, start=accum[-1], seed=3162)
+    dist = synth_walk(18, drift=0.0, vol=0.4, start=markup[-1], seed=3163)
+    markdown = synth_walk(16, drift=-0.85, vol=0.5, start=dist[-1], seed=3164)
+    closes = np.concatenate([accum, markup, dist, markdown])
+    o, h, l, c = to_ohlc(closes, seed=3161)
+    plot_candles(ax, o, h, l, c, width=0.55)
+
+    n1, n2, n3, n4 = len(accum), len(markup), len(dist), len(markdown)
+    box(ax, 0, n1 - 1, l[:n1].min() - 0.2, h[:n1].max() + 0.2, color="#DDE7EE", edge=NAVY, alpha=0.3, label="التجميع\n(Accumulation)")
+    arrow(ax, (n1, c[n1]), (n1 + n2 - 2, c[n1 + n2 - 2]), color=GREEN, label="الترويج الصعودي (Markup)")
+    box(ax, n1 + n2, n1 + n2 + n3 - 1, l[n1+n2:n1+n2+n3].min() - 0.2, h[n1+n2:n1+n2+n3].max() + 0.2,
+        color="#F4EBD9", edge=GOLD, alpha=0.35, label="التوزيع\n(Distribution)")
+    arrow(ax, (n1 + n2 + n3, c[n1 + n2 + n3]), (n1 + n2 + n3 + n4 - 2, c[-1]), color=RED, label="الترويج الهبوطي (Markdown)")
+    set_ylim_pad(ax, list(l) + list(h), pad_frac=0.28)
+    ax.set_title("دورة ويكوف الكاملة: تجميع ← ترويج صعودي ← توزيع ← ترويج هبوطي", fontsize=10.5, color=NAVY, fontweight="bold")
+    save(fig, "fig-31-06")
+
+# ============================================================ 31.5 Order Book / DOM ladder (dedicated)
+def fig_31_07():
+    fig, ax = plt.subplots(figsize=(6.4, 5.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    mid = 100.00
+    levels = np.arange(6, -6, -1)
+    prices = mid + levels * 0.01
+    rng = np.random.default_rng(3107)
+    bid_sizes = rng.integers(5, 60, size=len(prices))
+    ask_sizes = rng.integers(5, 60, size=len(prices))
+    y = np.arange(len(prices))
+    for i, (p, bs, asz) in enumerate(zip(prices, bid_sizes, ask_sizes)):
+        if p > mid:
+            ax.barh(i, asz, color=RED, alpha=0.75, height=0.7, zorder=3)
+            ax.text(asz + 2, i, str(asz), va="center", fontsize=8, color=RED)
+        elif p < mid:
+            ax.barh(i, bid_sizes[i], color=GREEN, alpha=0.75, height=0.7, zorder=3)
+            ax.text(bid_sizes[i] + 2, i, str(bid_sizes[i]), va="center", fontsize=8, color=GREEN)
+        ax.text(-4, i, f"{p:.2f}", va="center", ha="right", fontsize=9, color=NAVY, fontweight="bold")
+    mid_i = list(prices).index(mid) if mid in prices else len(prices) // 2
+    ax.axhline(mid_i, color=GREY, linestyle=":", linewidth=1.2)
+    ax.set_xlim(-10, 70)
+    ax.set_yticks([]); ax.set_xticks([])
+    for s in ax.spines.values(): s.set_visible(False)
+    ax.text(-4, -1.2, "السعر", fontsize=9, color=NAVY, fontweight="bold", ha="right")
+    ax.text(35, -1.2, "الحجم المعروض عند كل مستوى (طلب/عرض)", fontsize=9, color=NAVY, fontweight="bold")
+    ax.invert_yaxis()
+    ax.set_title("دفتر الأوامر (Order Book / DOM): أوامر الشراء (أخضر) مقابل أوامر البيع (أحمر) عند كل مستوى سعري",
+                 fontsize=10, color=NAVY, fontweight="bold")
+    save(fig, "fig-31-07")
+
 # ============================================================ 32.1 Triple analysis composite
 def fig_32_01():
     fig, ax = new_ax()
