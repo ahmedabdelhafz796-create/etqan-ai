@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="657.15pt" height="325.95pt" viewBox="0 0 657.15 325.95" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-19T20:01:37.478355</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.1, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 325.95 
+L 657.15 325.95 
+L 657.15 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 60.6515 293.72 
+L 649.95 293.72 
+L 649.95 7.2 
+L 60.6515 7.2 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="text_1">
+     <text style="font-size: 10px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #1f2937" x="355.30075" y="312.41" transform="rotate(-0 355.30075 312.41)">​ﺔﻴﻘﻴﻘﺣ EURUSD ﺕﺎﻴﻟﺎﺘﺘﻣ ﻰﻠﻋ ﺔﺳﺎﻘﻣ — (ﺕﺍﻮﻄﺧ) ﻒﻠﺨﻠﻟ ﺔﻴﻨﻣﺰﻟﺍ ﺔﻓﺎﺴﻤﻟﺍ</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_1">
+      <path d="M 60.6515 286.496096 
+L 649.95 286.496096 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_2">
+      <defs>
+       <path id="ma353e3efc3" d="M 0 0 
+L -3.5 0 
+" style="stroke: #555555; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#ma353e3efc3" x="60.6515" y="286.496096" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <!-- $\mathdefault{10^{-14}}$ -->
+      <g style="fill: #555555" transform="translate(29.0815 292.108346)">
+       <text>
+        <tspan x="0" y="-0.391625" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="6.005981" y="-0.391625" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+        <tspan x="12.112451" y="-4.728125" style="font-size: 7.35px; font-family: 'STIXGeneral'; fill: #555555">¤</tspan>
+        <tspan x="15.78744" y="-4.728125" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="19.991628" y="-4.728125" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">4</tspan>
+       </text>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_3">
+      <path d="M 60.6515 248.421197 
+L 649.95 248.421197 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#ma353e3efc3" x="60.6515" y="248.421197" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <!-- $\mathdefault{10^{-12}}$ -->
+      <g style="fill: #555555" transform="translate(29.0815 254.033447)">
+       <text>
+        <tspan x="0" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="6.005981" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+        <tspan x="12.112451" y="-4.673438" style="font-size: 7.35px; font-family: 'STIXGeneral'; fill: #555555">¤</tspan>
+        <tspan x="15.78744" y="-4.673438" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="19.991628" y="-4.673438" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">2</tspan>
+       </text>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_5">
+      <path d="M 60.6515 210.346298 
+L 649.95 210.346298 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#ma353e3efc3" x="60.6515" y="210.346298" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <!-- $\mathdefault{10^{-10}}$ -->
+      <g style="fill: #555555" transform="translate(29.0815 215.958548)">
+       <text>
+        <tspan x="0" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="6.005981" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+        <tspan x="12.112451" y="-4.673438" style="font-size: 7.35px; font-family: 'STIXGeneral'; fill: #555555">¤</tspan>
+        <tspan x="15.78744" y="-4.673438" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="19.991628" y="-4.673438" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+       </text>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_7">
+      <path d="M 60.6515 172.271399 
+L 649.95 172.271399 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#ma353e3efc3" x="60.6515" y="172.271399" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <!-- $\mathdefault{10^{-8}}$ -->
+      <g style="fill: #555555" transform="translate(33.2815 177.883649)">
+       <text>
+        <tspan x="0" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="6.005981" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+        <tspan x="12.112451" y="-4.673438" style="font-size: 7.35px; font-family: 'STIXGeneral'; fill: #555555">¤</tspan>
+        <tspan x="15.78744" y="-4.673438" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">8</tspan>
+       </text>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_9">
+      <path d="M 60.6515 134.1965 
+L 649.95 134.1965 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#ma353e3efc3" x="60.6515" y="134.1965" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <!-- $\mathdefault{10^{-6}}$ -->
+      <g style="fill: #555555" transform="translate(33.2815 139.80875)">
+       <text>
+        <tspan x="0" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="6.005981" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+        <tspan x="12.112451" y="-4.673438" style="font-size: 7.35px; font-family: 'STIXGeneral'; fill: #555555">¤</tspan>
+        <tspan x="15.78744" y="-4.673438" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">6</tspan>
+       </text>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_11">
+      <path d="M 60.6515 96.121602 
+L 649.95 96.121602 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#ma353e3efc3" x="60.6515" y="96.121602" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <!-- $\mathdefault{10^{-4}}$ -->
+      <g style="fill: #555555" transform="translate(33.2815 101.733852)">
+       <text>
+        <tspan x="0" y="-0.391625" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="6.005981" y="-0.391625" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+        <tspan x="12.112451" y="-4.728125" style="font-size: 7.35px; font-family: 'STIXGeneral'; fill: #555555">¤</tspan>
+        <tspan x="15.78744" y="-4.728125" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">4</tspan>
+       </text>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_13">
+      <path d="M 60.6515 58.046703 
+L 649.95 58.046703 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#ma353e3efc3" x="60.6515" y="58.046703" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <!-- $\mathdefault{10^{-2}}$ -->
+      <g style="fill: #555555" transform="translate(33.2815 63.658953)">
+       <text>
+        <tspan x="0" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="6.005981" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+        <tspan x="12.112451" y="-4.673438" style="font-size: 7.35px; font-family: 'STIXGeneral'; fill: #555555">¤</tspan>
+        <tspan x="15.78744" y="-4.673438" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">2</tspan>
+       </text>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_15">
+      <path d="M 60.6515 19.971804 
+L 649.95 19.971804 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_16">
+      <g>
+       <use xlink:href="#ma353e3efc3" x="60.6515" y="19.971804" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <!-- $\mathdefault{10^{0}}$ -->
+      <g style="fill: #555555" transform="translate(36.9565 25.584054)">
+       <text>
+        <tspan x="0" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">1</tspan>
+        <tspan x="6.005981" y="-0.336938" style="font-size: 10.5px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+        <tspan x="12.112451" y="-4.673438" style="font-size: 7.35px; font-family: 'Noto Naskh Arabic'; fill: #555555">0</tspan>
+       </text>
+      </g>
+     </g>
+    </g>
+    <g id="text_10">
+     <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #1f2937" x="18.4245" y="150.46" transform="rotate(-90 18.4245 150.46)">​(ﻲﻤﺘﻳﺭﺎﻏﻮﻟ) ﺝﺭﺪﺘﻟﺍ ﺓﺭﺎﺷﺇ ﻢﺠﺣ</text>
+    </g>
+   </g>
+   <g id="line2d_17">
+    <path d="M 87.437795 24.260804 
+L 96.517896 28.727275 
+L 105.597996 32.901835 
+L 114.678096 37.525174 
+L 123.758196 41.935831 
+L 132.838296 46.002747 
+L 141.918396 50.030527 
+L 150.998497 54.423734 
+L 160.078597 59.301086 
+L 169.158697 63.92152 
+L 178.238797 67.991458 
+L 187.318897 72.400874 
+L 196.398997 76.685258 
+L 205.479097 80.655503 
+L 214.559198 85.074624 
+L 223.639298 89.349567 
+L 232.719398 93.914522 
+L 241.799498 97.898911 
+L 250.879598 102.035033 
+L 259.959698 106.095498 
+L 269.039799 110.32576 
+L 278.119899 114.990013 
+L 287.199999 119.231684 
+L 296.280099 123.504464 
+L 305.360199 127.765715 
+L 314.440299 131.928989 
+L 323.520399 136.373604 
+L 332.6005 141.533393 
+L 341.6806 145.857798 
+L 350.7607 150.051433 
+L 359.8408 154.269009 
+L 368.9209 159.051103 
+L 378.001 163.663203 
+L 387.081101 168.71688 
+L 396.161201 173.263474 
+L 405.241301 177.90801 
+L 414.321401 182.101483 
+L 423.401501 186.593574 
+L 432.481601 191.149242 
+L 441.561701 195.957008 
+L 450.641802 200.356014 
+L 459.721902 204.726384 
+L 468.802002 209.231047 
+L 477.882102 213.541717 
+L 486.962202 217.912767 
+L 496.042302 222.374104 
+L 505.122403 226.316082 
+L 514.202503 230.242645 
+L 523.282603 234.232172 
+L 532.362703 238.295922 
+L 541.442803 242.917886 
+L 550.522903 247.246426 
+L 559.603003 251.586119 
+L 568.683104 255.514665 
+L 577.763204 259.248163 
+L 586.843304 263.299084 
+L 595.923404 267.255857 
+L 605.003504 272.162046 
+L 614.083604 276.645924 
+L 623.163705 280.696364 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_18">
+    <path d="M 87.437795 20.223636 
+L 96.517896 20.475469 
+L 105.597996 20.727301 
+L 114.678096 20.979134 
+L 123.758196 21.230966 
+L 132.838296 21.482799 
+L 141.918396 21.734631 
+L 150.998497 21.986463 
+L 160.078597 22.238296 
+L 169.158697 22.490128 
+L 178.238797 22.741961 
+L 187.318897 22.993793 
+L 196.398997 23.245626 
+L 205.479097 23.497458 
+L 214.559198 23.749291 
+L 223.639298 24.001123 
+L 232.719398 24.252955 
+L 241.799498 24.504788 
+L 250.879598 24.75662 
+L 259.959698 25.008453 
+L 269.039799 25.260285 
+L 278.119899 25.512118 
+L 287.199999 25.76395 
+L 296.280099 26.015782 
+L 305.360199 26.267615 
+L 314.440299 26.519447 
+L 323.520399 26.77128 
+L 332.6005 27.023112 
+L 341.6806 27.274945 
+L 350.7607 27.526777 
+L 359.8408 27.77861 
+L 368.9209 28.030442 
+L 378.001 28.282274 
+L 387.081101 28.534107 
+L 396.161201 28.785939 
+L 405.241301 29.037772 
+L 414.321401 29.289604 
+L 423.401501 29.541437 
+L 432.481601 29.793269 
+L 441.561701 30.045102 
+L 450.641802 30.296934 
+L 459.721902 30.548766 
+L 468.802002 30.800599 
+L 477.882102 31.052431 
+L 486.962202 31.304264 
+L 496.042302 31.556096 
+L 505.122403 31.807929 
+L 514.202503 32.059761 
+L 523.282603 32.311593 
+L 532.362703 32.563426 
+L 541.442803 32.815258 
+L 550.522903 33.067091 
+L 559.603003 33.318923 
+L 568.683104 33.570756 
+L 577.763204 33.822588 
+L 586.843304 34.074421 
+L 595.923404 34.326253 
+L 605.003504 34.578085 
+L 614.083604 34.829918 
+L 623.163705 35.08175 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_19">
+    <path d="M 60.6515 96.121602 
+L 649.95 96.121602 
+" clip-path="url(#pb8d956b5ba)" style="fill: none; stroke-dasharray: 1,1.65; stroke-dashoffset: 0; stroke: #8a8f98"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 60.6515 293.72 
+L 60.6515 7.2 
+" style="fill: none; stroke: #1f2937; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 60.6515 293.72 
+L 649.95 293.72 
+" style="fill: none; stroke: #1f2937; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="legend_1">
+    <g id="line2d_20">
+     <path d="M 68.7515 256.937 
+L 77.7515 256.937 
+L 86.7515 256.937 
+" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: square"/>
+    </g>
+    <g id="text_11">
+     <text style="font-size: 9px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #1f2937" x="93.9515" y="260.087" transform="rotate(-0 93.9515 260.087)">​RNN ﺩﺎﺣ ﻲﺷﻼﺗ :ﺔﻄﻴﺴﺑ</text>
+    </g>
+    <g id="line2d_21">
+     <path d="M 68.7515 276.764 
+L 77.7515 276.764 
+L 86.7515 276.764 
+" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: square"/>
+    </g>
+    <g id="text_12">
+     <text style="font-size: 9px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #1f2937" x="93.9515" y="279.914" transform="rotate(-0 93.9515 279.914)">​(0.97≈ ﻥﺎﻴﺴﻧ ﺱﺭﺎﺣ) LSTM ﺔﻴﻠﺧ ﺭﺎﺴﻣ</text>
+    </g>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pb8d956b5ba">
+   <rect x="60.6515" y="7.2" width="589.2985" height="286.52"/>
+  </clipPath>
+ </defs>
+</svg>

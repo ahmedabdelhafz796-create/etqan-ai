@@ -57,14 +57,14 @@ def fig_01_02():
     p12 = np.polyfit(x_fit, y_fit, 12)
 
     fig, ax = new_ax(price_axis=False, w=9.2, h=4.8)
+    # pre-clip curve values: WeasyPrint fails on paths with huge coordinates
+    lo, hi = seg.min() - 40, seg.max() + 40
     ax.plot(x_all, seg, "o", ms=3, color=GREY, label="سعر GOOG الحقيقي (يومي)")
-    ax.plot(x_all, np.polyval(p1, x_all), color=GREEN, lw=2.2, label="نموذج بسيط (درجة 1)")
-    ax.plot(x_all, np.polyval(p12, x_all), color=RED, lw=2.2, label="نموذج مفرط التعقيد (درجة 12)")
+    ax.plot(x_all, np.clip(np.polyval(p1, x_all), lo, hi), color=GREEN, lw=2.2, label="نموذج بسيط (درجة 1)")
+    ax.plot(x_all, np.clip(np.polyval(p12, x_all), lo, hi), color=RED, lw=2.2, label="نموذج مفرط التعقيد (درجة 12)")
     ax.axvline(n_fit, color=NAVY, ls="--", lw=1.4)
     ax.text(n_fit - 2, ax.get_ylim()[1], "بيانات التدريب", fontsize=9, color=NAVY, ha="right", va="top", fontweight="bold")
     ax.text(n_fit + 2, ax.get_ylim()[1], "المستقبل غير المرئي", fontsize=9, color=RED, ha="left", va="top", fontweight="bold")
-    # clamp crazy extrapolation for display
-    lo, hi = seg.min() - 40, seg.max() + 40
     ax.set_ylim(lo, hi)
     ax.set_ylabel("سعر الإغلاق (دولار)")
     ax.set_xlabel("أيام التداول (بيانات حقيقية 2007)")
