@@ -904,6 +904,28 @@ def fig_14_02():
     fig.tight_layout(pad=0.8)
     save(fig, "fig-14-02")
 
+# ============================================================ 14.4 Rate hike vs rate cut: direct currency reaction (dedicated)
+def fig_14_03():
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.2), dpi=150)
+    n = 24
+    hike_curr = 100 + np.concatenate([np.zeros(8), np.cumsum(np.random.default_rng(1406).uniform(0.3, 0.8, n - 8))])
+    axes[0].plot(hike_curr, color=GREEN, linewidth=2.3)
+    axes[0].axvline(8, color=NAVY, linestyle="--", linewidth=1.3)
+    axes[0].text(8.3, hike_curr.max(), "رفع الفائدة", color=NAVY, fontsize=9, fontweight="bold")
+    axes[0].set_title("رفع سعر الفائدة ← دعم العملة", fontsize=10.5, color=GREEN, fontweight="bold")
+
+    cut_curr = 100 - np.concatenate([np.zeros(8), np.cumsum(np.random.default_rng(1407).uniform(0.3, 0.8, n - 8))])
+    axes[1].plot(cut_curr, color=RED, linewidth=2.3)
+    axes[1].axvline(8, color=NAVY, linestyle="--", linewidth=1.3)
+    axes[1].text(8.3, cut_curr.max(), "خفض الفائدة", color=NAVY, fontsize=9, fontweight="bold")
+    axes[1].set_title("خفض سعر الفائدة ← ضغط على العملة", fontsize=10.5, color=RED, fontweight="bold")
+
+    for ax in axes:
+        for s in ["top", "right"]: ax.spines[s].set_visible(False)
+        ax.set_xticks([]); ax.set_ylabel("قيمة العملة")
+    fig.tight_layout(pad=0.8)
+    save(fig, "fig-14-03")
+
 # ============================================================ 15.1 Rate differential vs FX
 def fig_15_01():
     fig, ax1 = plt.subplots(figsize=(8.6, 4.6), dpi=150)
@@ -923,6 +945,28 @@ def fig_15_01():
     ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
     ax1.set_xlabel("الزمن")
     save(fig, "fig-15-01")
+
+# ============================================================ 15.4 Rising rates pressure stock valuations via DCF discounting (dedicated)
+def fig_15_03():
+    fig, ax1 = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    months = np.arange(14)
+    rates = 1.0 + np.concatenate([np.zeros(3), np.linspace(0, 4.0, 11)])
+    pe = 24 - np.concatenate([np.zeros(3), np.linspace(0, 6.5, 11)]) + np.random.default_rng(1504).normal(0, 0.15, 14)
+    ax1.plot(months, rates, color=NAVY, linewidth=2.2, marker="s", markersize=4, label="سعر الفائدة (%)")
+    ax1.set_ylabel("سعر الفائدة (%)", color=NAVY)
+    ax1.tick_params(axis="y", labelcolor=NAVY)
+    for s in ["top"]: ax1.spines[s].set_visible(False)
+    ax2 = ax1.twinx()
+    ax2.plot(months, pe, color=GOLD, linewidth=2.2, marker="o", markersize=4, label="مضاعف ربحية الأسهم (P/E)")
+    ax2.set_ylabel("مضاعف P/E", color=GOLD)
+    ax2.tick_params(axis="y", labelcolor=GOLD)
+    for s in ["top"]: ax2.spines[s].set_visible(False)
+    ax1.text(6.5, rates.max() + 0.4, "ارتفاع الفائدة يخفّض القيمة الحالية للأرباح المستقبلية\n(DCF) فتنخفض تقييمات الأسهم", color=RED,
+              fontsize=9, ha="center", fontweight="bold")
+    ax1.set_xlabel("الشهر")
+    ax1.grid(axis="y", color=GRID)
+    save(fig, "fig-15-03")
 
 # ============================================================ 15.6 Yield curve: normal vs inverted (dedicated)
 def fig_15_02():
