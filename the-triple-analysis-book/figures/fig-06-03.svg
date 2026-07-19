@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-19T00:15:40.045102</dc:date>
+    <dc:date>2026-07-19T00:32:58.317880</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -30,17 +30,17 @@ z
   </g>
   <g id="axes_1">
    <g id="patch_2">
-    <path d="M 57.248984 279.32 
-L 534.75 279.32 
-L 534.75 25.0815 
-L 57.248984 25.0815 
+    <path d="M 7.2 279.32 
+L 482.701016 279.32 
+L 482.701016 25.0815 
+L 7.2 25.0815 
 z
 " style="fill: #ffffff"/>
    </g>
    <g id="matplotlib.axis_1">
     <g id="text_1">
      <!-- ​ﻦﻣﺰﻟﺍ -->
-     <g style="fill: #1f2937" transform="translate(286.524492 298.01) scale(0.1 -0.1)">
+     <g style="fill: #1f2937" transform="translate(235.475508 298.01) scale(0.1 -0.1)">
       <defs>
        <path id="NotoNaskhArabic-Regular-3" d="M 666 0 
 Q 646 1126 604 2057 
@@ -197,23 +197,23 @@ z
    <g id="matplotlib.axis_2">
     <g id="ytick_1">
      <g id="line2d_1">
-      <path d="M 57.248984 275.811465 
-L 534.75 275.811465 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+      <path d="M 7.2 275.811465 
+L 482.701016 275.811465 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_2">
       <defs>
-       <path id="m4432bd500c" d="M 0 0 
-L -3.5 0 
+       <path id="m5ff93fa29a" d="M 0 0 
+L 3.5 0 
 " style="stroke: #555555; stroke-width: 0.8"/>
       </defs>
       <g>
-       <use xlink:href="#m4432bd500c" x="57.248984" y="275.811465" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+       <use xlink:href="#m5ff93fa29a" x="482.701016" y="275.811465" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_2">
       <!-- 99 -->
-      <g style="fill: #555555" transform="translate(38.236328 281.423715) scale(0.105 -0.105)">
+      <g style="fill: #555555" transform="translate(489.701016 281.423715) scale(0.105 -0.105)">
        <defs>
         <path id="NotoNaskhArabic-Regular-4d5" d="M 1229 -64 
 Q 851 -64 653 0 
@@ -256,18 +256,18 @@ z
     </g>
     <g id="ytick_2">
      <g id="line2d_3">
-      <path d="M 57.248984 242.035168 
-L 534.75 242.035168 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+      <path d="M 7.2 242.035168 
+L 482.701016 242.035168 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_4">
       <g>
-       <use xlink:href="#m4432bd500c" x="57.248984" y="242.035168" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+       <use xlink:href="#m5ff93fa29a" x="482.701016" y="242.035168" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_3">
       <!-- 100 -->
-      <g style="fill: #555555" transform="translate(32.23 247.647418) scale(0.105 -0.105)">
+      <g style="fill: #555555" transform="translate(489.701016 247.647418) scale(0.105 -0.105)">
        <defs>
         <path id="NotoNaskhArabic-Regular-4cd" d="M 1722 0 
 L 1722 3194 
@@ -314,18 +314,18 @@ z
     </g>
     <g id="ytick_3">
      <g id="line2d_5">
-      <path d="M 57.248984 208.258872 
-L 534.75 208.258872 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+      <path d="M 7.2 208.258872 
+L 482.701016 208.258872 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_6">
       <g>
-       <use xlink:href="#m4432bd500c" x="57.248984" y="208.258872" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+       <use xlink:href="#m5ff93fa29a" x="482.701016" y="208.258872" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_4">
       <!-- 101 -->
-      <g style="fill: #555555" transform="translate(32.23 213.871122) scale(0.105 -0.105)">
+      <g style="fill: #555555" transform="translate(489.701016 213.871122) scale(0.105 -0.105)">
        <use xlink:href="#NotoNaskhArabic-Regular-4cd"/>
        <use xlink:href="#NotoNaskhArabic-Regular-4cc" transform="translate(57.203125 0)"/>
        <use xlink:href="#NotoNaskhArabic-Regular-4cd" transform="translate(114.40625 0)"/>
@@ -334,18 +334,18 @@ L 534.75 208.258872
     </g>
     <g id="ytick_4">
      <g id="line2d_7">
-      <path d="M 57.248984 174.482575 
-L 534.75 174.482575 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+      <path d="M 7.2 174.482575 
+L 482.701016 174.482575 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_8">
       <g>
-       <use xlink:href="#m4432bd500c" x="57.248984" y="174.482575" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+       <use xlink:href="#m5ff93fa29a" x="482.701016" y="174.482575" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_5">
       <!-- 102 -->
-      <g style="fill: #555555" transform="translate(32.23 180.094825) scale(0.105 -0.105)">
+      <g style="fill: #555555" transform="translate(489.701016 180.094825) scale(0.105 -0.105)">
        <defs>
         <path id="NotoNaskhArabic-Regular-4ce" d="M 307 0 
 L 307 467 
@@ -383,18 +383,18 @@ z
     </g>
     <g id="ytick_5">
      <g id="line2d_9">
-      <path d="M 57.248984 140.706279 
-L 534.75 140.706279 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+      <path d="M 7.2 140.706279 
+L 482.701016 140.706279 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_10">
       <g>
-       <use xlink:href="#m4432bd500c" x="57.248984" y="140.706279" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+       <use xlink:href="#m5ff93fa29a" x="482.701016" y="140.706279" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_6">
       <!-- 103 -->
-      <g style="fill: #555555" transform="translate(32.23 146.318529) scale(0.105 -0.105)">
+      <g style="fill: #555555" transform="translate(489.701016 146.318529) scale(0.105 -0.105)">
        <defs>
         <path id="NotoNaskhArabic-Regular-4cf" d="M 1542 -64 
 Q 1184 -64 877 -9 
@@ -436,18 +436,18 @@ z
     </g>
     <g id="ytick_6">
      <g id="line2d_11">
-      <path d="M 57.248984 106.929982 
-L 534.75 106.929982 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+      <path d="M 7.2 106.929982 
+L 482.701016 106.929982 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_12">
       <g>
-       <use xlink:href="#m4432bd500c" x="57.248984" y="106.929982" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+       <use xlink:href="#m5ff93fa29a" x="482.701016" y="106.929982" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_7">
       <!-- 104 -->
-      <g style="fill: #555555" transform="translate(32.23 112.542232) scale(0.105 -0.105)">
+      <g style="fill: #555555" transform="translate(489.701016 112.542232) scale(0.105 -0.105)">
        <defs>
         <path id="NotoNaskhArabic-Regular-4d0" d="M 2323 0 
 L 2323 1037 
@@ -482,18 +482,18 @@ z
     </g>
     <g id="ytick_7">
      <g id="line2d_13">
-      <path d="M 57.248984 73.153686 
-L 534.75 73.153686 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+      <path d="M 7.2 73.153686 
+L 482.701016 73.153686 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_14">
       <g>
-       <use xlink:href="#m4432bd500c" x="57.248984" y="73.153686" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+       <use xlink:href="#m5ff93fa29a" x="482.701016" y="73.153686" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_8">
       <!-- 105 -->
-      <g style="fill: #555555" transform="translate(32.23 78.765936) scale(0.105 -0.105)">
+      <g style="fill: #555555" transform="translate(489.701016 78.765936) scale(0.105 -0.105)">
        <defs>
         <path id="NotoNaskhArabic-Regular-4d1" d="M 1587 -64 
 Q 826 -64 403 186 
@@ -527,18 +527,18 @@ z
     </g>
     <g id="ytick_8">
      <g id="line2d_15">
-      <path d="M 57.248984 39.37739 
-L 534.75 39.37739 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+      <path d="M 7.2 39.37739 
+L 482.701016 39.37739 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_16">
       <g>
-       <use xlink:href="#m4432bd500c" x="57.248984" y="39.37739" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+       <use xlink:href="#m5ff93fa29a" x="482.701016" y="39.37739" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_9">
       <!-- 106 -->
-      <g style="fill: #555555" transform="translate(32.23 44.98964) scale(0.105 -0.105)">
+      <g style="fill: #555555" transform="translate(489.701016 44.98964) scale(0.105 -0.105)">
        <defs>
         <path id="NotoNaskhArabic-Regular-4d2" d="M 1907 -64 
 Q 1440 -64 1088 176 
@@ -580,7 +580,7 @@ z
     </g>
     <g id="text_10">
      <!-- ​ﺮﻌﺴﻟﺍ -->
-     <g style="fill: #1f2937" transform="translate(17.89 161.856219) rotate(-90) scale(0.1 -0.1)">
+     <g style="fill: #1f2937" transform="translate(524.06 142.545281) rotate(-270) scale(0.1 -0.1)">
       <defs>
        <path id="NotoNaskhArabic-Regular-f9" d="M 1446 0 
 Q 1267 0 1030 57 
@@ -718,46 +718,46 @@ z
     </g>
    </g>
    <g id="patch_3">
-    <path d="M 205.274299 86.698692 
-L 291.224482 86.698692 
-L 291.224482 83.18503 
-L 205.274299 83.18503 
+    <path d="M 154.605315 86.698692 
+L 240.195498 86.698692 
+L 240.195498 83.18503 
+L 154.605315 83.18503 
 z
-" clip-path="url(#pd52d6c6909)" style="fill: #f4a6a6; opacity: 0.22; stroke: #b91c1c; stroke-width: 1.4; stroke-linejoin: miter"/>
+" clip-path="url(#p31a3be5071)" style="fill: #f4a6a6; opacity: 0.22; stroke: #b91c1c; stroke-width: 1.4; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
-    <path d="M 57.248984 279.32 
-L 57.248984 25.0815 
+    <path d="M 482.701016 279.32 
+L 482.701016 25.0815 
 " style="fill: none; stroke: #1f2937; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="patch_5">
-    <path d="M 57.248984 279.32 
-L 534.75 279.32 
+    <path d="M 7.2 279.32 
+L 482.701016 279.32 
 " style="fill: none; stroke: #1f2937; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="line2d_17">
-    <path d="M 152.749188 86.698692 
-L 152.749188 72.751219 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #1f8a56; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 102.300203 86.698692 
+L 102.300203 72.751219 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #1f8a56; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="line2d_18">
-    <path d="M 248.249391 89.476731 
-L 248.249391 73.067138 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #b91c1c; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 197.400406 89.476731 
+L 197.400406 73.067138 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #b91c1c; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="line2d_19">
-    <path d="M 343.749594 203.116867 
-L 343.749594 83.18503 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #b91c1c; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 292.500609 203.116867 
+L 292.500609 83.18503 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #b91c1c; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="line2d_20">
-    <path d="M 439.249797 231.650281 
-L 439.249797 197.017207 
-" clip-path="url(#pd52d6c6909)" style="fill: none; stroke: #b91c1c; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 387.600813 231.650281 
+L 387.600813 197.017207 
+" clip-path="url(#p31a3be5071)" style="fill: none; stroke: #b91c1c; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_11">
     <!-- FVG -->
-    <g style="fill: #b91c1c" transform="translate(237.429781 87.008111) scale(0.095 -0.095)">
+    <g style="fill: #b91c1c" transform="translate(186.580797 87.008111) scale(0.095 -0.095)">
      <defs>
       <path id="DejaVuSans-Bold-29" d="M 588 4666 
 L 3834 4666 
@@ -815,7 +815,7 @@ z
    </g>
    <g id="text_12">
     <!-- ​1 ﺔﻌﻤﺸﻟﺍ -->
-    <g style="fill: #1f2937" transform="translate(137.633406 60.929515) scale(0.09 -0.09)">
+    <g style="fill: #1f2937" transform="translate(87.184422 60.929515) scale(0.09 -0.09)">
      <defs>
       <path id="NotoNaskhArabic-Bold-3" d="M 774 58 
 Q 742 717 710 1216 
@@ -1087,7 +1087,7 @@ z
    </g>
    <g id="text_13">
     <!-- ​2 ﺔﻌﻤﺸﻟﺍ -->
-    <g style="fill: #1f2937" transform="translate(233.133609 61.245434) scale(0.09 -0.09)">
+    <g style="fill: #1f2937" transform="translate(182.284625 61.245434) scale(0.09 -0.09)">
      <defs>
       <path id="NotoNaskhArabic-Bold-4ce" d="M 256 0 
 L 256 672 
@@ -1131,7 +1131,7 @@ z
    </g>
    <g id="text_14">
     <!-- ​3 ﺔﻌﻤﺸﻟﺍ -->
-    <g style="fill: #1f2937" transform="translate(328.633813 71.363326) scale(0.09 -0.09)">
+    <g style="fill: #1f2937" transform="translate(277.384828 71.363326) scale(0.09 -0.09)">
      <defs>
       <path id="NotoNaskhArabic-Bold-4cf" d="M 1562 -64 
 Q 819 -64 243 186 
@@ -1176,7 +1176,7 @@ z
    </g>
    <g id="text_15">
     <!-- ​(3) ﺔﻤﻗﻭ (1) ﻉﺎﻗ ﻦﻴﺑ ﻞﺧﺍﺪﺗ ﻻ -->
-    <g style="fill: #b91c1c" transform="translate(199.157242 245.1608) scale(0.085 -0.085)">
+    <g style="fill: #b91c1c" transform="translate(148.308258 245.1608) scale(0.085 -0.085)">
      <defs>
       <path id="NotoNaskhArabic-Bold-2de" d="M 896 0 
 Q 883 0 883 51 
@@ -1674,7 +1674,7 @@ z
    </g>
    <g id="text_16">
     <!-- ​ﺔﻴﻟﺎﺘﺘﻣ ﻉﻮﻤﺷ ﺙﻼﺛ ﺮﺒﻋ ﺔﻴﻃﻮﺒﻫ FVG ﻒﻳﺮﻌﺗ -->
-    <g style="fill: #1f2937" transform="translate(209.483594 18.4245) scale(0.105 -0.105)">
+    <g style="fill: #1f2937" transform="translate(158.434609 18.4245) scale(0.105 -0.105)">
      <defs>
       <path id="NotoNaskhArabic-Bold-d4" d="M 653 -1248 
 Q 544 -1248 304 -1107 
@@ -2379,42 +2379,42 @@ z
     </g>
    </g>
    <g id="patch_6">
-    <path d="M 128.874137 86.041987 
-L 176.624238 86.041987 
-L 176.624238 73.153686 
-L 128.874137 73.153686 
+    <path d="M 78.525152 86.041987 
+L 126.075254 86.041987 
+L 126.075254 73.153686 
+L 78.525152 73.153686 
 z
-" clip-path="url(#pd52d6c6909)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#p31a3be5071)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
-    <path d="M 224.37434 86.664205 
-L 272.124441 86.664205 
-L 272.124441 74.768531 
-L 224.37434 74.768531 
+    <path d="M 173.625355 86.664205 
+L 221.175457 86.664205 
+L 221.175457 74.768531 
+L 173.625355 74.768531 
 z
-" clip-path="url(#pd52d6c6909)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#p31a3be5071)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
-    <path d="M 319.874543 201.503612 
-L 367.624645 201.503612 
-L 367.624645 85.248795 
-L 319.874543 85.248795 
+    <path d="M 268.725559 201.503612 
+L 316.27566 201.503612 
+L 316.27566 85.248795 
+L 268.725559 85.248795 
 z
-" clip-path="url(#pd52d6c6909)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#p31a3be5071)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="patch_9">
-    <path d="M 415.374746 228.52465 
-L 463.124848 228.52465 
-L 463.124848 199.592031 
-L 415.374746 199.592031 
+    <path d="M 363.825762 228.52465 
+L 411.375863 228.52465 
+L 411.375863 199.592031 
+L 363.825762 199.592031 
 z
-" clip-path="url(#pd52d6c6909)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#p31a3be5071)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
   </g>
  </g>
  <defs>
-  <clipPath id="pd52d6c6909">
-   <rect x="57.248984" y="25.0815" width="477.501016" height="254.2385"/>
+  <clipPath id="p31a3be5071">
+   <rect x="7.2" y="25.0815" width="475.501016" height="254.2385"/>
   </clipPath>
  </defs>
 </svg>

@@ -78,17 +78,26 @@ os.makedirs(FIG_DIR, exist_ok=True)
 
 
 def new_ax(w=8.6, h=4.6, price_axis=True):
+    """price_axis=True mimics the real trading-platform convention (TradingView /
+    MetaTrader): the price scale sits on the RIGHT edge of the chart, not the left."""
     fig, ax = plt.subplots(figsize=(w, h), dpi=150)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
-    for spine in ["top", "right"]:
-        ax.spines[spine].set_visible(False)
-    ax.spines["left"].set_color(NAVY)
-    ax.spines["bottom"].set_color(NAVY)
+    if price_axis:
+        for spine in ["top", "left"]:
+            ax.spines[spine].set_visible(False)
+        ax.spines["right"].set_color(NAVY)
+        ax.spines["bottom"].set_color(NAVY)
+        ax.yaxis.tick_right()
+        ax.yaxis.set_label_position("right")
+        ax.set_ylabel("السعر", fontsize=10, labelpad=10, rotation=270, va="bottom")
+    else:
+        for spine in ["top", "right"]:
+            ax.spines[spine].set_visible(False)
+        ax.spines["left"].set_color(NAVY)
+        ax.spines["bottom"].set_color(NAVY)
     ax.grid(axis="y", color=GRID, linewidth=0.8, zorder=0)
     ax.set_axisbelow(True)
-    if price_axis:
-        ax.set_ylabel("السعر", fontsize=10, labelpad=8)
     ax.set_xlabel("الزمن", fontsize=10, labelpad=8)
     ax.set_xticks([])
     return fig, ax
@@ -201,7 +210,10 @@ def box(ax, x0, x1, y0, y1, color=GOLD, alpha=0.22, edge=None, lw=1.4, label=Non
                  fontsize=fontsize, color=edge or NAVY, fontweight="bold")
 
 
-def hline(ax, y, x0, x1, color=GREY, ls="--", lw=1.4, label=None, label_side="right"):
+def hline(ax, y, x0, x1, color=GREY, ls="--", lw=1.4, label=None, label_side="left"):
+    """Default label_side is 'left' -- the price scale now lives on the right edge
+    of the chart (TradingView/MetaTrader convention), so annotation labels default
+    to the opposite side to avoid colliding with the price axis."""
     ax.plot([x0, x1], [y, y], color=color, linestyle=ls, linewidth=lw, zorder=2)
     if label:
         xt = x1 + 0.3 if label_side == "right" else x0 - 0.3
