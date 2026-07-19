@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>The Triple Analysis</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2.4cm 2cm 2.2cm 2cm;
+    @top-center {
+      content: "AI in Trading \2014 الذكاء الاصطناعي في التداول";
+      font-family: "Noto Naskh Arabic";
+      font-size: 8.5pt;
+      color: #8a7a55;
+    }
+    @bottom-left {
+      content: "\00a9 2026 Ahmed Abdelhafez وAhmed Abu Omran - جميع الحقوق محفوظة";
+      font-family: "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif;
+      font-size: 7pt;
+      color: #aaaaaa;
+    }
+    @bottom-center {
+      content: counter(page);
+      font-family: "Noto Naskh Arabic";
+      font-size: 9.5pt;
+      color: #666;
+    }
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: none; }
+    @bottom-left { content: none; }
+    @bottom-center { content: none; }
+  }
+  @page toc {
+    margin: 2.4cm 2cm;
+    @top-center { content: none; }
+    @bottom-left {
+      content: "\00a9 2026 Ahmed Abdelhafez وAhmed Abu Omran - جميع الحقوق محفوظة";
+      font-family: "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif;
+      font-size: 7pt;
+      color: #aaaaaa;
+    }
+    @bottom-center {
+      content: counter(page, lower-roman);
+      font-family: "Noto Naskh Arabic";
+      font-size: 9.5pt;
+      color: #666;
+    }
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    direction: rtl;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif;
+    font-size: 12pt;
+    line-height: 1.85;
+    color: #1a1a1a;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ---------- COVER ---------- */
+  .cover {
+    page: cover;
+    page-break-after: always;
+    width: 21cm;
+    height: 29.7cm;
+    max-width: 100%;
+    box-sizing: border-box;
+    background: linear-gradient(160deg, #1F2937 0%, #141b26 55%, #0d1219 100%);
+    color: #fff;
+    text-align: center;
+    padding: 5.2cm 1.8cm 0 1.8cm;
+    overflow: hidden;
+  }
+  .cover .kicker {
+    display: inline-block;
+    font-size: 12pt;
+    letter-spacing: 2px;
+    color: #E0A94A;
+    border: 1px solid rgba(224,169,74,0.5);
+    border-radius: 999px;
+    padding: 7px 22px;
+    margin-bottom: 44px;
+  }
+  .cover h1.title-en {
+    font-size: 34pt;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin: 0 0 8px;
+    font-family: "Noto Sans Arabic", sans-serif;
+  }
+  .cover h1.title-ar {
+    font-size: 27pt;
+    font-weight: 900;
+    color: #E0A94A;
+    margin: 0 0 36px;
+  }
+  .cover .subtitle {
+    font-size: 13.5pt;
+    color: #cbd3dd;
+    max-width: 13cm;
+    margin: 0 auto 50px;
+    line-height: 1.7;
+  }
+  .cover .pillars {
+    margin-bottom: 50px;
+  }
+  .cover .pillar {
+    display: inline-block;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 10.5pt;
+    color: #fff;
+    margin: 0 6px;
+  }
+  .cover .edition {
+    display: block;
+    margin-top: 2.2cm;
+    font-size: 10pt;
+    color: #8a93a1;
+    letter-spacing: 1px;
+  }
+
+  /* ---------- TOC ---------- */
+  .toc-page {
+    page: toc;
+    page-break-after: always;
+  }
+  .toc-page h1 {
+    font-size: 22pt;
+    text-align: center;
+    color: #1F2937;
+    margin-bottom: 30px;
+  }
+  .toc-page ul {
+    list-style: none;
+    padding-right: 0;
+    margin: 0;
+  }
+  .toc-page ul ul {
+    padding-right: 22px;
+  }
+  .toc-page li {
+    margin: 0;
+  }
+  .toc-page a {
+    display: flex;
+    align-items: baseline;
+    text-decoration: none;
+    color: inherit;
+    padding: 5px 0;
+  }
+  .toc-part > a {
+    font-weight: 700;
+    color: #B7791F;
+    font-size: 12.5pt;
+    margin-top: 10px;
+  }
+  .toc-chapter > a {
+    font-size: 11pt;
+    color: #2A2420;
+  }
+  .toc-leader {
+    flex: 1;
+    border-bottom: 1px dotted #999;
+    margin: 0 8px;
+    transform: translateY(-3px);
+  }
+  .toc-page a::after {
+    content: target-counter(attr(href url), page);
+    font-family: "Noto Naskh Arabic";
+    font-size: 10pt;
+    color: #555;
+  }
+
+  /* ---------- CONTENT ---------- */
+  .part-break { page-break-before: always; }
+  .chapter-break { page-break-before: always; }
+
+  h1 {
+    font-size: 20pt;
+    color: #1F2937;
+    text-align: center;
+    border-bottom: 3px solid #B7791F;
+    padding-bottom: 14px;
+    margin: 0 0 26px;
+  }
+  /* A Part title stacked directly above a Chapter title (no body text
+     between them): shrink the Part title into a small kicker line instead
+     of a second full-size heading, so the page doesn't look duplicated. */
+  h1:has(+ h1) {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin: 0 0 6px;
+    font-size: 12pt;
+    color: #B7791F;
+    letter-spacing: 1px;
+  }
+  h2 {
+    font-size: 16.5pt;
+    color: #1F2937;
+    margin-top: 0.3em;
+    margin-bottom: 0.6em;
+  }
+  /* A Chapter title stacked directly above its first subsection (no body
+     text between them yet): tighten the gap. */
+  h1 + h2 {
+    margin-top: 4px;
+  }
+  h3 {
+    font-size: 13.5pt;
+    color: #B7791F;
+    margin-top: 1.3em;
+  }
+  h4 {
+    font-size: 12pt;
+    color: #1F2937;
+    margin-top: 1em;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 1.4em 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    font-size: 10.5pt;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 7px 9px;
+    text-align: right;
+    vertical-align: top;
+  }
+  th {
+    background: #1F2937;
+    color: #fff;
+  }
+  tr:nth-child(even) {
+    background: #F7F4EE;
+  }
+  blockquote {
+    background: #FFF7E6;
+    border-right: 4px solid #B7791F;
+    margin: 1em 0;
+    padding: 0.7em 1.1em;
+    font-size: 10.5pt;
+    color: #5b4a2a;
+  }
+  strong { color: #1F2937; }
+  ul, ol { padding-right: 1.4em; }
+  li { margin: 0.25em 0; }
+  code {
+    font-family: monospace;
+    background: #f0eee8;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10pt;
+  }
+  p > img {
+    display: block;
+    margin: 1.1em auto 0.4em;
+    max-width: 94%;
+    border: 1px solid #e3ded0;
+    border-radius: 6px;
+    padding: 8px;
+    background: #ffffff;
+    page-break-inside: avoid;
+  }
+  pre {
+    direction: ltr;
+    text-align: left;
+    unicode-bidi: embed;
+    background: #f6f4ef;
+    border: 1px solid #e2ddd2;
+    border-right: 3px solid #B7791F;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: "DejaVu Sans Mono", monospace;
+    font-size: 8.3pt;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    page-break-inside: avoid;
+    color: #1F2937;
+  }
+  code {
+    direction: ltr;
+    unicode-bidi: embed;
+    font-family: "DejaVu Sans Mono", monospace;
+    font-size: 8.5pt;
+    color: #7A4A10;
+  }
+  pre > code { color: #1F2937; font-size: inherit; }
+
+  p.fig-caption {
+    text-align: center;
+    font-size: 9.5pt;
+    color: #5b6472;
+    margin: 0 0 1.6em;
+    page-break-before: avoid;
+  }
+  p.fig-caption strong {
+    color: #5b6472;
+    font-weight: 700;
+  }
+
+  /* ---------- FRONT/BACK MATTER (Copyright, Authors, Message, Legal) ---------- */
+  .en-page {
+    page: toc;
+    page-break-after: always;
+    direction: rtl;
+    text-align: right;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
+  }
+  .en-page.legal-page {
+    page: auto;
+  }
+  .en-page h1 {
+    margin-top: 0.4cm;
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
+    font-size: 20pt;
+    color: #1F2937;
+    text-align: right;
+    border-bottom: 3px solid #B7791F;
+    padding-bottom: 10px;
+    margin: 0 0 16px;
+  }
+  .en-page h2 {
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", serif;
+    font-size: 14pt;
+    color: #B7791F;
+    margin: 1em 0 0.4em;
+    page-break-after: avoid;
+  }
+  .en-page p {
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: #2A2420;
+    margin: 0 0 0.55em;
+    page-break-inside: avoid;
+  }
+  .en-page ul {
+    padding-right: 1.4em;
+    padding-left: 0;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: #2A2420;
+  }
+  .en-page li {
+    margin: 0.35em 0;
+  }
+  .authors-page {
+    text-align: center;
+    padding-top: 4.5cm;
+  }
+  .authors-page h1 {
+    text-align: center;
+    border-bottom: none;
+    font-size: 14pt;
+    color: #B7791F;
+    margin-bottom: 40px;
+  }
+  .authors-page .author-name {
+    font-size: 20pt;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 26px 0 0;
+  }
+  .authors-page .author-role {
+    font-size: 10.5pt;
+    color: #8a7a55;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  .message-signoff {
+    margin-top: 2em;
+    font-style: italic;
+    color: #1F2937;
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <span class="kicker">الطبعة الأولى &mdash; 2026</span>
+  <h1 class="title-en">AI IN TRADING</h1>
+  <h1 class="title-ar">الذكاء الاصطناعي في التداول</h1>
+  <p class="subtitle">الدليل الشامل من المبتدئ إلى المحترف &mdash; التعلم الآلي، التعلم العميق، معالجة اللغة، والتعلم المعزز مطبّقة على الأسواق المالية ببيانات حقيقية وكود Python كامل</p>
+  <div class="pillars">
+    <div class="pillar">Machine<br>Learning</div>
+    <div class="pillar">Deep<br>Learning</div>
+    <div class="pillar">NLP&nbsp;&amp;<br>LLMs</div>
+    <div class="pillar">Reinforcement<br>Learning</div>
+  </div>
+  <span class="edition">33 فصلًا &middot; مسرد مصطلحات &middot; ملاحق مرجعية</span>
+</div>
+
+
+<div class="en-page">
+  <h1>حقوق النشر</h1>
+  <p><strong>الذكاء الاصطناعي في التداول (AI IN TRADING)</strong><br>
+  الدليل الشامل لمفاهيم الأموال الذكية، والتحليل الأساسي، والتحليل الفني</p>
+  <p>الطبعة الأولى — 2026</p>
+  <p>جميع الحقوق محفوظة © 2026 لـ Ahmed Abdelhafez وAhmed Abu Omran.</p>
+  <p>لا يجوز إعادة إنتاج أي جزء من هذا الكتاب أو توزيعه أو نقله بأي شكل من الأشكال أو بأي وسيلة —
+  سواء بالتصوير، أو التسجيل، أو أي وسيلة إلكترونية أو ميكانيكية أخرى، أو عبر أي نظام لتخزين المعلومات
+  واسترجاعها — دون إذن كتابي مسبق من المؤلفَين، باستثناء الاقتباسات القصيرة المستخدمة في المراجعات
+  النقدية وبعض الاستخدامات غير التجارية الأخرى التي يسمح بها قانون حقوق النشر.</p>
+  <p>يُعد كتاب "الذكاء الاصطناعي في التداول"، وجميع ما يتضمنه من رسوم توضيحية وأشكال ومخططات، عملًا أصليًا أنتجه
+  المؤلفان، ويخضع لحماية قوانين الملكية الفكرية وحقوق النشر المعمول بها. أي إعادة إنتاج أو توزيع غير
+  مصرح به لهذا العمل، أو أي جزء منه، قد يُعرّض صاحبه لعقوبات مدنية وجنائية، وستُتخذ الإجراءات القانونية
+  اللازمة إلى أقصى حد يسمح به القانون.</p>
+  <h2>إخلاء المسؤولية</h2>
+  <p>هذا الكتاب مُعَدّ لأغراض تعليمية وتثقيفية فقط. ينطوي التداول والاستثمار في الأسواق المالية على
+  مخاطر جوهرية لخسارة رأس المال، وقد لا يكون مناسبًا لكل شخص. لا ينبغي اعتبار أي محتوى وارد في هذا
+  الكتاب استشارة مالية أو استثمارية أو قانونية أو ضريبية، ولا توصية أو دعوة لشراء أو بيع أي أداة مالية.</p>
+  <p>محتوى هذا الكتاب، وجميع الأطر والمفاهيم والقواعد الواردة فيه، مستمدّ من تجربة تداول حقيقية وشخصية
+  خاضها المؤلفان على مدار سنوات، بما فيها من نجاحات وإخفاقات شكّلت فهمهما العملي للأسواق. أما المخططات
+  والأشكال التوضيحية المرسومة داخل هذا الكتاب تحديدًا، فهي رسوم توضيحية أُعدّت خصيصًا لتجسيد وتبسيط تلك
+  المفاهيم بأوضح صورة ممكنة للقارئ، وليست نسخة حرفية عن صفقة أو حساب أو أداة مالية بعينها؛ فأداء الأسواق
+  الفعلي، ماضيًا أو مستقبلًا، لا يتكرر بالشكل نفسه ولا يمكن ضمانه.</p>
+  <p>لا يقدّم المؤلفان أي إقرار أو ضمان بخصوص دقة أو اكتمال محتوى هذا الكتاب، ويُخليان مسؤوليتهما صراحةً
+  عن أي ضمانات ضمنية. تقع مسؤولية أي قرار تداولي بالكامل على عاتق القارئ. لن يتحمّل المؤلفان أي مسؤولية
+  عن أي خسارة أو ضرر، مالي أو غير مالي، ينشأ بشكل مباشر أو غير مباشر عن استخدام أو تطبيق أي معلومة
+  واردة في هذا الكتاب.</p>
+  <p>يُنصح القراء بإجراء أبحاثهم الخاصة واستشارة مختص مالي مرخّص قبل اتخاذ أي قرار استثماري أو تداولي.</p>
+  <h2>معلومات الإصدار</h2>
+  <p>عنوان الكتاب: الذكاء الاصطناعي في التداول<br>
+  المؤلفان: Ahmed Abdelhafez، Ahmed Abu Omran<br>
+  الطبعة: الأولى، 2026<br>
+  اللغة: العربية (مع بعض المصطلحات الإنجليزية المتخصصة)</p>
+</div>
+
+
+<div class="en-page authors-page">
+  <h1>المؤلفـان</h1>
+  <div class="author-name">Ahmed Abdelhafez</div>
+  <div class="author-role">مؤلف مشارك</div>
+  <div class="author-name" style="margin-top:52px;">Ahmed Abu Omran</div>
+  <div class="author-role">مؤلف مشارك</div>
+</div>
+
+
+<div class="en-page">
+  <h1>رسالة من المؤلفَين</h1>
+  <p>وُلد هذا الكتاب بعد رحلة طويلة — سنوات قضيناها بين المخططات، وبين صفقاتنا الخاسرة بقدر ما بين
+  رابحاتها، وفي ذلك المسار البطيء، والمُحبِط أحيانًا، الذي حوّل خبرة متناثرة إلى شيء يمكن تعليمه فعلًا
+  لغيرنا.</p>
+  <p>لم نكتب هذا الكتاب بحثًا عن اختصارات سهلة. ما بين يديك أقرب إلى سجلٍّ عملي: الأطر التي عدنا إليها
+  مرارًا، والأخطاء التي كلّفتنا قبل أن تُعلّمنا شيئًا، والتنقيح البطيء لمنهج استقرّ أخيرًا تحت ضغط ظروف
+  السوق الحقيقية. إن درست هذا الكتاب بجدّية وطبّقته بصبر، فسيمنحك أساسًا حقيقيًا — أساسًا بُني ليدوم
+  طويلًا، لا ليخدم صفقتك القادمة فقط.</p>
+  <p>لكننا نريد أن نكون صادقَين معك قبل أن تقلب الصفحة التالية: لا شيء مما ستقرأه — لا هيكل السوق، ولا
+  مفاهيم الأموال الذكية، ولا المؤشرات — هو الدرس الحقيقي. الدرس الحقيقي أهدأ من كل ذلك بكثير. إنه
+  الهدوء. إنه الانضباط. إنه القدرة على الجلوس مع صفقة خاسرة دون أن تدعها تُملي عليك قرارك التالي.</p>
+  <p>ستمر بفترات تشعر فيها أن استراتيجيتك لا تُقهر، حين يبدو كل إعداد صحيحًا وكل حدس مصيبًا. لا تخلط
+  بين ذلك وبين الاحتراف الحقيقي. فبدون إدارة مخاطر وانضباط نفسي خلف أي ميزة تداولية، لن تصمد هذه الميزة
+  أمام عدد كافٍ من الصفقات. رأينا ذلك يحدث لغيرنا، ورأيناه يحدث لنا في بدايات مشوارنا أيضًا.</p>
+  <p>لذا خذ الأطر الواردة في هذا الكتاب على محمل الجد — فهي تعمل فعلًا، وقد بنيناها لتدوم. لكن خذ
+  الانضباط على محمل جدٍّ أكبر. فالاحتراف الحقيقي في هذا المجال لا يبدأ بالسيطرة على السوق، بل يبدأ
+  بالسيطرة على النفس.</p>
+  <p class="message-signoff">— Ahmed Abdelhafez وAhmed Abu Omran</p>
+</div>
+
+
+<div class="toc-page">
+  <h1>المحتويات</h1>
+  <ul>
+    <li class="toc-part"><a href="#_1"><span class="toc-title">الجزء الأول: أساسيات الذكاء الاصطناعي للتداول</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-part"><a href="#1"><span class="toc-title">الفصل 1: مقدمة إلى الذكاء الاصطناعي في الأسواق المالية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<ul><li class="toc-chapter"><a href="#11"><span class="toc-title">1.1 ما هو الذكاء الاصطناعي؟</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#12"><span class="toc-title">1.2 لماذا الذكاء الاصطناعي الآن؟</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#13"><span class="toc-title">1.3 المجالات الأربعة الرئيسية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#14"><span class="toc-title">1.4 التحليل البشري مقابل التحليل بالذكاء الاصطناعي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#15"><span class="toc-title">1.5 المفاهيم الأساسية الأربعة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#16-15"><span class="toc-title">1.6 أول كود في الكتاب: الفكرة كاملة في 15 سطرًا</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#17"><span class="toc-title">1.7 المصطلحات والرموز الأساسية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_2"><span class="toc-title">ملخص الفصل</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_3"><span class="toc-title">نقاط رئيسية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_4"><span class="toc-title">تمرين عملي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_5"><span class="toc-title">دراسة حالة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
+<li class="toc-part"><a href="#2-python"><span class="toc-title">الفصل 2: إعداد البيئة التقنية (Python)</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<ul><li class="toc-chapter"><a href="#21-python"><span class="toc-title">2.1 لماذا Python؟</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#22"><span class="toc-title">2.2 التثبيت خطوة بخطوة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#23"><span class="toc-title">2.3 خريطة المكتبات</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#24-apis"><span class="toc-title">2.4 مصادر البيانات عبر الواجهات البرمجية (APIs)</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#25"><span class="toc-title">2.5 أول تحليل حقيقي كامل</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_6"><span class="toc-title">ملخص الفصل</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_7"><span class="toc-title">نقاط رئيسية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_8"><span class="toc-title">تمرين عملي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_9"><span class="toc-title">دراسة حالة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
+<li class="toc-part"><a href="#_10"><span class="toc-title">الجزء الثاني: جمع البيانات ومعالجتها</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-part"><a href="#3"><span class="toc-title">الفصل 3: مصادر البيانات المالية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<ul><li class="toc-chapter"><a href="#31-ohlcv"><span class="toc-title">3.1 البيانات التاريخية (OHLCV): العمود الفقري</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#32"><span class="toc-title">3.2 خريطة أنواع البيانات الثلاثة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#33"><span class="toc-title">3.3 جودة البيانات: القيم الناقصة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#34"><span class="toc-title">3.4 جودة البيانات: القيم الشاذة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_11"><span class="toc-title">ملخص الفصل</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_12"><span class="toc-title">نقاط رئيسية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_13"><span class="toc-title">تمرين عملي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_14"><span class="toc-title">دراسة حالة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_15"><span class="toc-title">أمثلة تطبيقية من بيانات السوق الحقيقية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
+<li class="toc-part"><a href="#4"><span class="toc-title">الفصل 4: معالجة البيانات وتحضيرها للنماذج</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<ul><li class="toc-chapter"><a href="#41"><span class="toc-title">4.1 لماذا المعالجة نصف المشروع؟</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#42-normalization-standardization"><span class="toc-title">4.2 تحويل المقاييس (Normalization / Standardization)</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#43-feature-engineering"><span class="toc-title">4.3 هندسة المميزات (Feature Engineering)</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#44"><span class="toc-title">4.4 التقسيم الثلاثي: تدريب / تحقق / اختبار</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#45-look-ahead-bias"><span class="toc-title">4.5 التحيز المستقبلي (Look-ahead Bias): العدو الأول</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_16"><span class="toc-title">ملخص الفصل</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_17"><span class="toc-title">نقاط رئيسية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_18"><span class="toc-title">تمرين عملي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_19"><span class="toc-title">دراسة حالة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_20"><span class="toc-title">أمثلة تطبيقية من بيانات السوق الحقيقية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
+  </ul>
+</div>
+
+<h1 id="_1">الجزء الأول: أساسيات الذكاء الاصطناعي للتداول</h1>
+<h1 id="1">الفصل 1: مقدمة إلى الذكاء الاصطناعي في الأسواق المالية</h1>
+<h2 id="11">1.1 ما هو الذكاء الاصطناعي؟</h2>
+<p>الذكاء الاصطناعي (Artificial Intelligence) هو قدرة البرامج على أداء مهام كانت تتطلب تقليديًا ذكاءً بشريًا: التعرف على الأنماط، التعلم من التجربة، واتخاذ القرارات. الفرع الأهم لنا كمتداولين هو <strong>التعلم الآلي (Machine Learning)</strong>: بدلًا من كتابة قواعد يدوية («إذا كسر السعر المتوسط فاشترِ»)، نعطي الخوارزمية <strong>بيانات تاريخية</strong> وتستخرج هي القواعد والأنماط منها بنفسها.</p>
+<h2 id="12">1.2 لماذا الذكاء الاصطناعي الآن؟</h2>
+<p>ثلاثة أسباب جعلت هذا المجال ضرورة لا رفاهية:</p>
+<ol>
+<li><strong>حجم البيانات:</strong> ملايين الشموع والأخبار والتغريدات يوميًا — فوق طاقة أي محلل بشري.</li>
+<li><strong>سرعة السوق:</strong> قرارات تُتخذ في أجزاء من الثانية؛ المؤسسات تتنافس خوارزميًا منذ سنوات.</li>
+<li><strong>تجاوز الانحياز البشري:</strong> النموذج لا يخاف ولا يطمع ولا يتشبث برأيه — يطبّق ما تعلمه بثبات (يكمل هذا مباشرة ما ناقشناه في فصل علم النفس بكتاب «التحليل الثلاثي»).</li>
+</ol>
+<h2 id="13">1.3 المجالات الأربعة الرئيسية</h2>
+<p><img alt="الشكل 1.1" src="figures/fig-01-01.svg" /></p>
+<p class="fig-caption"><strong>الشكل 1.1 — خريطة مجالات الذكاء الاصطناعي الأربعة التي يغطيها هذا الكتاب، ودور كل منها في نظام التداول</strong></p>
+<table>
+<thead>
+<tr>
+<th>المجال</th>
+<th>ماذا يفعل في التداول</th>
+<th>أين في الكتاب</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>التعلم الآلي الكلاسيكي</td>
+<td>تنبؤ بالاتجاه، تصنيف حالات السوق</td>
+<td>الجزء الثالث</td>
+</tr>
+<tr>
+<td>التعلم العميق</td>
+<td>نمذجة السلاسل الزمنية المعقدة</td>
+<td>الجزء الرابع</td>
+</tr>
+<tr>
+<td>معالجة اللغة الطبيعية</td>
+<td>قراءة الأخبار وتصريحات البنوك آليًا</td>
+<td>الجزء الخامس</td>
+</tr>
+<tr>
+<td>التعلم المعزز</td>
+<td>وكيل يتعلم استراتيجية التداول بالتجربة</td>
+<td>الجزء السادس</td>
+</tr>
+</tbody>
+</table>
+<h2 id="14">1.4 التحليل البشري مقابل التحليل بالذكاء الاصطناعي</h2>
+<table>
+<thead>
+<tr>
+<th>المعيار</th>
+<th>المحلل البشري</th>
+<th>نموذج الذكاء الاصطناعي</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>سرعة المعالجة</td>
+<td>محدودة</td>
+<td>ملايين النقاط في ثوانٍ</td>
+</tr>
+<tr>
+<td>الاتساق</td>
+<td>يتأثر بالحالة النفسية</td>
+<td>ثابت دائمًا</td>
+</tr>
+<tr>
+<td>فهم السياق الاستثنائي</td>
+<td>ممتاز (حروب، أزمات جديدة)</td>
+<td>ضعيف خارج ما تدرّب عليه</td>
+</tr>
+<tr>
+<td>التفسير</td>
+<td>يشرح منطقه</td>
+<td>كثير من النماذج «صندوق أسود»</td>
+</tr>
+<tr>
+<td>التكيف مع تغيّر السوق</td>
+<td>مرن</td>
+<td>يحتاج إعادة تدريب</td>
+</tr>
+</tbody>
+</table>
+<p>الخلاصة العملية التي سيكررها هذا الكتاب: <strong>الذكاء الاصطناعي أداة دعم قرار تضاعف قدرة المتداول المتمكن، وليست بديلًا عن فهم الأسواق</strong> — من لا يفهم الفصل 12 من «التحليل الثلاثي» لن ينقذه نموذج.</p>
+<h2 id="15">1.5 المفاهيم الأساسية الأربعة</h2>
+<p><strong>1) هندسة المميزات (Feature Engineering):</strong> تحويل البيانات الخام إلى مدخلات ذات معنى للنموذج (عوائد، مؤشرات، فروق). جودة المميزات أهم من تعقيد النموذج.</p>
+<p><strong>2) الإفراط في التجهيز (Overfitting):</strong> أخطر مفهوم في الكتاب كله — النموذج «يحفظ» بيانات التدريب بدل أن «يتعلم» منها، فيبدو عبقريًا على الماضي وينهار على المستقبل. الشكل التالي <strong>ناتج عن تجربة فعلية على بيانات GOOG الحقيقية</strong>: نموذجان دُرّبا على نفس 60 يومًا، ثم واجها الأيام العشرين التالية التي لم يرياها:</p>
+<p><img alt="الشكل 1.2" src="figures/fig-01-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 1.2 — تجربة حقيقية على GOOG: النموذج المعقد (أحمر) يلتصق ببيانات التدريب ثم ينفجر خطؤه في المستقبل، بينما البسيط (أخضر) يعمّم بشكل معقول</strong></p>
+<p><strong>3) تقسيم البيانات (Train/Test Split):</strong> في السلاسل الزمنية يجب التقسيم <strong>بالترتيب الزمني</strong> — التدريب على الماضي والاختبار على المستقبل، وإلا تسرّبت معلومات المستقبل للنموذج:</p>
+<p><img alt="الشكل 1.3" src="figures/fig-01-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 1.3 — التقسيم الزمني الصحيح مطبقًا على بيانات GOOG الحقيقية (2004-2013): تدريب ثم تحقق ثم اختبار، دون خلط</strong></p>
+<p><strong>4) الاختبار الخلفي (Backtesting):</strong> محاكاة النموذج على الماضي بشروط واقعية (تكاليف، انزلاق) قبل أي مال حقيقي — الامتداد الآلي لما شرحناه يدويًا في القسم 12.7 من «التحليل الثلاثي».</p>
+<h2 id="16-15">1.6 أول كود في الكتاب: الفكرة كاملة في 15 سطرًا</h2>
+<pre><code class="language-python"># الفكرة الجوهرية للتعلم الآلي في التداول — نسخة مبسطة
+import numpy as np
+from backtesting.test import GOOG   # بيانات ياهو فاينانس حقيقية
+
+closes = GOOG.Close.values          # 2148 يوم تداول فعلي (2004-2013)
+returns = np.diff(closes) / closes[:-1]
+
+# الميزة X: عائد اليوم | الهدف y: هل يصعد الغد؟
+X = returns[:-1].reshape(-1, 1)
+y = (returns[1:] &gt; 0).astype(int)
+
+split = int(len(X) * 0.8)           # تقسيم زمني: الماضي للتعلم
+X_train, X_test = X[:split], X[split:]
+y_train, y_test = y[:split], y[split:]
+
+from sklearn.linear_model import LogisticRegression
+model = LogisticRegression().fit(X_train, y_train)
+acc = model.score(X_test, y_test)
+print(f&quot;Accuracy on unseen future: {acc:.1%}&quot;)
+</code></pre>
+<p>نتيجة تشغيل هذا الكود فعليًا على البيانات: <strong>54.2%</strong> — بالكاد فوق العملة المعدنية. وهذه <strong>أهم رسالة في الفصل</strong>: ميزة واحدة ساذجة لا تتنبأ بالسوق، والفارق الحقيقي بين 54% ونموذج نافع تجاريًا هو موضوع بقية الكتاب (مميزات أفضل، نماذج أنسب، وتقييم أصدق يكشف حتى هذه الـ54% هل هي حقيقية أم وهم إحصائي).</p>
+<h2 id="17">1.7 المصطلحات والرموز الأساسية</h2>
+<table>
+<thead>
+<tr>
+<th>المصطلح</th>
+<th>الاختصار</th>
+<th>المعنى</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Machine Learning</td>
+<td>ML</td>
+<td>تعلم الأنماط من البيانات</td>
+</tr>
+<tr>
+<td>Deep Learning</td>
+<td>DL</td>
+<td>تعلم آلي بشبكات عصبية متعددة الطبقات</td>
+</tr>
+<tr>
+<td>Feature</td>
+<td>X</td>
+<td>متغير مُدخَل للنموذج</td>
+</tr>
+<tr>
+<td>Target/Label</td>
+<td>y</td>
+<td>ما نحاول التنبؤ به</td>
+</tr>
+<tr>
+<td>Overfitting</td>
+<td>—</td>
+<td>حفظ التدريب والفشل في التعميم</td>
+</tr>
+<tr>
+<td>Backtesting</td>
+<td>—</td>
+<td>اختبار الاستراتيجية على الماضي</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_2">ملخص الفصل</h2>
+<ul>
+<li>التعلم الآلي يستخرج القواعد من البيانات بدل كتابتها يدويًا، ويتفوق في السرعة والاتساق ويقصّر في السياقات الاستثنائية والتفسير.</li>
+<li>الإفراط في التجهيز هو الخطر الأول: أداء مبهر على الماضي لا يعني شيئًا عن المستقبل (رأيته بتجربة حقيقية على GOOG في الشكل 1.2).</li>
+<li>تقسيم بيانات السلاسل الزمنية يجب أن يحترم الترتيب الزمني دائمًا.</li>
+</ul>
+<h2 id="_3">نقاط رئيسية</h2>
+<ol>
+<li>ابدأ دائمًا بالسؤال «ما الذي أتنبأ به بالضبط؟» قبل أي كود — تعريف y نصف المشروع.</li>
+<li>تعامل مع أي دقة قريبة من 50% في التنبؤ بالاتجاه على أنها «لا شيء» وليست «نصف نجاح».</li>
+<li>لا تصدّق نموذجًا لم يُختبر على بيانات لم يرها إطلاقًا أثناء التدريب.</li>
+</ol>
+<h2 id="_4">تمرين عملي</h2>
+<p>شغّل كود القسم 1.6 كما هو، ثم غيّر الميزة من عائد يوم واحد إلى متوسط عوائد آخر 5 أيام (<code>np.convolve</code> أو <code>pd.Series.rolling</code>)، وسجّل: هل تحسنت الدقة على بيانات الاختبار؟ ولماذا قد لا تتحسن؟</p>
+<h2 id="_5">دراسة حالة</h2>
+<p>في 2007-2008 (وهي ضمن بياناتنا الحقيقية في الشكل 1.3) انقلب سلوك السوق رأسًا على عقب خلال أسابيع. نموذج دُرّب حتى 2007 فقط وطُبّق في 2008 دون إعادة تدريب كان سيواجه سوقًا لا يشبه شيئًا مما تعلمه — هذا هو «انجراف النموذج» الذي سنعالجه في الفصل 21، وهو السبب الذي يجعل المحترفين يعيدون تدريب نماذجهم دوريًا ويراقبون أداءها لحظيًا بدل الوثوق بها للأبد.</p>
+<div class="chapter-break"></div><h1 id="2-python">الفصل 2: إعداد البيئة التقنية (Python)</h1>
+<h2 id="21-python">2.1 لماذا Python؟</h2>
+<p>Python هي اللغة القياسية للذكاء الاصطناعي المالي عالميًا: بساطة قراءتها تجعل الكود قريبًا من اللغة الطبيعية، ومكتباتها تغطي السلسلة كاملة من جلب البيانات حتى نشر النموذج. كل كود في هذا الكتاب Python خالص، مكتوب ليعمل كما هو.</p>
+<h2 id="22">2.2 التثبيت خطوة بخطوة</h2>
+<ol>
+<li><strong>حمّل Anaconda</strong> من موقعها الرسمي (anaconda.com) — توزيعة تجمع Python مع مئات المكتبات العلمية جاهزة.</li>
+<li><strong>افتح Jupyter Notebook</strong> (يُثبت مع Anaconda): بيئة تفاعلية تنفّذ الكود خلية-خلية وتعرض المخططات داخل الصفحة — مثالية للتجربة والتعلم.</li>
+<li><strong>أنشئ بيئة مستقلة للمشروع</strong> (خطوة احترافية تعزل مكتبات كل مشروع):</li>
+</ol>
+<pre><code class="language-bash">conda create -n ai-trading python=3.11
+conda activate ai-trading
+pip install pandas numpy matplotlib seaborn scikit-learn xgboost lightgbm backtesting yfinance
+</code></pre>
+<h2 id="23">2.3 خريطة المكتبات</h2>
+<p><img alt="الشكل 2.1" src="figures/fig-02-01.svg" /></p>
+<p class="fig-caption"><strong>الشكل 2.1 — طبقات الحزمة التقنية: من مصادر البيانات في الأعلى حتى العرض في الأسفل</strong></p>
+<table>
+<thead>
+<tr>
+<th>الفئة</th>
+<th>المكتبات</th>
+<th>دورها</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>معالجة البيانات</td>
+<td>Pandas، NumPy</td>
+<td>جداول وسلاسل زمنية وعمليات رقمية سريعة</td>
+</tr>
+<tr>
+<td>التعلم الآلي</td>
+<td>Scikit-learn، XGBoost، LightGBM</td>
+<td>النماذج الكلاسيكية (الجزء الثالث)</td>
+</tr>
+<tr>
+<td>التعلم العميق</td>
+<td>TensorFlow/Keras، PyTorch</td>
+<td>الشبكات العصبية (الجزء الرابع)</td>
+</tr>
+<tr>
+<td>معالجة اللغة</td>
+<td>NLTK، SpaCy، Transformers</td>
+<td>تحليل النصوص والأخبار (الجزء الخامس)</td>
+</tr>
+<tr>
+<td>العرض</td>
+<td>Matplotlib، Seaborn</td>
+<td>كل مخططات هذا الكتاب</td>
+</tr>
+<tr>
+<td>البيانات</td>
+<td>backtesting، yfinance</td>
+<td>بيانات تاريخية حقيقية جاهزة</td>
+</tr>
+</tbody>
+</table>
+<h2 id="24-apis">2.4 مصادر البيانات عبر الواجهات البرمجية (APIs)</h2>
+<table>
+<thead>
+<tr>
+<th>المصدر</th>
+<th>النوع</th>
+<th>مجاني؟</th>
+<th>ملاحظة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Yahoo Finance (yfinance)</td>
+<td>أسهم/مؤشرات/عملات</td>
+<td>نعم</td>
+<td>الأسهل للبدء؛ حدود استخدام غير رسمية</td>
+</tr>
+<tr>
+<td>Alpha Vantage</td>
+<td>أسهم/فوركس/كريبتو</td>
+<td>مفتاح مجاني محدود</td>
+<td>25 طلبًا يوميًا مجانًا</td>
+</tr>
+<tr>
+<td>CoinGecko</td>
+<td>كريبتو</td>
+<td>نعم</td>
+<td>بلا مفتاح للاستخدام الأساسي</td>
+</tr>
+<tr>
+<td>Binance API</td>
+<td>كريبتو لحظي</td>
+<td>نعم</td>
+<td>WebSocket للبيانات الحية (الفصل 19)</td>
+</tr>
+<tr>
+<td>OpenAI API</td>
+<td>نماذج لغوية</td>
+<td>مدفوع</td>
+<td>للجزء الخامس (LLMs)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>قاعدة مهنية:</strong> احفظ مفاتيح الـAPI في متغيرات بيئة، لا داخل الكود أبدًا:</p>
+<pre><code class="language-python">import os
+api_key = os.environ[&quot;ALPHA_VANTAGE_KEY&quot;]   # لا تكتب المفتاح في الملف
+</code></pre>
+<h2 id="25">2.5 أول تحليل حقيقي كامل</h2>
+<p>هذا الكتاب يعتمد أساسًا بيانات حقيقية مرفقة مع مكتبة <code>backtesting</code>: أسعار GOOG اليومية الفعلية (2004-2013) وEURUSD بالساعة — نفس بيانات ياهو فاينانس المنشورة، متاحة فورًا دون إنترنت أو مفاتيح. الكود التالي (المولّد الفعلي للشكل 2.2):</p>
+<pre><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
+from backtesting.test import GOOG          # بيانات حقيقية جاهزة
+
+close = GOOG.Close.values
+ma20 = np.convolve(close, np.ones(20)/20, mode=&quot;valid&quot;)
+
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 6),
+                               gridspec_kw={&quot;height_ratios&quot;: [2.4, 1]},
+                               sharex=True)
+ax1.plot(close, label=&quot;GOOG Close&quot;)
+ax1.plot(np.arange(19, len(close)), ma20, label=&quot;MA 20&quot;)
+ax1.legend()
+ax2.bar(np.arange(len(GOOG)), GOOG.Volume.values / 1e6)
+ax2.set_xlabel(&quot;Trading days 2004-2013&quot;)
+plt.show()
+</code></pre>
+<p><img alt="الشكل 2.2" src="figures/fig-02-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 2.2 — ناتج تشغيل الكود أعلاه فعليًا: سعر GOOG الحقيقي مع متوسط 20 يومًا ولوحة الحجم</strong></p>
+<p>وبسطرين إضافيين نفحص توزيع العوائد اليومية — أول خطوة في أي مشروع كمي:</p>
+<pre><code class="language-python">rets = np.diff(close) / close[:-1] * 100
+plt.hist(rets, bins=80)
+</code></pre>
+<p><img alt="الشكل 2.3" src="figures/fig-02-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 2.3 — توزيع عوائد GOOG اليومية الحقيقية: لاحظ «الذيول السمينة» — أيام متطرفة أكثر بكثير من التوزيع الطبيعي، وهي سمة جوهرية للأسواق سيتكرر أثرها في كل الفصول القادمة</strong></p>
+<hr />
+<h2 id="_6">ملخص الفصل</h2>
+<ul>
+<li>Anaconda + Jupyter هي بيئة العمل القياسية، مع بيئة conda مستقلة لكل مشروع.</li>
+<li>خمس فئات مكتبات تغطي السلسلة كاملة: معالجة، تعلم آلي، تعلم عميق، لغة، وعرض.</li>
+<li>بيانات GOOG وEURUSD الحقيقية المرفقة مع backtesting هي مختبرنا الثابت في كل الفصول.</li>
+</ul>
+<h2 id="_7">نقاط رئيسية</h2>
+<ol>
+<li>لا تضع مفاتيح API داخل الكود إطلاقًا — متغيرات البيئة دائمًا.</li>
+<li>اعتد فحص توزيع العوائد أول كل مشروع؛ الذيول السمينة تغيّر كل افتراضات النمذجة.</li>
+<li>ثبّت إصدارات مكتباتك في ملف requirements.txt ليعمل كودك غدًا كما عمل اليوم.</li>
+</ol>
+<h2 id="_8">تمرين عملي</h2>
+<p>ثبّت البيئة، ثم أعد إنتاج الشكل 2.2 بنفسك، وعدّله ليعرض متوسطين (20 و50 يومًا) معًا، ولاحظ نقاط التقاطع بينهما على البيانات الحقيقية.</p>
+<h2 id="_9">دراسة حالة</h2>
+<p>فريق صغير بدأ مشروعه بجمع البيانات مباشرة من واجهة برمجية لحظية دون تثبيت بيئة أو إدارة إصدارات. بعد شهر، تحدّثت إحدى المكتبات فتغيّر سلوك دالة مركزية، وانهار خط المعالجة كاملًا في يوم تقلبات عالية — والأسوأ أنهم لم يستطيعوا استرجاع النسخة العاملة لأن الإصدارات لم تكن مثبتة. الدرس: البنية التحتية المملة (بيئات معزولة، إصدارات مثبتة، بيانات مرجعية ثابتة للاختبار) هي ما يفصل مشروعًا احترافيًا عن تجربة هشة — ولهذا بدأنا بها قبل أي نموذج.</p>
+<div class="chapter-break"></div><h1 id="_10">الجزء الثاني: جمع البيانات ومعالجتها</h1>
+<h1 id="3">الفصل 3: مصادر البيانات المالية</h1>
+<h2 id="31-ohlcv">3.1 البيانات التاريخية (OHLCV): العمود الفقري</h2>
+<p>كل شمعة تختصر فترة كاملة في خمس قيم: الافتتاح (Open)، الأعلى (High)، الأدنى (Low)، الإغلاق (Close)، والحجم (Volume) — ومنها اشتُق كل ما درسته في «التحليل الثلاثي» وكل ما سيتعلمه أي نموذج في هذا الكتاب.</p>
+<p><img alt="الشكل 3.1" src="figures/fig-03-01.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.1 — 40 شمعة ساعة حقيقية من بيانات EUR/USD: خمس قيم لكل فترة هي المادة الخام لكل ما يلي</strong></p>
+<p>جلب البيانات عمليًا بثلاثة أسطر لكل مصدر:</p>
+<pre><code class="language-python"># المصدر 1: ياهو فاينانس (الأسهل)
+import yfinance as yf
+df = yf.download(&quot;AAPL&quot;, start=&quot;2015-01-01&quot;, end=&quot;2024-01-01&quot;)
+
+# المصدر 2: Alpha Vantage (مفتاح مجاني)
+# GET https://www.alphavantage.co/query?function=TIME_SERIES_DAILY
+#     &amp;symbol=AAPL&amp;apikey=YOUR_KEY
+
+# المصدر 3 (المعتمد في هذا الكتاب): بيانات حقيقية مرفقة، بلا إنترنت
+from backtesting.test import GOOG, EURUSD
+print(GOOG.tail(3))      # آخر 3 أيام فعلية في المجموعة
+</code></pre>
+<h2 id="32">3.2 خريطة أنواع البيانات الثلاثة</h2>
+<p><img alt="الشكل 3.3" src="figures/fig-03-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.3 — خط أنابيب البيانات: ثلاثة أنواع تصب في طبقة تنظيف واحدة ثم مخزن مميزات موحّد</strong></p>
+<table>
+<thead>
+<tr>
+<th>النوع</th>
+<th>أمثلة</th>
+<th>استخدامه في الكتاب</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>تاريخية</td>
+<td>OHLCV يومي/ساعة</td>
+<td>تدريب كل نماذج الأجزاء 3-4 و6</td>
+</tr>
+<tr>
+<td>بديلة (Alternative)</td>
+<td>عناوين أخبار، تغريدات، تقارير مركزية</td>
+<td>الجزء الخامس (NLP)</td>
+</tr>
+<tr>
+<td>لحظية (Real-time)</td>
+<td>WebSocket من Binance/Coinbase</td>
+<td>التنفيذ الآلي (الجزء السابع)</td>
+</tr>
+</tbody>
+</table>
+<p>مثال WebSocket لحظي (سيُستخدم فعليًا في الفصل 19):</p>
+<pre><code class="language-python">import websocket, json
+
+def on_message(ws, msg):
+    tick = json.loads(msg)
+    print(tick[&quot;s&quot;], tick[&quot;p&quot;])      # الرمز والسعر اللحظي
+
+ws = websocket.WebSocketApp(
+    &quot;wss://stream.binance.com:9443/ws/btcusdt@trade&quot;,
+    on_message=on_message)
+ws.run_forever()
+</code></pre>
+<h2 id="33">3.3 جودة البيانات: القيم الناقصة</h2>
+<p>مصادر البيانات ليست معصومة: أيام عطلات تختلف بين الأسواق، انقطاعات تسجيل، وأخطاء تجميع. القاعدة الأولى: <strong>افحص قبل أن تستخدم</strong>:</p>
+<pre><code class="language-python">import pandas as pd
+df = GOOG.copy()
+print(df.isna().sum())               # عدّ القيم الناقصة لكل عمود
+print(df.index.to_series().diff().value_counts().head())  # فجوات التواريخ
+
+# استراتيجيات المعالجة حسب الحالة:
+df_ff = df.ffill()                   # سحب آخر قيمة معروفة (الأنسب للأسعار)
+df_drop = df.dropna()                # حذف الصفوف الناقصة (إن كانت قليلة)
+</code></pre>
+<p><strong>تحذير جوهري:</strong> لا تستخدم أبدًا التعبئة الخلفية (<code>bfill</code>) أو الاستيفاء الذي «ينظر للأمام» في بيانات تدريب — فهو يهرّب معلومات من المستقبل (سنعمق هذا في القسم 4.5).</p>
+<h2 id="34">3.4 جودة البيانات: القيم الشاذة</h2>
+<p>الشكل التالي <strong>محسوب فعليًا</strong> على عوائد GOOG العشرية كاملة: الأيام التي تجاوز تحركها 4 انحرافات معيارية:</p>
+<p><img alt="الشكل 3.2" src="figures/fig-03-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 3.2 — الأيام الشاذة الفعلية في GOOG (2004-2013): يتجمّع معظمها في أزمة 2008 الحقيقية — شذوذ «صحيح» يجب إبقاؤه لا حذفه</strong></p>
+<p>وهنا الدرس المالي المميز: في بيانات المصانع، الشاذ خطأ قياس يُحذف؛ في الأسواق، <strong>الشاذ غالبًا أهم يوم في البيانات</strong> (انهيار، قرار مفاجئ). القاعدة: تحقق من صحة القيمة (خطأ تسجيل أم حركة حقيقية؟) — فإن كانت حقيقية فأبقها، ودع النموذج يتعلم أن هذه الأيام موجودة.</p>
+<pre><code class="language-python">rets = df.Close.pct_change() * 100
+mu, sd = rets.mean(), rets.std()
+outliers = rets[abs(rets - mu) &gt; 4 * sd]
+print(f&quot;Days beyond 4 sigma: {len(outliers)}&quot;)
+print(outliers.sort_values().head())   # افحصها يدويًا قبل أي قرار
+</code></pre>
+<hr />
+<h2 id="_11">ملخص الفصل</h2>
+<ul>
+<li>OHLCV هي الوحدة الأساسية، وتأتي من ثلاث عائلات مصادر: تاريخية وبديلة ولحظية.</li>
+<li>افحص النواقص والفجوات قبل أي نمذجة، وعالج الأسعار بـ<code>ffill</code> لا بأي طريقة تنظر للأمام.</li>
+<li>الشاذ المالي الحقيقي معلومة ثمينة لا خطأ — تحقق منه ثم أبقه.</li>
+</ul>
+<h2 id="_12">نقاط رئيسية</h2>
+<ol>
+<li>اعتمد مصدرًا مرجعيًا ثابتًا للتجارب (كبيانات هذا الكتاب) ومصدرًا حيًا للتشغيل، ولا تخلط بينهما أثناء البحث.</li>
+<li>اكتب فحص الجودة (نواقص، فجوات، شواذ) كدالة تُشغَّل على كل بيانات جديدة تلقائيًا.</li>
+<li>وثّق مصدر وتاريخ سحب كل مجموعة بيانات — النتائج غير القابلة للتكرار بلا قيمة.</li>
+</ol>
+<h2 id="_13">تمرين عملي</h2>
+<p>حمّل بيانات سهم من اختيارك عبر <code>yfinance</code>، وطبّق عليه فحص الجودة الكامل: عدد النواقص، أكبر فجوة تواريخ، وقائمة الأيام الشاذة فوق 4σ — ثم ابحث في أخبار أكبر ثلاثة أيام شذوذًا: ماذا حدث فيها فعلًا؟</p>
+<h2 id="_14">دراسة حالة</h2>
+<p>فريق كمي لاحظ أن نموذجه يحقق نتائج خيالية في الاختبار الخلفي على بيانات مصدر مجاني. بعد تدقيق طويل اكتشفوا أن المصدر كان «يصحح» الأسعار بأثر رجعي: يعدّل بيانات الأيام الماضية بعد إغلاقها (توزيعات، تصحيحات) — فكان النموذج يتدرب فعليًا على نسخة من الماضي لم تكن متاحة وقتها لأحد. الحل المهني: الاحتفاظ بنسخ مؤرشفة «كما ظهرت وقتها» (Point-in-Time data) — وهذا أحد أهم فروق البيانات الاحترافية المدفوعة عن المجانية.</p>
+<h2 id="_15">أمثلة تطبيقية من بيانات السوق الحقيقية</h2>
+<p>كل مخططات هذا الفصل (3.1 و3.2) محسوبة مباشرة من بيانات EURUSD وGOOG الفعلية أعلاه — أعد إنتاجها بنفسك بتشغيل كود المستودع المرافق <code>code/ch03_data.py</code>.</p>
+<div class="chapter-break"></div><h1 id="4">الفصل 4: معالجة البيانات وتحضيرها للنماذج</h1>
+<h2 id="41">4.1 لماذا المعالجة نصف المشروع؟</h2>
+<p>القاعدة الميدانية في التعلم الآلي المالي: نحو 70% من وقت المشروع يذهب لتحضير البيانات، لا للنماذج. النموذج الأفضل في العالم على بيانات سيئة التحضير يخسر أمام نموذج بسيط على بيانات محضّرة بإتقان — وهذا الفصل هو سبب تفوّق الثاني.</p>
+<h2 id="42-normalization-standardization">4.2 تحويل المقاييس (Normalization / Standardization)</h2>
+<p>معظم الخوارزميات تتأثر بمدى الأرقام: سعر بـ300 دولار وRSI بين 0-100 وحجم بالملايين — بلا توحيد، سيهيمن الأكبر رقميًا. الطريقتان القياسيتان (<strong>مطبقتان فعليًا على GOOG</strong> في الشكل):</p>
+<p><img alt="الشكل 4.1" src="figures/fig-04-01.svg" /></p>
+<p class="fig-caption"><strong>الشكل 4.1 — بيانات GOOG الحقيقية نفسها بثلاثة مقاييس: الشكل محفوظ والمدى موحّد</strong></p>
+<pre><code class="language-python">from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+# قاعدة ذهبية: fit على التدريب فقط — ثم transform للاختبار
+scaler = StandardScaler()
+X_train_s = scaler.fit_transform(X_train)
+X_test_s  = scaler.transform(X_test)     # بنفس معاملات التدريب!
+</code></pre>
+<p><strong>الخطأ القاتل الشائع:</strong> عمل <code>fit</code> على البيانات كاملة قبل التقسيم — بهذا تسرّبت إحصاءات المستقبل (متوسطه وانحرافه) إلى التدريب. دائمًا: قسّم أولًا، ثم <code>fit</code> على التدريب وحده.</p>
+<h2 id="43-feature-engineering">4.3 هندسة المميزات (Feature Engineering)</h2>
+<p>هنا يلتقي الكتابان: كل مؤشر تعلمته في «التحليل الثلاثي» يصبح الآن <strong>ميزة رقمية</strong> تُطعم للنموذج. الشكل التالي محسوب فعليًا من GOOG:</p>
+<p><img alt="الشكل 4.2" src="figures/fig-04-02.svg" /></p>
+<p class="fig-caption"><strong>الشكل 4.2 — من عمود سعر واحد إلى ثلاث مميزات حقيقية: MA20 وRSI14 والتقلب — كل منها يرى السوق من زاوية مختلفة</strong></p>
+<pre><code class="language-python">import pandas as pd
+df = GOOG.copy()
+
+# 1) عوائد ومتغيرات متأخرة (Lags)
+df[&quot;ret1&quot;] = df.Close.pct_change()
+for k in (1, 2, 3, 5, 10):
+    df[f&quot;ret_lag{k}&quot;] = df[&quot;ret1&quot;].shift(k)
+
+# 2) مؤشرات فنية كمميزات
+df[&quot;ma20&quot;]  = df.Close.rolling(20).mean()
+df[&quot;dist_ma20&quot;] = df.Close / df[&quot;ma20&quot;] - 1     # بُعد السعر عن متوسطه
+delta = df.Close.diff()
+gain  = delta.clip(lower=0).rolling(14).mean()
+loss  = (-delta.clip(upper=0)).rolling(14).mean()
+df[&quot;rsi14&quot;] = 100 - 100 / (1 + gain / loss)
+
+# 3) تقلب متحرك
+df[&quot;vol20&quot;] = df[&quot;ret1&quot;].rolling(20).std()
+
+# 4) الهدف: اتجاه الغد (يُزاح للخلف حتى لا نرى المستقبل)
+df[&quot;target&quot;] = (df.Close.shift(-1) &gt; df.Close).astype(int)
+df = df.dropna()
+</code></pre>
+<p>لاحظ سطر الهدف جيدًا: <code>shift(-1)</code> يعني أن صف اليوم يحمل «ما سيحدث غدًا» كهدف — وكل المميزات في نفس الصف محسوبة من اليوم وما قبله فقط. هذا الانضباط هو الفارق بين مشروع سليم وآخر مبني على وهم.</p>
+<h2 id="44">4.4 التقسيم الثلاثي: تدريب / تحقق / اختبار</h2>
+<ul>
+<li><strong>التدريب (70%):</strong> يتعلم منه النموذج.</li>
+<li><strong>التحقق (15%):</strong> لضبط الإعدادات واختيار النموذج (يُستهلك بالتجربة المتكررة).</li>
+<li><strong>الاختبار (15%):</strong> يُفتح <strong>مرة واحدة في نهاية المشروع</strong> — أي نظرة متكررة عليه تحوّله لمجموعة تحقق ثانية وتُفقده معناه.</li>
+</ul>
+<p>(راجع الشكل 1.3 — التقسيم مطبق على خط GOOG الزمني الحقيقي.)</p>
+<pre><code class="language-python">n = len(df)
+train = df.iloc[: int(n*0.70)]
+val   = df.iloc[int(n*0.70): int(n*0.85)]
+test  = df.iloc[int(n*0.85):]           # لا يُلمس حتى النهاية
+</code></pre>
+<h2 id="45-look-ahead-bias">4.5 التحيز المستقبلي (Look-ahead Bias): العدو الأول</h2>
+<p>كل خطأ يجعل معلومة من المستقبل متاحة للنموذج وقت القرار:</p>
+<p><img alt="الشكل 4.3" src="figures/fig-04-03.svg" /></p>
+<p class="fig-caption"><strong>الشكل 4.3 — الخلط العشوائي يوزع أيام الاختبار داخل فترة التدريب (يسار — خطأ قاتل) مقابل القطع الزمني الصارم (يمين — صحيح)</strong></p>
+<p>قائمة فحص التسريبات الخمس الأشهر:</p>
+<ol>
+<li>خلط عشوائي (<code>train_test_split</code> الافتراضي!) بدل القطع الزمني — استخدم <code>shuffle=False</code> دائمًا.</li>
+<li><code>fit</code> للمقاييس على كامل البيانات (القسم 4.2).</li>
+<li>مؤشر محسوب بنافذة تشمل شموعًا مستقبلية (<code>center=True</code> في rolling مثلًا).</li>
+<li>هدف بلا <code>shift</code> صحيح.</li>
+<li>بيانات مصححة بأثر رجعي (دراسة حالة الفصل 3).</li>
+</ol>
+<hr />
+<h2 id="_16">ملخص الفصل</h2>
+<ul>
+<li>المعالجة الصحيحة (توحيد مقاييس، مميزات، تقسيم) أهم من اختيار الخوارزمية.</li>
+<li>كل fit للمحوّلات على التدريب فقط، والاختبار يُحوَّل بمعاملات التدريب.</li>
+<li>مجموعة الاختبار تُفتح مرة واحدة؛ والتحيز المستقبلي يتسلل من خمسة أبواب احفظها عن ظهر قلب.</li>
+</ul>
+<h2 id="_17">نقاط رئيسية</h2>
+<ol>
+<li>ابنِ دالة واحدة <code>make_features(df)</code> تُنتج كل المميزات — تُستدعى نفسها للتدريب والتشغيل الحي لضمان التطابق.</li>
+<li>راجع قائمة التسريبات الخمس قبل تصديق أي نتيجة جيدة — النتيجة «الممتازة» غالبًا تسريب.</li>
+<li>احتفظ بنسبة اختبار لا تقل عن 15% مهما صغرت بياناتك.</li>
+</ol>
+<h2 id="_18">تمرين عملي</h2>
+<p>طبّق كود القسم 4.3 كاملًا على بيانات EURUSD (بدل GOOG)، وأضف ميزة جديدة من عندك (مثلًا: مدى الشمعة <code>High-Low</code> نسبة للسعر)، ثم تحقق: كم صفًا فقدت بعد <code>dropna()</code> ولماذا؟</p>
+<h2 id="_19">دراسة حالة</h2>
+<p>باحث مستقل نشر استراتيجية «تربح 200% سنويًا» على بيانات خمس سنوات. عند التدقيق، كان يحسب متوسطًا متحركًا بـ<code>rolling(window=20, center=True)</code> — أي أن قيمة المؤشر عند كل يوم تستخدم 10 أيام مستقبلية. بإصلاح سطر واحد، انقلبت الاستراتيجية إلى خاسرة. الدرس المزدوج: أولًا، سطر واحد يكفي لتدمير صلاحية مشروع كامل؛ وثانيًا، أي نتيجة استثنائية تستحق البحث عن التسريب قبل الاحتفال.</p>
+<h2 id="_20">أمثلة تطبيقية من بيانات السوق الحقيقية</h2>
+<p>الأشكال 4.1 و4.2 محسوبة بالكامل من أسعار GOOG الفعلية بالكود المعروض أعلاه — الكود الكامل القابل للتشغيل في <code>code/ch04_features.py</code>.</p>
+
+
+<div class="en-page legal-page">
+  <div class="part-break"></div>
+  <h1>تنبيه قانوني</h1>
+  <p>يُعد هذا الكتاب، <strong>الذكاء الاصطناعي في التداول</strong>، بنصّه وهيكله وجميع ما يتضمنه من رسوم وأشكال
+  توضيحية أصلية، ملكية فكرية لمؤلفَيه، Ahmed Abdelhafez وAhmed Abu Omran، ويخضع لحماية قوانين حقوق
+  النشر المحلية والدولية.</p>
+  <p>يُمنع منعًا باتًا القيام بأي من الإجراءات التالية دون إذن كتابي مسبق من المؤلفَين:</p>
+  <ul>
+    <li>إعادة بيع هذا الكتاب، كليًا أو جزئيًا، بأي صيغة.</li>
+    <li>إعادة نشر هذا الكتاب، أو أي جزء منه، تحت أي اسم.</li>
+    <li>نسخ هذا الكتاب أو تكراره أو رفعه على أي موقع إلكتروني، أو خدمة مشاركة ملفات، أو منتدى، أو
+    منصة تواصل اجتماعي.</li>
+    <li>استخدام أي نص أو رسم أو شكل توضيحي من هذا الكتاب لأغراض تجارية.</li>
+    <li>ترجمة هذا الكتاب أو تعديله أو إنتاج أي عمل مشتق منه دون تصريح.</li>
+  </ul>
+  <p>تبقى جميع الحقوق غير الممنوحة صراحةً هنا محفوظة للمؤلفَين. أي انتهاك لهذه الشروط قد يُعرّض
+  المخالف للمساءلة المدنية والجنائية وفق قوانين حقوق النشر المعمول بها، ويحتفظ المؤلفان بحقهما في
+  اتخاذ كل الإجراءات القانونية المتاحة ضد أي فرد أو جهة يثبت انتهاكها لهذا التنبيه.</p>
+  <p>للاستفسار عن التصاريح أو التراخيص أو الاستخدام المصرح به لأي مادة من هذا الكتاب، يُرجى التواصل
+  مع المؤلفَين مباشرة.</p>
+  <p style="margin-top:2em;">© 2026 Ahmed Abdelhafez وAhmed Abu Omran. جميع الحقوق محفوظة.</p>
+</div>
+
+
+</body>
+</html>
