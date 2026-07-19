@@ -60,7 +60,7 @@ def fig_02_01():
     hline(ax, h[:18].max(), 0, 17, color=GREY, label="أعلى نطاق الجلسة الآسيوية")
     hline(ax, l[:18].min(), 0, 17, color=GREY, label="أدنى نطاق الجلسة الآسيوية")
     arrow(ax, (17, h[:18].max()), (20, h[:18].max() + 1.6), color=RED, label="اكتساح سيولة")
-    arrow(ax, (20, l[19]), (39, c[-1]), color=NAVY, label="توسّع جلسة لندن")
+    arrow(ax, (20, l[19]), (39, c[-1]), color=NAVY, label="توسّع جلسة لندن", label_offset=(0, 1.1))
     ax.axvline(18, color=GOLD, linestyle=":", linewidth=1.4)
     ax.text(9, ax.get_ylim()[1], "الجلسة الآسيوية", color=GOLD, fontsize=9, ha="center", va="bottom", fontweight="bold")
     ax.text(29, ax.get_ylim()[1], "جلسة لندن", color=GOLD, fontsize=9, ha="center", va="bottom", fontweight="bold")
