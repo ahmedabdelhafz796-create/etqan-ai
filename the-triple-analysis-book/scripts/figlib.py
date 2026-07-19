@@ -35,7 +35,13 @@ plt.rcParams.update({
     "text.color": NAVY,
     "xtick.color": "#555555",
     "ytick.color": "#555555",
-    "svg.fonttype": "path",
+    # "path" bakes each glyph in as an individually-positioned vector outline using
+    # matplotlib's own naive (non-shaping-aware) advance-width layout -- this breaks
+    # the cursive connections between Arabic letters, since Arabic fonts rely on a
+    # real text-shaping engine (used by the SVG's final renderer) for correct joining.
+    # "none" instead emits a real <text> element with the Unicode string intact, so
+    # the renderer that ultimately displays the SVG performs proper Arabic shaping.
+    "svg.fonttype": "none",
     "axes.unicode_minus": False,
 })
 
