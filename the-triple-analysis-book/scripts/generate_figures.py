@@ -271,6 +271,48 @@ def fig_05_05():
     set_ylim_pad(ax, list(l) + list(h) + [level + 1.4])
     save(fig, "fig-05-05")
 
+# ============================================================ 5.2/5.3 Bullish OB vs Bearish OB side by side (dedicated)
+def fig_05_06():
+    fig, axes = plt.subplots(1, 2, figsize=(10.4, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+
+    down = synth_walk(8, drift=-0.5, vol=0.3, start=103, seed=5061)
+    ob_seg = synth_walk(2, drift=-0.3, vol=0.15, start=down[-1], seed=5062)
+    up = synth_walk(10, drift=0.9, vol=0.5, start=ob_seg[-1], seed=5063)
+    closes_bull = np.concatenate([down, ob_seg, up])
+    o1, h1, l1, c1 = to_ohlc(closes_bull, seed=5061, wick=0.4)
+    ob1_x = 9
+    axes[0].set_facecolor("white")
+    for s in ["top", "left"]: axes[0].spines[s].set_visible(False)
+    axes[0].spines["right"].set_color(NAVY); axes[0].spines["bottom"].set_color(NAVY)
+    axes[0].yaxis.tick_right()
+    plot_candles(axes[0], o1, h1, l1, c1, width=0.55)
+    y0, y1 = min(o1[ob1_x], c1[ob1_x]) - 0.1, max(o1[ob1_x], c1[ob1_x]) + 0.1
+    box(axes[0], ob1_x - 0.55, ob1_x + 0.55, y0, y1, color=GOLD_LIGHT, edge=GOLD)
+    arrow(axes[0], (ob1_x + 1, c1[ob1_x + 1]), (ob1_x + 5, c1[ob1_x + 5]), color=GREEN, label="BOS صاعد")
+    axes[0].set_xticks([]); axes[0].set_yticks([])
+    axes[0].set_title("كتلة طلب صعودية (Bullish OB): آخر شمعة هابطة قبل اندفاع صعودي", fontsize=9.5, color=GREEN, fontweight="bold")
+
+    up2 = synth_walk(8, drift=0.5, vol=0.3, start=100, seed=5064)
+    ob_seg2 = synth_walk(2, drift=0.3, vol=0.15, start=up2[-1], seed=5065)
+    down2 = synth_walk(10, drift=-0.9, vol=0.5, start=ob_seg2[-1], seed=5066)
+    closes_bear = np.concatenate([up2, ob_seg2, down2])
+    o2, h2, l2, c2 = to_ohlc(closes_bear, seed=5064, wick=0.4)
+    ob2_x = 9
+    axes[1].set_facecolor("white")
+    for s in ["top", "left"]: axes[1].spines[s].set_visible(False)
+    axes[1].spines["right"].set_color(NAVY); axes[1].spines["bottom"].set_color(NAVY)
+    axes[1].yaxis.tick_right()
+    plot_candles(axes[1], o2, h2, l2, c2, width=0.55)
+    y0b, y1b = min(o2[ob2_x], c2[ob2_x]) - 0.1, max(o2[ob2_x], c2[ob2_x]) + 0.1
+    box(axes[1], ob2_x - 0.55, ob2_x + 0.55, y0b, y1b, color="#F4D9D9", edge=RED)
+    arrow(axes[1], (ob2_x + 1, c2[ob2_x + 1]), (ob2_x + 5, c2[ob2_x + 5]), color=RED, label="BOS هابط")
+    axes[1].set_xticks([]); axes[1].set_yticks([])
+    axes[1].set_title("كتلة طلب هابطة (Bearish OB): آخر شمعة صاعدة قبل اندفاع هبوطي", fontsize=9.5, color=RED, fontweight="bold")
+
+    fig.tight_layout(pad=1.0)
+    save(fig, "fig-05-06")
+
 # ============================================================ 6.1 FVG + OB confluence
 def fig_06_01():
     fig, ax = new_ax()
@@ -1781,6 +1823,45 @@ def fig_29_02():
     ax.legend(frameon=False, fontsize=9, loc="upper left")
     set_ylim_pad(ax, list(l) + list(h))
     save(fig, "fig-29-02")
+
+# ============================================================ 29.9 MACD (dedicated)
+def _ema(values, period):
+    values = np.asarray(values, dtype=float)
+    alpha = 2 / (period + 1)
+    out = np.empty(len(values))
+    out[0] = values[0]
+    for i in range(1, len(values)):
+        out[i] = alpha * values[i] + (1 - alpha) * out[i - 1]
+    return out
+
+def fig_29_11():
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8.6, 5.6), dpi=150, gridspec_kw={"height_ratios": [2, 1.2]})
+    n = 60
+    closes = 100 + np.cumsum(np.random.default_rng(2911).normal(0.1, 0.5, n))
+    o, h, l, c = to_ohlc(closes, seed=2911)
+    plot_candles(ax1, o, h, l, c, width=0.55)
+    ax1.set_xticks([]); ax1.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax1.spines[s].set_visible(False)
+    ax1.set_ylabel("السعر")
+
+    ema12 = _ema(closes, 12)
+    ema26 = _ema(closes, 26)
+    macd_line = ema12 - ema26
+    signal_line = _ema(macd_line, 9)
+    hist = macd_line - signal_line
+
+    ax2.bar(np.arange(n), hist, color=[GREEN if v >= 0 else RED for v in hist], width=0.6, zorder=2)
+    ax2.plot(macd_line, color=NAVY, linewidth=1.8, label="خط MACD")
+    ax2.plot(signal_line, color=GOLD, linewidth=1.8, linestyle="--", label="خط الإشارة (Signal)")
+    ax2.axhline(0, color=GREY, linewidth=1.0)
+    cross_x = 44
+    marker_point(ax2, cross_x, macd_line[cross_x], color=GREEN, label="تقاطع صعودي", va="top", dy=0.5, fontsize=8.5)
+    ax2.set_ylabel("MACD")
+    ax2.set_xticks([])
+    for s in ["top", "right"]: ax2.spines[s].set_visible(False)
+    ax2.legend(frameon=False, fontsize=8.5, loc="upper left")
+    fig.tight_layout(pad=0.6)
+    save(fig, "fig-29-11")
 
 # ============================================================ 29.3 Bollinger squeeze
 def fig_29_03():

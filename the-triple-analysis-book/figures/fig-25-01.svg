@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-19T00:39:08.407416</dc:date>
+    <dc:date>2026-07-19T01:11:19.193349</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -43,14 +43,14 @@ L 81.10625 185.528423
 L 81.10625 183.923954 
 L 51.54375 183.923954 
 z
-" clip-path="url(#pf77068563a)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#pf138bdcdfe)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="matplotlib.axis_1"/>
    <g id="matplotlib.axis_2"/>
    <g id="line2d_1">
     <path d="M 66.325 89.260269 
 L 66.325 217.617808 
-" clip-path="url(#pf77068563a)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pf138bdcdfe)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="text_1">
     <!-- ​(Hammer) ﺔﻗﺮﻄﻤﻟﺍ -->
@@ -485,14 +485,14 @@ L 320.23125 217.617808
 L 320.23125 89.260269 
 L 290.66875 89.260269 
 z
-" clip-path="url(#pe860eb9ef6)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#pabcbbc0bc6)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="matplotlib.axis_3"/>
    <g id="matplotlib.axis_4"/>
    <g id="line2d_2">
     <path d="M 305.45 185.528423 
 L 305.45 57.170885 
-" clip-path="url(#pe860eb9ef6)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pabcbbc0bc6)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="text_2">
     <!-- ​(Shooting Star) ﺏﺎﻬﺸﻟﺍ -->
@@ -891,7 +891,7 @@ L 559.35625 185.528423
 L 559.35625 121.349654 
 L 529.79375 121.349654 
 z
-" clip-path="url(#pfdaee23c47)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#pbf9d728ba6)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 588.91875 185.528423 
@@ -899,19 +899,19 @@ L 618.48125 185.528423
 L 618.48125 111.722838 
 L 588.91875 111.722838 
 z
-" clip-path="url(#pfdaee23c47)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#pbf9d728ba6)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="matplotlib.axis_5"/>
    <g id="matplotlib.axis_6"/>
    <g id="line2d_3">
     <path d="M 544.575 111.722838 
 L 544.575 207.990992 
-" clip-path="url(#pfdaee23c47)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pbf9d728ba6)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="line2d_4">
     <path d="M 603.7 105.304962 
 L 603.7 224.035685 
-" clip-path="url(#pfdaee23c47)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pbf9d728ba6)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="text_3">
     <!-- ​(Bullish Engulfing) ﻱﺩﻮﻌﺼﻟﺍ ﻉﻼﺘﺑﻻﺍ -->
@@ -1509,7 +1509,7 @@ L 81.10625 414.615923
 L 81.10625 340.810338 
 L 51.54375 340.810338 
 z
-" clip-path="url(#p927d803b04)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#p748866f058)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="patch_11">
     <path d="M 110.66875 414.615923 
@@ -1517,19 +1517,19 @@ L 140.23125 414.615923
 L 140.23125 340.810338 
 L 110.66875 340.810338 
 z
-" clip-path="url(#p927d803b04)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#p748866f058)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="matplotlib.axis_7"/>
    <g id="matplotlib.axis_8"/>
    <g id="line2d_5">
     <path d="M 66.325 334.392462 
 L 66.325 350.437154 
-" clip-path="url(#p927d803b04)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#p748866f058)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="line2d_6">
     <path d="M 125.45 331.183523 
 L 125.45 437.078492 
-" clip-path="url(#p927d803b04)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#p748866f058)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="text_4">
     <!-- ​(Bearish Engulfing) ﻲﻃﻮﺒﻬﻟﺍ ﻉﻼﺘﺑﻻﺍ -->
@@ -1719,14 +1719,14 @@ L 320.23125 382.526538
 L 320.23125 379.959388 
 L 290.66875 379.959388 
 z
-" clip-path="url(#pb600cd52eb)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#p08a003ac0e)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="matplotlib.axis_9"/>
    <g id="matplotlib.axis_10"/>
    <g id="line2d_7">
     <path d="M 305.45 286.258385 
 L 305.45 446.705308 
-" clip-path="url(#pb600cd52eb)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#p08a003ac0e)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="text_5">
     <!-- ​(Doji) ﻲﺟﻭﺪﻟﺍ -->
@@ -1910,7 +1910,7 @@ L 559.35625 414.615923
 L 559.35625 318.347769 
 L 529.79375 318.347769 
 z
-" clip-path="url(#p4c04a2ed0f)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#pf5c09f2e2e)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="patch_16">
     <path d="M 588.91875 416.220392 
@@ -1918,7 +1918,7 @@ L 618.48125 416.220392
 L 618.48125 409.802515 
 L 588.91875 409.802515 
 z
-" clip-path="url(#p4c04a2ed0f)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#pf5c09f2e2e)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="patch_17">
     <path d="M 648.04375 408.198046 
@@ -1926,24 +1926,24 @@ L 677.60625 408.198046
 L 677.60625 318.347769 
 L 648.04375 318.347769 
 z
-" clip-path="url(#p4c04a2ed0f)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
+" clip-path="url(#pf5c09f2e2e)" style="fill: #1f8a56; stroke: #1f8a56; stroke-linejoin: miter"/>
    </g>
    <g id="matplotlib.axis_11"/>
    <g id="matplotlib.axis_12"/>
    <g id="line2d_8">
     <path d="M 544.575 421.0338 
 L 544.575 308.720954 
-" clip-path="url(#p4c04a2ed0f)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pf5c09f2e2e)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="line2d_9">
     <path d="M 603.7 422.638269 
 L 603.7 403.384638 
-" clip-path="url(#p4c04a2ed0f)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pf5c09f2e2e)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="line2d_10">
     <path d="M 662.825 414.615923 
 L 662.825 308.720954 
-" clip-path="url(#p4c04a2ed0f)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#pf5c09f2e2e)" style="fill: none; stroke: #1f8a56; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="text_6">
     <!-- ​(Morning Star) ﺡﺎﺒﺼﻟﺍ ﺔﻤﺠﻧ -->
@@ -2123,22 +2123,22 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pf77068563a">
+  <clipPath id="pf138bdcdfe">
    <rect x="7.2" y="25.0815" width="236.5" height="208.581"/>
   </clipPath>
-  <clipPath id="pe860eb9ef6">
+  <clipPath id="pabcbbc0bc6">
    <rect x="246.325" y="25.0815" width="236.5" height="208.581"/>
   </clipPath>
-  <clipPath id="pfdaee23c47">
+  <clipPath id="pbf9d728ba6">
    <rect x="485.45" y="25.0815" width="236.5" height="208.581"/>
   </clipPath>
-  <clipPath id="p927d803b04">
+  <clipPath id="p748866f058">
    <rect x="7.2" y="254.169" width="236.5" height="208.581"/>
   </clipPath>
-  <clipPath id="pb600cd52eb">
+  <clipPath id="p08a003ac0e">
    <rect x="246.325" y="254.169" width="236.5" height="208.581"/>
   </clipPath>
-  <clipPath id="p4c04a2ed0f">
+  <clipPath id="pf5c09f2e2e">
    <rect x="485.45" y="254.169" width="236.5" height="208.581"/>
   </clipPath>
  </defs>
