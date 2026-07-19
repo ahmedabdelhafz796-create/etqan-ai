@@ -420,7 +420,7 @@ def build_ict():
     df = ds.load(dsn)
 
     def kz_draw(keys, focus=None):
-        def draw(p, ev, dfx):
+        def draw(p, ev=None, dfx=None):
             for k in keys:
                 hrs, lab, col = KZ[k]
                 p.session(hrs, lab, color=col)
