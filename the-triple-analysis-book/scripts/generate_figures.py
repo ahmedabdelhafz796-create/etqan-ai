@@ -980,6 +980,41 @@ def fig_16_02():
     ax.legend(frameon=False, fontsize=9)
     save(fig, "fig-16-02")
 
+# ============================================================ 16.5 PPI as a leading indicator of CPI (dedicated)
+def fig_16_03():
+    fig, ax1 = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    months = np.arange(14)
+    ppi = 3.0 + 2.5 * np.sin((months - 2) / 3.5) + np.random.default_rng(1603).normal(0, 0.08, 14)
+    cpi = 3.0 + 2.5 * np.sin((months - 5) / 3.5) + np.random.default_rng(1604).normal(0, 0.08, 14)
+    ax1.plot(months, ppi, color=GOLD, linewidth=2.2, marker="o", markersize=4, label="مؤشر أسعار المنتجين (PPI)")
+    ax1.plot(months, cpi, color=NAVY, linewidth=2.2, marker="s", markersize=4, label="مؤشر أسعار المستهلك (CPI)")
+    ax1.annotate("", xy=(5, cpi[5]), xytext=(2, ppi[2]),
+                 arrowprops=dict(arrowstyle="-|>", color=RED, linewidth=1.6, linestyle="--"))
+    ax1.text(3.5, (ppi[2] + cpi[5]) / 2 + 0.5, "PPI يتقدّم بنحو 3 أشهر", color=RED, fontsize=9, ha="center", fontweight="bold")
+    ax1.set_ylabel("التغير السنوي (%)")
+    ax1.set_xlabel("الشهر")
+    ax1.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax1.spines[s].set_visible(False)
+    ax1.legend(frameon=False, fontsize=9)
+    save(fig, "fig-16-03")
+
+# ============================================================ 16.7 Inflation targeting reaction (dedicated)
+def fig_16_04():
+    fig, ax = new_ax(price_axis=False, w=8.6, h=4.6)
+    n = 30
+    rate = np.concatenate([np.full(12, 2.0), np.linspace(2.0, 4.5, 10), np.full(8, 4.5)])
+    cpi_target = np.full(n, 2.0)
+    cpi_actual = np.concatenate([np.linspace(2.0, 5.5, 14), np.linspace(5.5, 3.0, 16)])
+    ax.plot(cpi_actual, color=RED, linewidth=2.2, label="التضخم الفعلي (CPI)")
+    ax.plot(cpi_target, color=GREY, linestyle=":", linewidth=1.6, label="هدف التضخم (2%)")
+    ax.plot(rate, color=NAVY, linewidth=2.2, linestyle="--", label="سعر الفائدة")
+    ax.axvspan(12, 22, color=GOLD, alpha=0.08)
+    ax.text(17, 6.0, "رفع الفائدة تدريجيًا لإعادة التضخم للهدف", color=GOLD, fontsize=9, ha="center", fontweight="bold")
+    ax.set_ylabel("%")
+    ax.legend(frameon=False, fontsize=9)
+    save(fig, "fig-16-04")
+
 # ============================================================ 17.1 NFP reaction
 def fig_17_01():
     fig, ax = new_ax()

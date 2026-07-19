@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-18T23:55:07.376210</dc:date>
+    <dc:date>2026-07-19T00:05:25.194011</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -43,14 +43,14 @@ L 371.053125 104.32482
 L 371.053125 94.0998 
 L 214.096875 94.0998 
 z
-" clip-path="url(#p81fd5fcbbc)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
+" clip-path="url(#p75b45c37af)" style="fill: #b91c1c; stroke: #b91c1c; stroke-linejoin: miter"/>
    </g>
    <g id="matplotlib.axis_1"/>
    <g id="matplotlib.axis_2"/>
    <g id="line2d_1">
     <path d="M 292.575 162.2666 
 L 292.575 90.69146 
-" clip-path="url(#p81fd5fcbbc)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
+" clip-path="url(#p75b45c37af)" style="fill: none; stroke: #b91c1c; stroke-width: 2; stroke-linecap: round"/>
    </g>
    <g id="text_1">
     <!-- ​ﻞﻤﺘﺤﻣ ﻲﻃﻮﺒﻫ ﺱﺎﻜﻌﻧﺍ — (Hanging Man) ﻕﻮﻨﺸﻤﻟﺍ ﻞﺟﺮﻟﺍ -->
@@ -1129,7 +1129,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p81fd5fcbbc">
+  <clipPath id="p75b45c37af">
    <rect x="7.2" y="25.933" width="570.75" height="170.417"/>
   </clipPath>
  </defs>
