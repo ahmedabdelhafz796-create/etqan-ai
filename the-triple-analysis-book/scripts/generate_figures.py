@@ -1051,6 +1051,42 @@ def fig_17_02():
               color=NAVY, fontsize=8.5, ha="center", fontweight="bold")
     save(fig, "fig-17-02")
 
+# ============================================================ 17.4 Average hourly earnings vs CPI (dedicated)
+def fig_17_03():
+    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    months = np.arange(12)
+    wages = 3.0 + months * 0.15 + np.random.default_rng(1704).normal(0, 0.05, 12)
+    cpi = 2.2 + months * 0.05 + np.random.default_rng(1705).normal(0, 0.05, 12)
+    ax.plot(months, wages, color=GOLD, linewidth=2.2, marker="o", markersize=4, label="نمو متوسط الأجر بالساعة (سنوي %)")
+    ax.plot(months, cpi, color=NAVY, linewidth=2.2, linestyle="--", marker="s", markersize=4, label="تضخم CPI (سنوي %)")
+    ax.fill_between(months, wages, cpi, where=(wages > cpi), color=RED, alpha=0.12, interpolate=True)
+    ax.text(6, wages.max() + 0.3, "الأجور تنمو أسرع من التضخم:\nضغط تضخمي إضافي متوقع", color=RED, fontsize=9,
+            ha="center", fontweight="bold")
+    ax.set_ylabel("%")
+    ax.set_xlabel("الشهر")
+    ax.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.legend(frameon=False, fontsize=9)
+    save(fig, "fig-17-03")
+
+# ============================================================ 17.6/17.7 Weekly jobless claims as a high-frequency leading signal (dedicated)
+def fig_17_04():
+    fig, ax = plt.subplots(figsize=(8.6, 4.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    weeks = np.arange(16)
+    claims = 220 + np.concatenate([np.zeros(8), np.linspace(0, 45, 8)]) + np.random.default_rng(1706).normal(0, 5, 16)
+    ax.plot(weeks, claims, color=NAVY, linewidth=2.2, marker="o", markersize=4)
+    ax.axvspan(8, 15, color=RED, alpha=0.08)
+    ax.axvline(12, color=RED, linestyle="--", linewidth=1.4)
+    ax.text(12.2, claims.max(), "صدور NFP الشهري\n(تأكيد التباطؤ)", color=RED, fontsize=8.5, fontweight="bold")
+    ax.text(10, claims[8] - 12, "ارتفاع تدريجي أسبوعي\nإشارة مبكرة قبل NFP", color=GOLD, fontsize=9, ha="center", fontweight="bold")
+    ax.set_ylabel("مطالبات البطالة الأسبوعية (آلاف)")
+    ax.set_xlabel("الأسبوع")
+    ax.grid(axis="y", color=GRID)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    save(fig, "fig-17-04")
+
 # ============================================================ 18.1 GDP components pie
 def fig_18_01():
     fig, ax = plt.subplots(figsize=(6.4, 6.4), dpi=150)
@@ -1087,6 +1123,45 @@ def fig_18_02():
     for s in ["top", "right"]: ax.spines[s].set_visible(False)
     save(fig, "fig-18-02")
 
+# ============================================================ 18.5 GDP revisions across three releases (dedicated)
+def fig_18_03():
+    fig, ax = plt.subplots(figsize=(8.6, 4.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    cats = ["أولي (Advance)", "منقّح (Revised)", "نهائي (Final)"]
+    vals = [2.8, 2.3, 2.5]
+    colors = [GOLD, GOLD_LIGHT, NAVY]
+    bars = ax.bar(cats, vals, color=colors, width=0.45, zorder=3)
+    for b, v in zip(bars, vals):
+        ax.text(b.get_x() + b.get_width() / 2, v + 0.05, f"{v}%", ha="center", fontsize=10, fontweight="bold", color=NAVY)
+    ax.text(1, 3.3, "كل نسخة من نسخ نفس الربع قد تحرك السوق عند صدورها", color=NAVY, fontsize=9.5,
+            ha="center", fontweight="bold")
+    ax.set_ylabel("نمو الناتج المحلي الإجمالي المُعلن (%)")
+    ax.set_ylim(0, 3.8)
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    save(fig, "fig-18-03")
+
+# ============================================================ 18.6 GDP vs GNP (dedicated)
+def fig_18_04():
+    fig, ax = plt.subplots(figsize=(8.6, 4.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    cats = ["الناتج المحلي\n(GDP) = 100", "+ دخل مواطنين\nمن الخارج", "- دخل أجانب\nداخل الدولة", "الناتج القومي\n(GNP) = 102"]
+    bottoms = [0, 100, 102, 0]
+    heights = [100, 6, 4, 102]
+    colors = [NAVY, GREEN, RED, GOLD]
+    labels = ["100", "+6", "-4", "102"]
+    bars = ax.bar(cats, heights, bottom=bottoms, color=colors, width=0.5, zorder=3)
+    for b, bot, h, lab in zip(bars, bottoms, heights, labels):
+        ax.text(b.get_x() + b.get_width() / 2, bot + h / 2, lab, ha="center", va="center",
+                fontsize=9.5, fontweight="bold", color="white")
+    ax.text(1.5, 112, "الناتج القومي = الناتج المحلي + دخل المواطنين بالخارج − دخل الأجانب محليًا", color=NAVY,
+            fontsize=9, ha="center", fontweight="bold")
+    ax.set_ylabel("مؤشر نسبي (GDP = 100)")
+    ax.set_ylim(0, 118)
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    save(fig, "fig-18-04")
+
 # ============================================================ 19.1 PMI leading GDP
 def fig_19_01():
     fig, ax1 = plt.subplots(figsize=(8.6, 4.6), dpi=150)
@@ -1107,6 +1182,30 @@ def fig_19_01():
     ax1.set_xlabel("الشهر")
     ax1.grid(axis="y", color=GRID)
     save(fig, "fig-19-01")
+
+# ============================================================ 19.1/19.2/19.3 Consumer & business confidence lead consumption (dedicated)
+def fig_19_02():
+    fig, ax1 = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    months = np.arange(14)
+    confidence = 100 + 12 * np.sin((months - 2) / 4.0) + np.random.default_rng(1902).normal(0, 1.2, 14)
+    consumption = 2.5 + 1.0 * np.sin((months - 6) / 4.0) + np.random.default_rng(1903).normal(0, 0.08, 14)
+    ax1.plot(months, confidence, color=GOLD, linewidth=2.2, marker="o", markersize=4, label="ثقة المستهلك والأعمال (مؤشر)")
+    ax1.set_ylabel("مؤشر الثقة", color=GOLD)
+    ax1.tick_params(axis="y", labelcolor=GOLD)
+    for s in ["top"]: ax1.spines[s].set_visible(False)
+    ax2 = ax1.twinx()
+    ax2.plot(months, consumption, color=NAVY, linewidth=2.2, linestyle="--", marker="s", markersize=4, label="نمو الاستهلاك الفعلي (%)")
+    ax2.set_ylabel("نمو الاستهلاك (%)", color=NAVY)
+    ax2.tick_params(axis="y", labelcolor=NAVY)
+    for s in ["top"]: ax2.spines[s].set_visible(False)
+    ax1.annotate("", xy=(6, confidence[6]), xytext=(2, confidence[2]),
+                 arrowprops=dict(arrowstyle="-|>", color=RED, linewidth=1.4, linestyle="--"))
+    ax1.text(4, confidence.max() + 2, "الثقة تتقدّم على الاستهلاك الفعلي بعدة أشهر", color=RED, fontsize=9,
+              ha="center", fontweight="bold")
+    ax1.set_xlabel("الشهر")
+    ax1.grid(axis="y", color=GRID)
+    save(fig, "fig-19-02")
 
 # ============================================================ 20.1 Trade balance vs currency
 def fig_20_01():
@@ -1148,6 +1247,31 @@ def fig_20_02():
     ax.legend(bars, cats, frameon=False, fontsize=9, loc="lower center")
     save(fig, "fig-20-02")
 
+# ============================================================ 20.1 Exports vs imports = trade balance (dedicated)
+def fig_20_03():
+    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    quarters = ["ر1", "ر2", "ر3", "ر4", "ر5", "ر6"]
+    exports = [42, 44, 46, 45, 48, 51]
+    imports = [39, 40, 41, 44, 43, 44]
+    x = np.arange(len(quarters))
+    w = 0.35
+    ax.bar(x - w/2, exports, width=w, color=GREEN, zorder=3, label="الصادرات")
+    ax.bar(x + w/2, imports, width=w, color=RED, zorder=3, label="الواردات")
+    balance = [e - i for e, i in zip(exports, imports)]
+    ax2 = ax.twinx()
+    ax2.plot(x, balance, color=NAVY, linewidth=2.2, marker="o", markersize=5, label="الميزان التجاري (فائض)")
+    ax2.set_ylabel("الميزان التجاري (مليار$)", color=NAVY)
+    ax2.tick_params(axis="y", labelcolor=NAVY)
+    ax2.set_ylim(0, 12)
+    for s in ["top"]: ax2.spines[s].set_visible(False)
+    ax.set_xticks(x); ax.set_xticklabels(quarters)
+    ax.set_ylabel("مليار دولار")
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.legend(loc="upper left", frameon=False, fontsize=9)
+    save(fig, "fig-20-03")
+
 # ============================================================ 21.1 Earnings beat, weak guidance
 def fig_21_01():
     fig, ax = new_ax()
@@ -1179,6 +1303,67 @@ def fig_21_02():
     ax.grid(axis="y", color=GRID, zorder=0)
     for s in ["top", "right"]: ax.spines[s].set_visible(False)
     save(fig, "fig-21-02")
+
+# ============================================================ 21.2 Income statement waterfall (dedicated)
+def fig_21_03():
+    fig, ax = plt.subplots(figsize=(8.8, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    cats = ["الإيرادات", "تكلفة البضاعة\nالمباعة", "الربح\nالإجمالي", "المصاريف\nالتشغيلية", "صافي\nالربح"]
+    revenue, cogs, opex = 100, 58, 22
+    gross = revenue - cogs
+    net = gross - opex
+    bottoms = [0, gross, 0, net, 0]
+    heights = [revenue, cogs, gross, opex, net]
+    colors = [NAVY, RED, GOLD, RED, GREEN]
+    bars = ax.bar(cats, heights, bottom=bottoms, color=colors, width=0.5, zorder=3)
+    vals = [revenue, -cogs, gross, -opex, net]
+    for b, bot, h, v in zip(bars, bottoms, heights, vals):
+        ax.text(b.get_x() + b.get_width() / 2, bot + h / 2, f"{v:+.0f}" if v < 0 else f"{v:.0f}",
+                ha="center", va="center", fontsize=9.5, fontweight="bold", color="white")
+    ax.set_ylabel("% من الإيرادات")
+    ax.set_ylim(0, 112)
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    save(fig, "fig-21-03")
+
+# ============================================================ 21.3 Balance sheet equation (dedicated)
+def fig_21_04():
+    fig, ax = plt.subplots(figsize=(7.2, 4.6), dpi=150)
+    fig.patch.set_facecolor("white")
+    ax.bar([0], [100], color=NAVY, width=0.5, zorder=3, label="الأصول")
+    ax.bar([1], [65], color=RED, width=0.5, zorder=3, label="الخصوم (الديون)")
+    ax.bar([1], [35], bottom=[65], color=GREEN, width=0.5, zorder=3, label="حقوق الملكية")
+    ax.text(0, 50, "100", ha="center", va="center", fontsize=11, fontweight="bold", color="white")
+    ax.text(1, 32.5, "65", ha="center", va="center", fontsize=11, fontweight="bold", color="white")
+    ax.text(1, 82.5, "35", ha="center", va="center", fontsize=11, fontweight="bold", color="white")
+    ax.text(0.5, 108, "الأصول = الخصوم + حقوق الملكية", color=NAVY, fontsize=10.5, ha="center", fontweight="bold")
+    ax.set_xticks([0, 1]); ax.set_xticklabels(["الأصول", "الخصوم + حقوق الملكية"])
+    ax.set_ylabel("القيمة (وحدات نسبية)")
+    ax.set_ylim(0, 118)
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    ax.legend(frameon=False, fontsize=9, loc="lower center", ncol=1, bbox_to_anchor=(0.5, -0.32))
+    fig.subplots_adjust(bottom=0.28)
+    save(fig, "fig-21-04")
+
+# ============================================================ 21.4 Cash flow by activity: net income vs operating cash flow divergence (dedicated)
+def fig_21_05():
+    fig, ax = plt.subplots(figsize=(8.6, 4.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    cats = ["التشغيلية", "الاستثمارية", "التمويلية"]
+    vals = [-8, -15, 20]
+    colors = [RED, RED, GREEN]
+    bars = ax.bar(cats, vals, color=colors, width=0.45, zorder=3)
+    ax.axhline(0, color=NAVY, linewidth=1.2)
+    for b, v in zip(bars, vals):
+        ax.text(b.get_x() + b.get_width() / 2, v + (0.8 if v >= 0 else -1.5), f"{v:+d}", ha="center",
+                fontsize=10, fontweight="bold", color=NAVY)
+    ax.text(1, 15, "ربح محاسبي موجب لكن تدفق نقدي تشغيلي سالب:\nإشارة تحذيرية تستحق الفحص", color=RED, fontsize=9,
+            ha="center", fontweight="bold")
+    ax.set_ylabel("صافي التدفق النقدي (مليون$)")
+    ax.grid(axis="y", color=GRID, zorder=0)
+    for s in ["top", "right"]: ax.spines[s].set_visible(False)
+    save(fig, "fig-21-05")
 
 # ============================================================ 22.1 Weekly calendar impact
 def fig_22_01():
