@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="628.35pt" height="340.148623pt" viewBox="0 0 628.35 340.148623" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-19T15:23:07.437432</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.1, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 340.148623 
+L 628.35 340.148623 
+L 628.35 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 7.2 307.918623 
+L 569.101016 307.918623 
+L 569.101016 30.988283 
+L 7.2 30.988283 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="text_1">
+     <text style="font-size: 10px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #1f2937" x="288.150508" y="326.608623" transform="rotate(-0 288.150508 326.608623)">​ﻦﻣﺰﻟﺍ</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_1">
+      <path d="M 7.2 299.456685 
+L 569.101016 299.456685 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_2">
+      <defs>
+       <path id="ma026793164" d="M 0 0 
+L 3.5 0 
+" style="stroke: #555555; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#ma026793164" x="569.101016" y="299.456685" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #555555" x="576.101016" y="305.068935" transform="rotate(-0 576.101016 305.068935)">100</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_3">
+      <path d="M 7.2 247.963521 
+L 569.101016 247.963521 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#ma026793164" x="569.101016" y="247.963521" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #555555" x="576.101016" y="253.575771" transform="rotate(-0 576.101016 253.575771)">101</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_5">
+      <path d="M 7.2 196.470358 
+L 569.101016 196.470358 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#ma026793164" x="569.101016" y="196.470358" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #555555" x="576.101016" y="202.082608" transform="rotate(-0 576.101016 202.082608)">102</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_7">
+      <path d="M 7.2 144.977194 
+L 569.101016 144.977194 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#ma026793164" x="569.101016" y="144.977194" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #555555" x="576.101016" y="150.589444" transform="rotate(-0 576.101016 150.589444)">103</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_9">
+      <path d="M 7.2 93.48403 
+L 569.101016 93.48403 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#ma026793164" x="569.101016" y="93.48403" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #555555" x="576.101016" y="99.09628" transform="rotate(-0 576.101016 99.09628)">104</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_11">
+      <path d="M 7.2 41.990866 
+L 569.101016 41.990866 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke: #e6e1d6; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#ma026793164" x="569.101016" y="41.990866" style="fill: #555555; stroke: #555555; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #555555" x="576.101016" y="47.603116" transform="rotate(-0 576.101016 47.603116)">105</text>
+     </g>
+    </g>
+    <g id="text_8">
+     <text style="font-size: 10px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: middle; fill: #1f2937" x="610.46" y="169.453453" transform="rotate(-270 610.46 169.453453)">​ﺭﻻﻭﺪﻟﺍ ﺮﺷﺆﻣ</text>
+    </g>
+   </g>
+   <g id="line2d_13">
+    <path d="M 32.740955 295.33088 
+L 51.660181 294.845706 
+L 70.579407 291.811044 
+L 89.498634 290.249253 
+L 108.41786 281.445174 
+L 127.337086 279.520422 
+L 146.256312 280.46648 
+L 165.175538 283.29511 
+L 184.094764 284.097151 
+L 203.01399 291.539017 
+L 221.933216 214.271319 
+L 240.852443 139.421101 
+L 259.771669 45.934709 
+L 278.690895 43.576026 
+L 297.610121 54.982942 
+L 316.529347 62.327822 
+L 335.448573 95.602858 
+L 354.367799 122.855001 
+L 373.287025 134.951529 
+L 392.206251 134.432226 
+L 411.125478 132.058634 
+L 430.044704 139.527289 
+L 448.96393 176.623177 
+L 467.883156 180.389025 
+L 486.802382 196.709491 
+L 505.721608 208.977801 
+L 524.640834 205.961249 
+L 543.56006 214.808806 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke: #1f2937; stroke-width: 1.9; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_14">
+    <path d="M 221.933216 307.918623 
+L 221.933216 30.988283 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke-dasharray: 5.18,2.24; stroke-dashoffset: 0; stroke: #b91c1c; stroke-width: 1.4"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 569.101016 307.918623 
+L 569.101016 30.988283 
+" style="fill: none; stroke: #1f2937; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 7.2 307.918623 
+L 569.101016 307.918623 
+" style="fill: none; stroke: #1f2937; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; text-anchor: start; fill: #b91c1c" x="225.717062" y="43.576026" transform="rotate(-0 225.717062 43.576026)">​(NFP) ﻒﻴﻇﻮﺘﻟﺍ ﺕﺎﻧﺎﻴﺑ ﺭﻭﺪﺻ</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; fill: #b7791f" transform="translate(286.53489 17.3555)">​ﻲﺋﺰﺟ ﻊﺟﺍﺮﺗ</text>
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'Noto Naskh Arabic', 'DejaVu Sans'; fill: #b7791f" transform="translate(280.687937 33.534)">(ﺭﻮﺟﻷﺍ ﻒﻌﺿ)</text>
+   </g>
+   <g id="patch_5">
+    <path d="M 280.613533 46.490017 
+Q 307.068829 54.131004 331.161042 61.08947 
+" clip-path="url(#pba32e78f40)" style="fill: none; stroke-dasharray: 8.14,3.52; stroke-dashoffset: 0; stroke: #b7791f; stroke-width: 2.2; stroke-linecap: round"/>
+    <path d="M 325.900318 56.239235 
+L 331.161042 61.08947 
+L 324.124419 62.387908 
+z
+" clip-path="url(#pba32e78f40)" style="fill: #b7791f; stroke-dasharray: 8.14,3.52; stroke-dashoffset: 0; stroke: #b7791f; stroke-width: 2.2; stroke-linecap: round"/>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pba32e78f40">
+   <rect x="7.2" y="30.988283" width="561.901016" height="276.93034"/>
+  </clipPath>
+ </defs>
+</svg>
