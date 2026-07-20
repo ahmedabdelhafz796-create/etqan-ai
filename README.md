@@ -8,6 +8,15 @@ architecture.
 Design language: TradingView × Binance × Bloomberg × Apple × Stripe — glass,
 glow, animated candlesticks, gold & emerald accents on deep night black.
 
+## 🚀 Deploy in one click
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/ahmedabdelhafz796-create/etqan-ai)
+&nbsp;
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/ahmedabdelhafz796-create/etqan-ai)
+
+No environment variables required to launch — see **[DEPLOYMENT.md](./DEPLOYMENT.md)**
+for the step-by-step guide and the optional config table.
+
 ---
 
 ## Quick start
