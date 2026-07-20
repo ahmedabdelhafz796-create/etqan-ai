@@ -712,6 +712,27 @@
 <li class="toc-chapter"><a href="#_114"><span class="toc-title">تمرين عملي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#_115"><span class="toc-title">دراسة حالة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
 <li class="toc-chapter"><a href="#_116"><span class="toc-title">أمثلة تطبيقية من بيانات السوق الحقيقية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
+<li class="toc-part"><a href="#_117"><span class="toc-title">ملحق أ: إعداد بيئة العمل خطوة بخطوة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<ul><li class="toc-chapter"><a href="#1-python"><span class="toc-title">أ.1 تثبيت Python</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#2"><span class="toc-title">أ.2 بيئة معزولة لكل مشروع</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#3_1"><span class="toc-title">أ.3 تثبيت مكتبات الكتاب</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#4-jupyter"><span class="toc-title">أ.4 Jupyter: مختبرك التفاعلي</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#5_1"><span class="toc-title">أ.5 اختبار التثبيت بسطرين</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
+<li class="toc-part"><a href="#_118"><span class="toc-title">ملحق ب: مصادر البيانات المالية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<ul><li class="toc-chapter"><a href="#1_1"><span class="toc-title">ب.1 بيانات الأسعار</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#2_1"><span class="toc-title">ب.2 بيانات الأخبار والنصوص</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#3_2"><span class="toc-title">ب.3 قواعد الجودة قبل أي استخدام</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
+<li class="toc-part"><a href="#python"><span class="toc-title">ملحق ج: مرجع سريع لمكتبات Python</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-part"><a href="#_119"><span class="toc-title">ملحق د: مسرد المصطلحات</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-part"><a href="#_120"><span class="toc-title">ملحق هـ: أكواد الكتاب وإعادة إنتاج كل نتيجة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<ul><li class="toc-chapter"><a href="#1_2"><span class="toc-title">هـ.1 البنية</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#2_2"><span class="toc-title">هـ.2 ميثاق إعادة الإنتاج</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
+<li class="toc-part"><a href="#_121"><span class="toc-title">ملحق و: خارطة ما بعد الكتاب</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-part"><a href="#_122"><span class="toc-title">ملحق ز: المراجع والقراءات الموصى بها</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<ul><li class="toc-chapter"><a href="#_123"><span class="toc-title">كتب مؤسِّسة</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_124"><span class="toc-title">أوراق مفصلية (بترتيب فصول الكتاب)</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_125"><span class="toc-title">توثيق رسمي (محدَّث دائمًا)</span><span class="toc-leader"></span><span class="toc-page"></span></a></li>
+<li class="toc-chapter"><a href="#_126"><span class="toc-title">ومن المؤلفَين</span><span class="toc-leader"></span><span class="toc-page"></span></a></li></ul>
   </ul>
 </div>
 
@@ -2574,6 +2595,414 @@ order = client.submit_order(symbol=&quot;GOOG&quot;, qty=10,
 <p>عام 2015 أُدين متداول بريطاني عن مساهمته في «الانهيار الومضي» لعام 2010 عبر خوارزمية Spoofing وضعت أوامر بيع ضخمة زائفة قرب السوق ثم ألغتها آلاف المرات. دفاعه أن «الجميع يلغي أوامر» لم يصمد: النمط الآلي المنهجي (نسبة إلغاء شاذة، توقيت متزامن مع صفقات معاكسة) أدانه من سجلات السوق نفسها. الدرسان الختاميان: (1) المنظمون يحللون البيانات بنفس أدوات هذا الكتاب — أنماطك الآلية بصمة لا تُمحى، (2) الخط بين «استراتيجية ذكية» و«تلاعب» ليس التقنية بل <strong>القصد والأثر</strong> — والسجلات تشهد بهما معًا. ابنِ أنظمة تفخر بأن تُقرأ سجلاتها كاملة في محكمة.</p>
 <h2 id="_116">أمثلة تطبيقية من بيانات السوق الحقيقية</h2>
 <p>هذا الفصل معياري بطبيعته؛ عُدَّته التطبيقية هي سجلات الفصل 19 وحدود الفصل 20 مطبقة على أنظمتك — وكل أدوات القياس في هذا الكتاب صالحة لمراجعة امتثالك كما تراجع أرباحك.</p>
+<div class="chapter-break"></div><h1 id="_117">ملحق أ: إعداد بيئة العمل خطوة بخطوة</h1>
+<h2 id="1-python">أ.1 تثبيت Python</h2>
+<ol>
+<li>حمّل Python 3.11 أو أحدث من python.org (ويندوز/ماك) أو عبر مدير حزم نظامك (لينكس).</li>
+<li>أثناء التثبيت على ويندوز فعّل خيار <strong>Add Python to PATH</strong>.</li>
+<li>تحقق: <code>python --version</code> في الطرفية يجب أن يطبع الإصدار.</li>
+</ol>
+<h2 id="2">أ.2 بيئة معزولة لكل مشروع</h2>
+<pre><code class="language-bash">python -m venv trading-env            # إنشاء البيئة (مرة واحدة)
+source trading-env/bin/activate       # تفعيلها (ماك/لينكس)
+trading-env\Scripts\activate          # (ويندوز)
+</code></pre>
+<p>البيئة المعزولة تمنع تضارب إصدارات المكتبات بين مشاريعك — عادة إلزامية لا رفاهية.</p>
+<h2 id="3_1">أ.3 تثبيت مكتبات الكتاب</h2>
+<pre><code class="language-bash">pip install numpy pandas matplotlib scikit-learn xgboost backtesting jupyter
+# للأجزاء المتقدمة (اختياري بحسب الفصل):
+pip install tensorflow            # الجزء الرابع (أو torch)
+pip install transformers          # الجزء الخامس (FinBERT)
+pip install anthropic             # الفصل 14 (LLM API)
+pip install stable-baselines3     # الجزء السادس (Deep RL)
+</code></pre>
+<h2 id="4-jupyter">أ.4 Jupyter: مختبرك التفاعلي</h2>
+<pre><code class="language-bash">jupyter notebook       # يفتح المتصفح — نفّذ الخلايا واحدة واحدة وشاهد النتائج
+</code></pre>
+<p>ابدأ كل استكشاف في دفتر Jupyter، وحين ينضج الكود انقله لملف <code>.py</code> منظم — نفس مسار هذا الكتاب: تجارب في <code>scripts/</code> وأكواد جاهزة في <code>code/</code>.</p>
+<h2 id="5_1">أ.5 اختبار التثبيت بسطرين</h2>
+<pre><code class="language-python">from backtesting.test import GOOG
+print(GOOG.tail())     # جدول أسعار حقيقية = البيئة جاهزة تمامًا
+</code></pre>
+<div class="chapter-break"></div><h1 id="_118">ملحق ب: مصادر البيانات المالية</h1>
+<h2 id="1_1">ب.1 بيانات الأسعار</h2>
+<table>
+<thead>
+<tr>
+<th>المصدر</th>
+<th>النوع</th>
+<th>التكلفة</th>
+<th>ملاحظات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>مكتبة backtesting.py</td>
+<td>GOOG يومي + EURUSD ساعة</td>
+<td>مجاني</td>
+<td>بيانات الكتاب — تعمل بلا إنترنت</td>
+</tr>
+<tr>
+<td>yfinance</td>
+<td>أسهم/مؤشرات/عملات، يومي ولحظي محدود</td>
+<td>مجاني</td>
+<td>الأشهر للتعلم؛ غير مضمون للإنتاج</td>
+</tr>
+<tr>
+<td>Alpha Vantage</td>
+<td>أسهم وعملات وفوركس</td>
+<td>مجاني بحدود</td>
+<td>يتطلب مفتاح API مجانيًا</td>
+</tr>
+<tr>
+<td>Polygon / Tiingo</td>
+<td>لحظي احترافي</td>
+<td>مدفوع</td>
+<td>جودة إنتاج</td>
+</tr>
+<tr>
+<td>واجهات الوسطاء (Alpaca, IBKR, Binance)</td>
+<td>لحظي + تنفيذ</td>
+<td>مع الحساب</td>
+<td>الخيار الطبيعي للروبوت الحي</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">import yfinance as yf
+df = yf.download(&quot;AAPL&quot;, start=&quot;2020-01-01&quot;)   # مثال جلب — يتطلب إنترنت
+</code></pre>
+<h2 id="2_1">ب.2 بيانات الأخبار والنصوص</h2>
+<ul>
+<li><strong>خلاصات RSS</strong> للمواقع المالية: مجانية وكافية للنمذجة الأولية.</li>
+<li><strong>NewsAPI / Finnhub / Benzinga:</strong> واجهات أخبار منظمة بطوابع زمنية (الأهم! — القسم 15.3).</li>
+<li><strong>تقارير الشركات (10-K/10-Q):</strong> موقع EDGAR الأمريكي مجانًا.</li>
+</ul>
+<h2 id="3_2">ب.3 قواعد الجودة قبل أي استخدام</h2>
+<ol>
+<li>افحص الفجوات والقيم الشاذة (منهجية الفصل 3) على كل مصدر جديد.</li>
+<li>تحقق من تعديل الأسعار للتوزيعات والتجزئات (Adjusted).</li>
+<li>سجّل بجانب كل ملف بيانات: مصدره وتاريخ جلبه وإصداره — قابلية إعادة الإنتاج تبدأ هنا.</li>
+</ol>
+<div class="chapter-break"></div><h1 id="python">ملحق ج: مرجع سريع لمكتبات Python</h1>
+<table>
+<thead>
+<tr>
+<th>المكتبة</th>
+<th>دورها</th>
+<th>السطر النموذجي</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>numpy</td>
+<td>مصفوفات وحساب علمي</td>
+<td><code>rets = np.diff(p) / p[:-1]</code></td>
+</tr>
+<tr>
+<td>pandas</td>
+<td>جداول وسلاسل زمنية</td>
+<td><code>df["ma20"] = df.Close.rolling(20).mean()</code></td>
+</tr>
+<tr>
+<td>matplotlib</td>
+<td>رسوم (كل أشكال الكتاب)</td>
+<td><code>plt.plot(df.Close)</code></td>
+</tr>
+<tr>
+<td>scikit-learn</td>
+<td>التعلم الآلي الكلاسيكي</td>
+<td><code>LogisticRegression().fit(X, y)</code></td>
+</tr>
+<tr>
+<td>xgboost</td>
+<td>الأشجار المعززة</td>
+<td><code>xgb.XGBClassifier(max_depth=3)</code></td>
+</tr>
+<tr>
+<td>backtesting</td>
+<td>الاختبار الخلفي</td>
+<td><code>Backtest(GOOG, SmaCross).run()</code></td>
+</tr>
+<tr>
+<td>tensorflow/keras</td>
+<td>التعلم العميق</td>
+<td><code>keras.layers.LSTM(32)</code></td>
+</tr>
+<tr>
+<td>transformers</td>
+<td>نماذج اللغة (FinBERT)</td>
+<td><code>pipeline("sentiment-analysis")</code></td>
+</tr>
+<tr>
+<td>anthropic</td>
+<td>LLM عبر API</td>
+<td><code>client.messages.create(...)</code></td>
+</tr>
+<tr>
+<td>stable-baselines3</td>
+<td>تعلم معزز جاهز</td>
+<td><code>PPO("MlpPolicy", env).learn(100_000)</code></td>
+</tr>
+</tbody>
+</table>
+<p>القاعدة الذهبية في التعامل معها جميعًا: اقرأ توقيع الدالة في التوثيق الرسمي عند أول استخدام — نصف أخطاء المبتدئين معاملات افتراضية لم يعرفوا بوجودها.</p>
+<div class="chapter-break"></div><h1 id="_119">ملحق د: مسرد المصطلحات</h1>
+<table>
+<thead>
+<tr>
+<th>العربية</th>
+<th>English</th>
+<th>الفصل</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>التعلم الآلي</td>
+<td>Machine Learning</td>
+<td>1</td>
+</tr>
+<tr>
+<td>الإفراط في التجهيز</td>
+<td>Overfitting</td>
+<td>1، 9</td>
+</tr>
+<tr>
+<td>هندسة المميزات</td>
+<td>Feature Engineering</td>
+<td>4</td>
+</tr>
+<tr>
+<td>التسريب المستقبلي</td>
+<td>Look-ahead Bias / Leakage</td>
+<td>4، 10</td>
+</tr>
+<tr>
+<td>التقسيم الزمني</td>
+<td>Time-based Split</td>
+<td>1، 5</td>
+</tr>
+<tr>
+<td>التصنيف / الانحدار</td>
+<td>Classification / Regression</td>
+<td>5، 6</td>
+</tr>
+<tr>
+<td>مصفوفة الالتباس</td>
+<td>Confusion Matrix</td>
+<td>5</td>
+</tr>
+<tr>
+<td>الدقة الإيجابية / الاستدعاء</td>
+<td>Precision / Recall</td>
+<td>5</td>
+</tr>
+<tr>
+<td>التجميع</td>
+<td>Clustering</td>
+<td>7</td>
+</tr>
+<tr>
+<td>أنظمة السوق</td>
+<td>Market Regimes</td>
+<td>7</td>
+</tr>
+<tr>
+<td>اكتشاف الشذوذ</td>
+<td>Anomaly Detection</td>
+<td>7</td>
+</tr>
+<tr>
+<td>بحث المعايير</td>
+<td>Hyperparameter Tuning</td>
+<td>8</td>
+</tr>
+<tr>
+<td>الانتشار الخلفي</td>
+<td>Backpropagation</td>
+<td>9</td>
+</tr>
+<tr>
+<td>الإيقاف المبكر</td>
+<td>Early Stopping</td>
+<td>9</td>
+</tr>
+<tr>
+<td>تلاشي التدرج</td>
+<td>Vanishing Gradient</td>
+<td>10</td>
+</tr>
+<tr>
+<td>الذاكرة الطويلة قصيرة المدى</td>
+<td>LSTM</td>
+<td>10</td>
+</tr>
+<tr>
+<td>الانتباه الذاتي</td>
+<td>Self-Attention</td>
+<td>11</td>
+</tr>
+<tr>
+<td>المحوّل</td>
+<td>Transformer</td>
+<td>11</td>
+</tr>
+<tr>
+<td>الترميز الموضعي</td>
+<td>Positional Encoding</td>
+<td>11</td>
+</tr>
+<tr>
+<td>تحليل المشاعر</td>
+<td>Sentiment Analysis</td>
+<td>13</td>
+</tr>
+<tr>
+<td>النموذج اللغوي الكبير</td>
+<td>Large Language Model (LLM)</td>
+<td>14</td>
+</tr>
+<tr>
+<td>التوليد المعزز بالاسترجاع</td>
+<td>RAG</td>
+<td>14</td>
+</tr>
+<tr>
+<td>الهلوسة</td>
+<td>Hallucination</td>
+<td>14</td>
+</tr>
+<tr>
+<td>انجراف ما بعد الإعلان</td>
+<td>Post-Earnings Drift (PEAD)</td>
+<td>15</td>
+</tr>
+<tr>
+<td>التعلم المعزز</td>
+<td>Reinforcement Learning</td>
+<td>16</td>
+</tr>
+<tr>
+<td>الحالة / الفعل / المكافأة</td>
+<td>State / Action / Reward</td>
+<td>16</td>
+</tr>
+<tr>
+<td>الاستكشاف والاستغلال</td>
+<td>Exploration vs Exploitation</td>
+<td>16</td>
+</tr>
+<tr>
+<td>ذاكرة إعادة التشغيل</td>
+<td>Replay Buffer</td>
+<td>17</td>
+</tr>
+<tr>
+<td>هندسة المكافأة</td>
+<td>Reward Shaping</td>
+<td>18</td>
+</tr>
+<tr>
+<td>الاختبار الخلفي</td>
+<td>Backtesting</td>
+<td>19</td>
+</tr>
+<tr>
+<td>التداول الورقي</td>
+<td>Paper Trading</td>
+<td>19</td>
+</tr>
+<tr>
+<td>الانزلاق</td>
+<td>Slippage</td>
+<td>20</td>
+</tr>
+<tr>
+<td>دفتر التشغيل</td>
+<td>Runbook</td>
+<td>20</td>
+</tr>
+<tr>
+<td>انجراف النموذج</td>
+<td>Model Drift</td>
+<td>21</td>
+</tr>
+<tr>
+<td>التلصص على البيانات</td>
+<td>Data Snooping</td>
+<td>21</td>
+</tr>
+<tr>
+<td>التراجع الأقصى</td>
+<td>Maximum Drawdown</td>
+<td>19</td>
+</tr>
+<tr>
+<td>نسبة شارب</td>
+<td>Sharpe Ratio</td>
+<td>19</td>
+</tr>
+<tr>
+<td>التلاعب بالإيحاء</td>
+<td>Spoofing</td>
+<td>22</td>
+</tr>
+</tbody>
+</table>
+<div class="chapter-break"></div><h1 id="_120">ملحق هـ: أكواد الكتاب وإعادة إنتاج كل نتيجة</h1>
+<h2 id="1_2">هـ.1 البنية</h2>
+<pre><code>ai-trading-book/
+├── chapters/            # نصوص الفصول (Markdown)
+├── figures/             # كل الأشكال (SVG مولدة بالكود)
+├── code/                # أكواد جاهزة للتشغيل بأرقام الفصول
+└── scripts/
+    ├── figlib.py            # مكتبة الرسم المشتركة
+    ├── experiments_part3.py # تجارب الفصول 5-8
+    ├── experiments_part4.py # تجارب الفصول 9-12
+    ├── experiments_part5.py # تجارب الفصول 13-15
+    ├── experiments_part6.py # تجارب الفصول 16-18
+    ├── experiments_part7_8.py # تجارب الفصول 19-22
+    └── metrics_part*.json   # الأرقام الفعلية المقتبسة في المتن
+</code></pre>
+<h2 id="2_2">هـ.2 ميثاق إعادة الإنتاج</h2>
+<p>كل رقم نتيجة في هذا الكتاب — من دقة 54.2% في الفصل 1 إلى فجوة التلصص في الفصل 21 — ناتج تشغيل فعلي على بيانات ياهو فاينانس الحقيقية المرفقة بمكتبة backtesting.py، <strong>ببذور عشوائية مثبتة</strong>. لإعادة توليد أي شكل:</p>
+<pre><code class="language-bash">cd scripts
+python experiments_part6.py            # كل تجارب الجزء السادس
+python experiments_part6.py fig_18_01  # شكل واحد بعينه
+</code></pre>
+<p>وستجد الأرقام المحسوبة مطبوعة ومحفوظة في ملف metrics المقابل — قارنها بالمتن بنفسك؛ هذه الشفافية هي الفارق بين كتاب تعليمي ومنشور تسويقي.</p>
+<div class="chapter-break"></div><h1 id="_121">ملحق و: خارطة ما بعد الكتاب</h1>
+<p>مرتبة بالأولوية العملية لمن أتم الكتاب:</p>
+<ol>
+<li><strong>التعمق الكمي المنهجي:</strong> فترات صمود المميزات، اختبارات Walk-Forward، وWhite's Reality Check لتقييم صدق الاستراتيجيات إحصائيًا.</li>
+<li><strong>نمذجة التقلب:</strong> عائلة GARCH والتنبؤ بالتقلب — المهمة القابلة للتنبؤ فعلًا (القسم 6.4) ومدخل إدارة المخاطر الكمية.</li>
+<li><strong>تحسين المحافظ:</strong> من ماركوفيتز إلى Hierarchical Risk Parity — توزيع رأس المال على استراتيجيات وأصول.</li>
+<li><strong>البيانات البديلة:</strong> صور الأقمار، حركة الشحن، بيانات البطاقات — حيث تبقى إشارات لم تُسحق بعد.</li>
+<li><strong>مسابقات Kaggle المالية:</strong> تدريب مجاني على بيانات ضخمة بتقييم صارم خارج العينة.</li>
+<li><strong>بنية أنظمة الإنتاج:</strong> أنماط Event-Driven، وقوائم انتظار الرسائل، وموثوقية الأنظمة الموزعة.</li>
+</ol>
+<div class="chapter-break"></div><h1 id="_122">ملحق ز: المراجع والقراءات الموصى بها</h1>
+<h2 id="_123">كتب مؤسِّسة</h2>
+<ol>
+<li><strong>Advances in Financial Machine Learning</strong> — Marcos López de Prado: المرجع الأول لمنهجية ML المالية الصارمة (تقسيمات زمنية متقدمة، أوزان العينات، اختبارات الصدق).</li>
+<li><strong>Machine Learning for Asset Managers</strong> — Marcos López de Prado: مكثف وعملي في بناء المميزات والمحافظ.</li>
+<li><strong>An Introduction to Statistical Learning</strong> — James, Witten, Hastie, Tibshirani: أفضل مدخل رياضي رصين للجزء الثالث (متاح مجانًا من مؤلفيه).</li>
+<li><strong>Deep Learning</strong> — Goodfellow, Bengio, Courville: مرجع الجزء الرابع النظري (متاح مجانًا إلكترونيًا).</li>
+<li><strong>Reinforcement Learning: An Introduction</strong> — Sutton &amp; Barto: إنجيل الجزء السادس (متاح مجانًا من مؤلفيه).</li>
+<li><strong>Algorithmic Trading</strong> — Ernest Chan: جسر عملي بين النمذجة والتشغيل الحي.</li>
+</ol>
+<h2 id="_124">أوراق مفصلية (بترتيب فصول الكتاب)</h2>
+<ul>
+<li>Gu, Kelly &amp; Xiu (2020), <em>Empirical Asset Pricing via Machine Learning</em> — المسح الأشمل لأداء نماذج ML على عوائد الأسهم.</li>
+<li>Hochreiter &amp; Schmidhuber (1997), <em>Long Short-Term Memory</em> — الورقة الأم للفصل 10.</li>
+<li>Vaswani et al. (2017), <em>Attention Is All You Need</em> — ورقة المحولات (الفصل 11).</li>
+<li>Araci (2019), <em>FinBERT</em> — نموذج المشاعر المالية (الفصل 13).</li>
+<li>Mnih et al. (2015), <em>Human-level control through deep RL</em> — ورقة DQN (الفصل 17).</li>
+<li>Bailey et al. (2014), <em>Pseudo-Mathematics and Financial Charlatanism</em> — الأساس الرياضي لتجربة التلصص (الفصل 21).</li>
+</ul>
+<h2 id="_125">توثيق رسمي (محدَّث دائمًا)</h2>
+<p>scikit-learn.org، xgboost.readthedocs.io، keras.io، huggingface.co/docs، kernc.github.io/backtesting.py، stable-baselines3.readthedocs.io، docs.anthropic.com</p>
+<h2 id="_126">ومن المؤلفَين</h2>
+<p><strong>«التحليل الثلاثي: منهج متكامل للتداول»</strong> — الكتاب الشقيق: المنهج التحليلي (SMC + أساسي + فني) الذي يشكل مع أدوات هذا الكتاب منظومة واحدة: هناك «ماذا نحلل»، وهنا «كيف نؤتمت التحليل ونختبره» — والقارئ الجاد يقرؤهما معًا.</p>
 
 
 <div class="en-page legal-page">
