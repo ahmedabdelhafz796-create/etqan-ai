@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useIsClient } from "@/hooks/useClock";
 
 function seeded(i: number, s = 1) {
   const x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453;
@@ -26,8 +26,7 @@ export function Particles({
   color = "rgba(233,196,106,0.7)",
 }: Props) {
   const reduce = useReducedMotion();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  const mounted = useIsClient();
   if (reduce || !mounted) return null;
 
   return (

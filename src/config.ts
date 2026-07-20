@@ -37,11 +37,30 @@ export const siteConfig = {
   ],
   social: {
     telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "TELEGRAM_URL_PLACEHOLDER",
-    twitter: "https://x.com/",
-    youtube: "https://youtube.com/",
-    instagram: "https://instagram.com/",
-    email: "support@etqan-ai.example.com",
+    twitter: process.env.NEXT_PUBLIC_TWITTER_URL || "https://x.com/",
+    youtube: process.env.NEXT_PUBLIC_YOUTUBE_URL || "https://youtube.com/",
+    instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/",
+    email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "support@etqan-ai.example.com",
   },
+} as const;
+
+/**
+ * Analytics — inert until you provide an ID. The Analytics component only
+ * injects a script when the matching value is set, so nothing loads (and no
+ * cookies are set) while these are empty.
+ */
+export const analytics = {
+  gaId: process.env.NEXT_PUBLIC_GA_ID || "", // e.g. G-XXXXXXXXXX
+  plausibleDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN || "", // e.g. etqan-ai.com
+} as const;
+
+/**
+ * Optional direct-crypto wallet address (placeholder). NOWPayments manages
+ * payout wallets in its dashboard, so this is only needed if you display a
+ * manual wallet anywhere. Left empty by default.
+ */
+export const payment = {
+  walletAddress: process.env.NEXT_PUBLIC_WALLET_ADDRESS || "", // WALLET_ADDRESS_PLACEHOLDER
 } as const;
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useTransform } from "framer-motion";
-import { ArrowRight, ShieldCheck, Sparkles, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, ShieldCheck, Star, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Magnetic } from "@/components/ui/magnetic";

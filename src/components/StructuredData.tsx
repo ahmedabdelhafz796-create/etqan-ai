@@ -2,6 +2,14 @@ import { books, siteConfig } from "@/config";
 
 /** JSON-LD structured data for SEO (Organization + Products). */
 export function StructuredData() {
+  // Only advertise real, configured profiles (skip generic placeholders).
+  const sameAs = [
+    process.env.NEXT_PUBLIC_TWITTER_URL,
+    process.env.NEXT_PUBLIC_YOUTUBE_URL,
+    process.env.NEXT_PUBLIC_INSTAGRAM_URL,
+    process.env.NEXT_PUBLIC_TELEGRAM_URL,
+  ].filter((u): u is string => Boolean(u));
+
   const data = {
     "@context": "https://schema.org",
     "@graph": [
@@ -10,11 +18,7 @@ export function StructuredData() {
         name: siteConfig.name,
         url: siteConfig.url,
         description: siteConfig.description,
-        sameAs: [
-          siteConfig.social.twitter,
-          siteConfig.social.youtube,
-          siteConfig.social.instagram,
-        ],
+        ...(sameAs.length ? { sameAs } : {}),
       },
       {
         "@type": "WebSite",
@@ -41,7 +45,6 @@ export function StructuredData() {
   return (
     <script
       type="application/ld+json"
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );

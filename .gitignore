@@ -33,3 +33,7 @@ next-env.d.ts.bak
 
 # vercel
 .vercel
+
+# local scratch / audit scripts
+_*.mjs
+*.log

@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { siteConfig } from "@/config";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { AmbientBackground } from "@/components/visuals/AmbientBackground";
+import { Analytics } from "@/components/Analytics";
 import "./globals.css";
 
 const inter = Inter({
@@ -77,6 +78,7 @@ export default function RootLayout({
       <body className="min-h-screen font-sans">
         <AmbientBackground />
         <SmoothScroll>{children}</SmoothScroll>
+        <Analytics />
       </body>
     </html>
   );

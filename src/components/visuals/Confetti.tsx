@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { useIsClient } from "@/hooks/useClock";
 
 const COLORS = ["#E9C46A", "#F4D98B", "#34D399", "#3B82F6", "#F7F4EE"];
 
@@ -21,8 +21,7 @@ interface Props {
  */
 export function Confetti({ count = 26, active = true }: Props) {
   const reduce = useReducedMotion();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  const mounted = useIsClient();
 
   if (!active || reduce || !mounted) return null;
 

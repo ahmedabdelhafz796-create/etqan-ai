@@ -37,6 +37,18 @@
     @apply bg-gold/30 text-soft;
   }
 
+  /* Visible keyboard focus for all interactive elements */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid rgba(233, 196, 106, 0.7);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 10px;
