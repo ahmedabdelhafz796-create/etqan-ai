@@ -19,7 +19,12 @@ export function BookCard({ book, index }: { book: Book; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.01] p-6 shadow-card backdrop-blur-xl transition-colors hover:border-gold/25 sm:p-8"
+      onMouseMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+        e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+      }}
+      className="spotlight gradient-border group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.01] p-6 shadow-card backdrop-blur-xl transition-colors hover:border-gold/25 sm:p-8"
     >
       {/* hover glow */}
       <div className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100">

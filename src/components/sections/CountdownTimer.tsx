@@ -55,7 +55,7 @@ export function CountdownTimer({ className, compact = false }: Props) {
         <div key={u.label} className="flex items-stretch gap-2 sm:gap-3">
           <div
             className={cn(
-              "flex flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] backdrop-blur-xl",
+              "gradient-border relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.05] backdrop-blur-xl",
               compact ? "min-w-[58px] px-2.5 py-2" : "min-w-[72px] px-3 py-3 sm:min-w-[88px]"
             )}
           >

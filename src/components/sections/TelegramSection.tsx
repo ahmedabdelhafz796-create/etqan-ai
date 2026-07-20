@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Magnetic } from "@/components/ui/magnetic";
 import { Reveal } from "@/components/ui/reveal";
 import { links, offerConfig } from "@/config";
 
@@ -67,21 +68,23 @@ export function TelegramSection() {
 
               <Reveal delay={0.15}>
                 <div className="mt-8">
-                  <Button
-                    asChild
-                    variant="gold"
-                    size="xl"
-                    className="w-full sm:w-auto"
-                  >
-                    <a
-                      href={links.telegramUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  <Magnetic className="inline-block">
+                    <Button
+                      asChild
+                      variant="gold"
+                      size="xl"
+                      className="w-full sm:w-auto"
                     >
-                      <Send className="h-5 w-5" />
-                      Join Telegram
-                    </a>
-                  </Button>
+                      <a
+                        href={links.telegramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Send className="h-5 w-5" />
+                        Join Telegram
+                      </a>
+                    </Button>
+                  </Magnetic>
                   <p className="mt-3 text-xs text-soft/45">
                     Free preview channel now · VIP room opens{" "}
                     {offerConfig.telegramLaunchLabel}.
@@ -98,9 +101,15 @@ export function TelegramSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.06 }}
-                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-colors hover:border-gold/25 hover:bg-white/[0.06]"
+                  whileHover={{ y: -4 }}
+                  onMouseMove={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect();
+                    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+                    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+                  }}
+                  className="spotlight gradient-border group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-colors hover:border-gold/25 hover:bg-white/[0.06]"
                 >
-                  <f.icon className="h-5 w-5 text-gold-light" />
+                  <f.icon className="h-5 w-5 text-gold-light transition-transform duration-300 group-hover:scale-110" />
                   <p className="mt-3 text-sm font-medium text-soft">
                     {f.title}
                   </p>

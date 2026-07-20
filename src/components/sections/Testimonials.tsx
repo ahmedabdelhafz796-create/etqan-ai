@@ -85,7 +85,12 @@ export function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: (i % 3) * 0.08 }}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-gold/20"
+              onMouseMove={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+                e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+              }}
+              className="spotlight gradient-border rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-gold/20"
             >
               <div className="flex gap-0.5 text-gold-light">
                 {Array.from({ length: 5 }).map((_, s) => (

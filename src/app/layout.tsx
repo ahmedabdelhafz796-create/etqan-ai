@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { siteConfig } from "@/config";
+import { SmoothScroll } from "@/components/providers/SmoothScroll";
+import { AmbientBackground } from "@/components/visuals/AmbientBackground";
 import "./globals.css";
 
 const inter = Inter({
@@ -72,7 +74,10 @@ export default function RootLayout({
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen font-sans">{children}</body>
+      <body className="min-h-screen font-sans">
+        <AmbientBackground />
+        <SmoothScroll>{children}</SmoothScroll>
+      </body>
     </html>
   );
 }

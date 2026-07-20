@@ -17,12 +17,20 @@
 
   body {
     @apply bg-night-900 text-soft antialiased;
-    background-image:
-      radial-gradient(circle at 15% -10%, rgba(37, 99, 235, 0.12), transparent 45%),
-      radial-gradient(circle at 85% 5%, rgba(233, 196, 106, 0.1), transparent 42%),
-      radial-gradient(circle at 50% 120%, rgba(18, 185, 129, 0.08), transparent 50%);
-    background-attachment: fixed;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv01", "cv11";
+  }
+
+  /* Luxury display typography */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
   }
 
   ::selection {
@@ -88,6 +96,85 @@
   .hairline {
     @apply h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent;
   }
+
+  /* Gradient hairline border via mask (crisp on any bg) */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(233, 196, 106, 0.55),
+      rgba(255, 255, 255, 0.08) 30%,
+      rgba(255, 255, 255, 0.02) 60%,
+      rgba(18, 185, 129, 0.35)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.7;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+  }
+  .gradient-border:hover::after {
+    opacity: 1;
+  }
+
+  /* Animated shine sweep for premium buttons */
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn-shine::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 45%;
+    background: linear-gradient(
+      100deg,
+      transparent,
+      rgba(255, 255, 255, 0.45),
+      transparent
+    );
+    transform: translateX(-160%) skewX(-15deg);
+    z-index: 1;
+  }
+  .btn-shine:hover::after {
+    animation: shine 1.1s ease;
+  }
+
+  /* Card that spotlights toward the cursor (set --mx/--my in JS) */
+  .spotlight {
+    position: relative;
+  }
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      380px circle at var(--mx, 50%) var(--my, 0%),
+      rgba(233, 196, 106, 0.14),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .spotlight:hover::before {
+    opacity: 1;
+  }
 }
 
 @layer utilities {
@@ -103,6 +190,28 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Fine film-grain overlay for a cinematic finish */
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  .mask-fade-y {
+    mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .perspective {
+    perspective: 1400px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  /* Reserve scrollbar gutter so layout never shifts */
+  html {
+    scrollbar-gutter: stable;
   }
 }
 

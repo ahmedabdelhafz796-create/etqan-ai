@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { RevealGroup, RevealItem } from "@/components/ui/reveal";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
 
 const perks = [
   { icon: GraduationCap, title: "Institutional Concepts", desc: "Learn the framework desks and funds trade — structure, liquidity, order flow." },
@@ -42,8 +43,8 @@ export function WhyBuy() {
         <RevealGroup className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {perks.map((p) => (
             <RevealItem key={p.title}>
-              <div className="group h-full rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-gold/25 hover:bg-white/[0.05] hover:shadow-glow">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-gold/25 bg-gold/10 text-gold-light transition-transform duration-300 group-hover:scale-110">
+              <SpotlightCard className="h-full p-6 transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-glow">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-gold/25 bg-gold/10 text-gold-light transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <p.icon className="h-5 w-5" />
                 </span>
                 <h3 className="mt-4 font-display text-lg font-semibold text-soft">
@@ -52,7 +53,7 @@ export function WhyBuy() {
                 <p className="mt-2 text-sm leading-relaxed text-soft/55">
                   {p.desc}
                 </p>
-              </div>
+              </SpotlightCard>
             </RevealItem>
           ))}
         </RevealGroup>

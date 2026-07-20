@@ -79,7 +79,7 @@ export function Newsletter() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@email.com"
-                        className="h-13 w-full flex-1 rounded-full border border-white/15 bg-white/[0.05] px-5 py-3.5 text-sm text-soft placeholder:text-soft/40 outline-none transition-colors focus:border-gold/50 focus:bg-white/[0.08]"
+                        className="h-12 w-full flex-1 rounded-full border border-white/15 bg-white/[0.05] px-5 text-sm text-soft placeholder:text-soft/40 outline-none transition-colors focus:border-gold/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-gold/30"
                         aria-label="Email address"
                       />
                       <Button

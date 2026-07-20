@@ -93,6 +93,31 @@ const config: Config = {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
         },
+        aurora: {
+          "0%": { transform: "translate3d(0,0,0) rotate(0deg) scale(1)" },
+          "33%": { transform: "translate3d(4%,-3%,0) rotate(6deg) scale(1.1)" },
+          "66%": { transform: "translate3d(-3%,3%,0) rotate(-5deg) scale(1.05)" },
+          "100%": { transform: "translate3d(0,0,0) rotate(0deg) scale(1)" },
+        },
+        shine: {
+          "0%": { transform: "translateX(-120%) skewX(-15deg)" },
+          "60%, 100%": { transform: "translateX(220%) skewX(-15deg)" },
+        },
+        "spin-slow": {
+          to: { transform: "rotate(360deg)" },
+        },
+        tilt: {
+          "0%, 100%": { transform: "rotateX(0deg) rotateY(0deg)" },
+          "50%": { transform: "rotateX(2deg) rotateY(-3deg)" },
+        },
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(16px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "border-flow": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.25s ease-out",
@@ -102,6 +127,12 @@ const config: Config = {
         "pulse-glow": "pulse-glow 3s ease-in-out infinite",
         marquee: "marquee 40s linear infinite",
         "gradient-pan": "gradient-pan 8s ease infinite",
+        aurora: "aurora 22s ease-in-out infinite",
+        shine: "shine 5s ease-in-out infinite",
+        "spin-slow": "spin-slow 30s linear infinite",
+        tilt: "tilt 8s ease-in-out infinite",
+        "fade-up": "fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both",
+        "border-flow": "border-flow 6s ease infinite",
       },
     },
   },

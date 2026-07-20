@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CandlestickChart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Magnetic } from "@/components/ui/magnetic";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config";
 
@@ -61,9 +62,11 @@ export function Navbar() {
         </div>
 
         <div className="hidden md:block">
-          <Button asChild variant="gold" size="sm">
-            <a href="#store">Get the Books</a>
-          </Button>
+          <Magnetic strength={8}>
+            <Button asChild variant="gold" size="sm">
+              <a href="#store">Get the Books</a>
+            </Button>
+          </Magnetic>
         </div>
 
         <button

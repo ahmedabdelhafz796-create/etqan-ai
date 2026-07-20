@@ -10,9 +10,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        gold: "bg-gradient-to-r from-gold-light via-gold to-gold-deep text-night-900 shadow-glow hover:shadow-[0_0_50px_-6px_rgba(233,196,106,0.65)] hover:-translate-y-0.5",
+        gold: "btn-shine bg-gradient-to-r from-gold-light via-gold to-gold-deep text-night-900 shadow-glow hover:shadow-[0_0_50px_-6px_rgba(233,196,106,0.7)] hover:-translate-y-0.5 active:translate-y-0",
         emerald:
-          "bg-gradient-to-r from-emerald-light via-emerald to-emerald-deep text-night-900 shadow-glow-emerald hover:-translate-y-0.5",
+          "btn-shine bg-gradient-to-r from-emerald-light via-emerald to-emerald-deep text-night-900 shadow-glow-emerald hover:shadow-[0_0_50px_-6px_rgba(18,185,129,0.7)] hover:-translate-y-0.5 active:translate-y-0",
         outline:
           "border border-white/15 bg-white/5 text-soft backdrop-blur hover:bg-white/10 hover:border-gold/40",
         ghost: "text-soft/80 hover:text-soft hover:bg-white/5",
