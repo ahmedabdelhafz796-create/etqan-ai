@@ -40,3 +40,7 @@ _*.mjs
 
 # private product files (paid PDFs) — never commit
 /private/
+
+# local libSQL database
+/local.db
+/local.db-*

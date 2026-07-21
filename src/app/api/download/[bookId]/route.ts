@@ -6,6 +6,7 @@ import {
   DOWNLOAD_TTL_MS,
 } from "@/lib/download-token";
 import { downloadStore } from "@/lib/download-store";
+import { consumeGrant } from "@/lib/repositories";
 import { resolveBookFile } from "@/lib/book-files";
 
 export const runtime = "nodejs";
@@ -43,15 +44,37 @@ export async function GET(
   }
 
   // Enforce the download-count limit for this specific link.
-  const count = await downloadStore.increment(verified.jti!, DOWNLOAD_TTL_MS);
-  if (count > DOWNLOAD_MAX) {
+  // Prefer the persistent DB grant; fall back to the in-memory store.
+  let count: number;
+  const grant = await consumeGrant(verified.jti!);
+  if (grant === null) {
+    // No database configured — use the per-instance in-memory counter.
+    count = await downloadStore.increment(verified.jti!, DOWNLOAD_TTL_MS);
+    if (count > DOWNLOAD_MAX) {
+      return NextResponse.json(
+        {
+          error: "limit_reached",
+          message: `This link has reached its ${DOWNLOAD_MAX}-download limit.`,
+        },
+        { status: 429 }
+      );
+    }
+  } else if (!grant.ok) {
+    const status = grant.reason === "expired" ? 410 : grant.reason === "not_found" ? 403 : 429;
     return NextResponse.json(
       {
-        error: "limit_reached",
-        message: `This link has reached its ${DOWNLOAD_MAX}-download limit.`,
+        error: grant.reason,
+        message:
+          grant.reason === "limit_reached"
+            ? `This link has reached its ${DOWNLOAD_MAX}-download limit.`
+            : grant.reason === "expired"
+              ? "This download link has expired."
+              : "Download grant not found.",
       },
-      { status: 429 }
+      { status }
     );
+  } else {
+    count = grant.used;
   }
 
   const resolved = resolveBookFile(bookId);

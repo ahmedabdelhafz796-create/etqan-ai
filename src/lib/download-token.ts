@@ -50,24 +50,37 @@ function sign(payloadB64: string, secret: string): string {
   );
 }
 
-/** Create a signed download token for a book. */
-export function createDownloadToken(
+export interface IssuedToken {
+  token: string;
+  jti: string;
+  expiresAt: number;
+}
+
+/** Create a signed download token plus its metadata (jti, expiry). */
+export function issueDownloadToken(
   bookId: string,
   ttlMs: number = DOWNLOAD_TTL_MS
-): string {
+): IssuedToken {
   const secret = signingSecret();
   if (!secret) {
     throw new Error(
       "DOWNLOAD_SIGNING_SECRET (or NOWPAYMENTS_IPN_SECRET) must be set to issue download tokens."
     );
   }
-  const payload: TokenPayload = {
-    b: bookId,
-    j: crypto.randomUUID(),
-    e: Date.now() + ttlMs,
-  };
+  const jti = crypto.randomUUID();
+  const expiresAt = Date.now() + ttlMs;
+  const payload: TokenPayload = { b: bookId, j: jti, e: expiresAt };
   const payloadB64 = b64url(JSON.stringify(payload));
-  return `${payloadB64}.${sign(payloadB64, secret)}`;
+  const token = `${payloadB64}.${sign(payloadB64, secret)}`;
+  return { token, jti, expiresAt };
+}
+
+/** Create a signed download token for a book. */
+export function createDownloadToken(
+  bookId: string,
+  ttlMs: number = DOWNLOAD_TTL_MS
+): string {
+  return issueDownloadToken(bookId, ttlMs).token;
 }
 
 export interface VerifiedToken {
