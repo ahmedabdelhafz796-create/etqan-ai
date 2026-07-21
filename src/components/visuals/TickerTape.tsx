@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { TrendingUp, TrendingDown, Radio } from "lucide-react";
+import { useT } from "@/components/providers/I18nProvider";
 import { cn } from "@/lib/utils";
 
 interface Tick {
@@ -54,6 +55,7 @@ function Item({ t, live }: { t: Tick; live: number }) {
 }
 
 export function TickerTape({ className }: { className?: string }) {
+  const t = useT();
   const [live, setLive] = React.useState(0);
   React.useEffect(() => {
     const id = setInterval(() => setLive((v) => v + 1), 1400);
@@ -76,7 +78,7 @@ export function TickerTape({ className }: { className?: string }) {
           <span className="relative inline-flex h-2 w-2 rounded-full bg-loss" />
         </span>
         <span className="flex items-center gap-1 font-mono text-[10px] font-semibold uppercase tracking-widest text-soft/80">
-          <Radio className="h-3 w-3" /> Live Markets
+          <Radio className="h-3 w-3" /> {t.ticker.live}
         </span>
       </div>
 

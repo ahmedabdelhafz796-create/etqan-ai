@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { useT } from "@/components/providers/I18nProvider";
 
 interface Testimonial {
   name: string;
@@ -64,17 +65,21 @@ const testimonials: Testimonial[] = [
 ];
 
 export function Testimonials() {
+  const dict = useT();
   return (
     <section className="py-24 sm:py-28">
       <div className="container-tight">
         <SectionHeading
-          eyebrow="Trusted by traders"
+          eyebrow={dict.testimonials.eyebrow}
           title={
             <>
-              Results people can <span className="text-gradient-gold">feel.</span>
+              {dict.testimonials.title1}{" "}
+              <span className="text-gradient-gold">
+                {dict.testimonials.titleGold}
+              </span>
             </>
           }
-          description="A snapshot of what serious traders say after putting the framework to work. (Placeholder testimonials — swap in your own.)"
+          description={dict.testimonials.description}
         />
 
         <div className="mt-14 columns-1 gap-4 sm:columns-2 lg:columns-3 [&>*]:mb-4 [&>*]:break-inside-avoid">
@@ -98,7 +103,7 @@ export function Testimonials() {
                 ))}
               </div>
               <blockquote className="mt-4 text-sm leading-relaxed text-soft/75">
-                &ldquo;{t.quote}&rdquo;
+                &ldquo;{dict.testimonials.items[i]?.quote ?? t.quote}&rdquo;
               </blockquote>
               <figcaption className="mt-5 flex items-center gap-3">
                 <span
@@ -110,7 +115,9 @@ export function Testimonials() {
                   <span className="block text-sm font-medium text-soft">
                     {t.name}
                   </span>
-                  <span className="block text-xs text-soft/45">{t.role}</span>
+                  <span className="block text-xs text-soft/45">
+                    {dict.testimonials.items[i]?.role ?? t.role}
+                  </span>
                 </span>
               </figcaption>
             </motion.figure>

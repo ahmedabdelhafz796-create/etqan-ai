@@ -16,19 +16,15 @@ import { Badge } from "@/components/ui/badge";
 import { Magnetic } from "@/components/ui/magnetic";
 import { Reveal } from "@/components/ui/reveal";
 import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
+import { useT, fill } from "@/components/providers/I18nProvider";
 import { offerConfig } from "@/config";
 
-const features = [
-  { icon: BarChart2, title: "Daily Analysis", desc: "Structured market breakdowns before every session." },
-  { icon: Target, title: "Entry Levels", desc: "Precise, pre-planned entries with clear invalidation." },
-  { icon: Shield, title: "Stop Loss (SL)", desc: "Defined risk on every idea — no exceptions." },
-  { icon: TrendingUp, title: "Take Profit (TP)", desc: "Layered targets mapped to real liquidity." },
-  { icon: Bell, title: "Market Reviews", desc: "End-of-day recaps and what to watch next." },
-  { icon: Crown, title: "VIP Community", desc: "A focused room of serious, like-minded traders." },
-];
+const featureIcons = [BarChart2, Target, Shield, TrendingUp, Bell, Crown];
 
 export function TelegramSection() {
   const { telegramUrl } = useSiteConfig();
+  const t = useT();
+  const date = offerConfig.telegramLaunchLabel;
   return (
     <section
       id="telegram"
@@ -45,26 +41,20 @@ export function TelegramSection() {
               <Reveal>
                 <Badge variant="royal" className="mb-5">
                   <CalendarClock className="h-3.5 w-3.5" />
-                  Going live · {offerConfig.telegramLaunchLabel}
+                  {t.telegram.goingLive} · {date}
                 </Badge>
               </Reveal>
 
               <Reveal delay={0.05}>
                 <h2 className="font-display text-3xl font-semibold leading-tight text-soft sm:text-4xl">
-                  Exclusive{" "}
-                  <span className="text-gradient-gold">Telegram Signals</span>
+                  {t.telegram.title1}{" "}
+                  <span className="text-gradient-gold">{t.telegram.titleGold}</span>
                 </h2>
               </Reveal>
 
               <Reveal delay={0.1}>
                 <p className="mt-4 max-w-xl text-base leading-relaxed text-soft/60 sm:text-lg">
-                  Beginning{" "}
-                  <span className="font-medium text-soft/90">
-                    {offerConfig.telegramLaunchLabel}
-                  </span>
-                  , we publish professional trading signals and trade ideas
-                  built on the exact framework taught in the books — full
-                  transparency, real risk management, zero noise.
+                  {fill(t.telegram.body, { date })}
                 </p>
               </Reveal>
 
@@ -83,20 +73,21 @@ export function TelegramSection() {
                         rel="noopener noreferrer"
                       >
                         <Send className="h-5 w-5" />
-                        Join Telegram
+                        {t.telegram.cta}
                       </a>
                     </Button>
                   </Magnetic>
                   <p className="mt-3 text-xs text-soft/45">
-                    Free preview channel now · VIP room opens{" "}
-                    {offerConfig.telegramLaunchLabel}.
+                    {fill(t.telegram.note, { date })}
                   </p>
                 </div>
               </Reveal>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              {features.map((f, i) => (
+              {t.telegram.features.map((f, i) => {
+                const Icon = featureIcons[i] ?? BarChart2;
+                return (
                 <motion.div
                   key={f.title}
                   initial={{ opacity: 0, y: 20 }}
@@ -111,7 +102,7 @@ export function TelegramSection() {
                   }}
                   className="spotlight gradient-border group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-colors hover:border-gold/25 hover:bg-white/[0.06]"
                 >
-                  <f.icon className="h-5 w-5 text-gold-light transition-transform duration-300 group-hover:scale-110" />
+                  <Icon className="h-5 w-5 text-gold-light transition-transform duration-300 group-hover:scale-110" />
                   <p className="mt-3 text-sm font-medium text-soft">
                     {f.title}
                   </p>
@@ -119,7 +110,8 @@ export function TelegramSection() {
                     {f.desc}
                   </p>
                 </motion.div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

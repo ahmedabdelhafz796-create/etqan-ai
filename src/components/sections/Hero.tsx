@@ -9,21 +9,25 @@ import { CandlestickField } from "@/components/visuals/CandlestickField";
 import { Particles } from "@/components/visuals/Particles";
 import { BookCover } from "@/components/visuals/BookCover";
 import { useMouseParallax } from "@/hooks/useMouseParallax";
+import { useT } from "@/components/providers/I18nProvider";
 import { books, offerConfig } from "@/config";
 
-const stats = [
-  { value: "26", label: "Core Modules" },
-  { value: "100+", label: "Chapters" },
-  { value: "240+", label: "Chart Examples" },
-  { value: "2", label: "Flagship Books" },
-];
-
-const headline = ["Trade", "the", "way"];
-const headlineGold = ["institutions"];
-const headlineRest = ["actually", "do."];
-
 export function Hero() {
+  const t = useT();
   const { x, y, bind } = useMouseParallax(90, 16);
+
+  const stats = [
+    { value: "26", label: t.hero.stats.modules },
+    { value: "100+", label: t.hero.stats.chapters },
+    { value: "240+", label: t.hero.stats.examples },
+    { value: "2", label: t.hero.stats.books },
+  ];
+
+  const headlineParts = [
+    { text: t.hero.headline1, gold: false },
+    { text: t.hero.headlineGold, gold: true },
+    { text: t.hero.headline2, gold: false },
+  ];
 
   // Layer depths driven by pointer.
   const bgX = useTransform(x, [-0.5, 0.5], [24, -24]);
@@ -80,34 +84,32 @@ export function Hero() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold-light opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-gold-light" />
                 </span>
-                {offerConfig.celebrationTitle} · until{" "}
+                {t.celebration.title} · {t.hero.badgeUntil}{" "}
                 {offerConfig.offerDeadlineLabel.split(" ·")[0]}
               </Badge>
             </motion.div>
 
             <h1 className="mt-6 font-display text-[2.6rem] font-semibold leading-[1.04] tracking-tight text-soft sm:text-6xl md:text-[4.4rem]">
-              <span className="sr-only">
-                Trade the way institutions actually do.
-              </span>
-              <span aria-hidden className="flex flex-wrap justify-center gap-x-3 lg:justify-start">
-                {[...headline, ...headlineGold, ...headlineRest].map((w, i) => {
-                  const isGold = headlineGold.includes(w) && i === headline.length;
-                  return (
-                    <motion.span
-                      key={i}
-                      initial={{ opacity: 0, y: 26, filter: "blur(8px)" }}
-                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                      transition={{
-                        duration: 0.6,
-                        delay: 0.15 + i * 0.08,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      className={isGold ? "text-gradient-gold" : undefined}
-                    >
-                      {w}
-                    </motion.span>
-                  );
-                })}
+              <span className="sr-only">{t.hero.headlinePlain}</span>
+              <span
+                aria-hidden
+                className="flex flex-wrap justify-center gap-x-3 lg:justify-start rtl:lg:justify-start"
+              >
+                {headlineParts.map((part, i) => (
+                  <motion.span
+                    key={i}
+                    initial={{ opacity: 0, y: 26, filter: "blur(8px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{
+                      duration: 0.6,
+                      delay: 0.15 + i * 0.12,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    className={part.gold ? "text-gradient-gold" : undefined}
+                  >
+                    {part.text}
+                  </motion.span>
+                ))}
               </span>
             </h1>
 
@@ -117,10 +119,7 @@ export function Hero() {
               transition={{ duration: 0.7, delay: 0.5 }}
               className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-soft/65 sm:text-lg lg:mx-0"
             >
-              A premium library of professional trading books — market
-              structure, liquidity, order flow, SMC, ICT, Wyckoff and AI-driven
-              institutional analysis. No hype. No indicators. Just the real
-              logic that moves price.
+              {t.hero.subtitle}
             </motion.p>
 
             <motion.div
@@ -132,14 +131,14 @@ export function Hero() {
               <Magnetic>
                 <Button asChild variant="gold" size="xl" className="w-full sm:w-auto">
                   <a href="#store">
-                    Explore the Library
-                    <ArrowRight className="h-5 w-5" />
+                    {t.hero.ctaPrimary}
+                    <ArrowRight className="h-5 w-5 rtl:rotate-180" />
                   </a>
                 </Button>
               </Magnetic>
               <Magnetic strength={10}>
                 <Button asChild variant="glass" size="xl" className="w-full sm:w-auto">
-                  <a href="#telegram">See the Signals</a>
+                  <a href="#telegram">{t.hero.ctaSecondary}</a>
                 </Button>
               </Magnetic>
             </motion.div>
@@ -152,13 +151,13 @@ export function Hero() {
             >
               <span className="flex items-center gap-1.5">
                 <ShieldCheck className="h-4 w-4 text-emerald-light" />
-                Lifetime access &amp; updates
+                {t.hero.trust1}
               </span>
               <span className="flex items-center gap-1.5">
                 <Star className="h-4 w-4 text-gold-light" />
-                Institutional-grade curriculum
+                {t.hero.trust2}
               </span>
-              <span className="flex items-center gap-1.5">Secure crypto checkout</span>
+              <span className="flex items-center gap-1.5">{t.hero.trust3}</span>
             </motion.div>
           </div>
 
@@ -206,7 +205,7 @@ export function Hero() {
                 className="absolute -right-2 bottom-6 rounded-2xl border border-gold/25 bg-night-800/70 px-4 py-3 backdrop-blur-xl shadow-glow"
               >
                 <p className="text-[10px] uppercase tracking-widest text-soft/50">
-                  From
+                  {t.hero.from}
                 </p>
                 <p className="font-display text-2xl font-semibold text-gradient-gold">
                   $65

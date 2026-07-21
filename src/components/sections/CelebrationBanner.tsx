@@ -5,9 +5,11 @@ import { PartyPopper, Tag } from "lucide-react";
 import { Confetti } from "@/components/visuals/Confetti";
 import { CountdownTimer } from "@/components/sections/CountdownTimer";
 import { useOfferActive } from "@/hooks/useOfferActive";
+import { useT } from "@/components/providers/I18nProvider";
 import { offerConfig } from "@/config";
 
 export function CelebrationBanner() {
+  const t = useT();
   const { active, ready } = useOfferActive();
 
   // Once the offer ends, collapse to a gentle notice.
@@ -15,10 +17,7 @@ export function CelebrationBanner() {
     return (
       <section className="container-tight -mt-6">
         <div className="rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-6 text-center">
-          <p className="text-sm text-soft/60">
-            The First Edition Celebration has ended — thank you to our founding
-            readers. Books are now at their standard prices.
-          </p>
+          <p className="text-sm text-soft/60">{t.celebration.endedNotice}</p>
         </div>
       </section>
     );
@@ -47,18 +46,18 @@ export function CelebrationBanner() {
               <PartyPopper className="h-6 w-6" />
             </motion.span>
             <h2 className="font-display text-2xl font-semibold text-soft sm:text-3xl">
-              🎉 {offerConfig.celebrationTitle}
+              {t.celebration.title}
             </h2>
             <p className="mt-2 flex items-center justify-center gap-2 text-soft/65 lg:justify-start">
               <Tag className="h-4 w-4 text-gold-light" />
-              {offerConfig.celebrationSubtitle} · ends{" "}
+              {t.celebration.subtitle} · {t.celebration.ends}{" "}
               {offerConfig.offerDeadlineLabel}
             </p>
           </div>
 
           <div className="flex flex-col items-center gap-3">
             <span className="text-xs uppercase tracking-[0.3em] text-soft/45">
-              Offer ends in
+              {t.celebration.endsIn}
             </span>
             <CountdownTimer />
           </div>

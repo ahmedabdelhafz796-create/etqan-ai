@@ -5,20 +5,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CandlestickChart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Magnetic } from "@/components/ui/magnetic";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useT } from "@/components/providers/I18nProvider";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config";
-
-const NAV_LINKS = [
-  { label: "Library", href: "#store" },
-  { label: "Curriculum", href: "#store" },
-  { label: "Signals", href: "#telegram" },
-  { label: "Why Us", href: "#why" },
-  { label: "FAQ", href: "#faq" },
-];
 
 export function Navbar() {
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const t = useT();
+
+  const NAV_LINKS = [
+    { label: t.nav.links.library, href: "#store" },
+    { label: t.nav.links.curriculum, href: "#store" },
+    { label: t.nav.links.signals, href: "#telegram" },
+    { label: t.nav.links.why, href: "#why" },
+    { label: t.nav.links.faq, href: "#faq" },
+  ];
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -61,22 +64,26 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-3 md:flex">
+          <LanguageSwitcher />
           <Magnetic strength={8}>
             <Button asChild variant="gold" size="sm">
-              <a href="#store">Get the Books</a>
+              <a href="#store">{t.nav.cta}</a>
             </Button>
           </Magnetic>
         </div>
 
-        <button
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-soft md:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-          aria-expanded={open}
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher />
+          <button
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-soft"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={t.nav.menu}
+            aria-expanded={open}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </nav>
 
       <AnimatePresence>
@@ -106,7 +113,7 @@ export function Navbar() {
                 className="mt-2 w-full"
               >
                 <a href="#store" onClick={() => setOpen(false)}>
-                  Get the Books
+                  {t.nav.cta}
                 </a>
               </Button>
             </div>

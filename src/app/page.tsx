@@ -14,46 +14,54 @@ import { Newsletter } from "@/components/sections/Newsletter";
 import { Footer } from "@/components/sections/Footer";
 import { StructuredData } from "@/components/StructuredData";
 import { SiteConfigProvider } from "@/components/providers/SiteConfigProvider";
+import { I18nProvider } from "@/components/providers/I18nProvider";
 import { getEffectiveConfig } from "@/lib/site-settings";
-
-// Revalidate periodically so admin price/offer/link changes go live without a
-// deploy, while keeping the page fast (statically cached between refreshes).
-export const revalidate = 30;
+import { getCurrentLocale } from "@/lib/locale";
+import { getDictionary } from "@/i18n/dictionaries";
+import { getLocalizedBooks } from "@/i18n/books";
+import { dirFor } from "@/i18n/config";
 
 export default async function HomePage() {
-  const eff = await getEffectiveConfig();
+  const [eff, locale] = await Promise.all([
+    getEffectiveConfig(),
+    getCurrentLocale(),
+  ]);
+  const dict = getDictionary(locale);
+  const localizedBooks = getLocalizedBooks(locale);
   const activeIds = Object.values(eff.books)
     .filter((b) => b.active)
     .map((b) => b.id);
 
   return (
-    <SiteConfigProvider
-      value={{
-        books: eff.books,
-        offerEndsAt: eff.offerEndsAt,
-        telegramUrl: eff.telegramUrl,
-        paymentUrl: eff.paymentUrl,
-      }}
-    >
-      <StructuredData />
-      <ScrollProgress />
-      <Navbar />
+    <I18nProvider value={{ t: dict, locale, dir: dirFor(locale) }}>
+      <SiteConfigProvider
+        value={{
+          books: eff.books,
+          offerEndsAt: eff.offerEndsAt,
+          telegramUrl: eff.telegramUrl,
+          paymentUrl: eff.paymentUrl,
+        }}
+      >
+        <StructuredData />
+        <ScrollProgress />
+        <Navbar />
 
-      <main>
-        <Hero />
-        <TickerTape />
-        <CelebrationBanner />
-        <BookStore activeIds={activeIds} />
-        <WhyBuy />
-        <TelegramSection />
-        <WarningSection />
-        <QuoteSection />
-        <Testimonials />
-        <FAQ />
-        <Newsletter />
-      </main>
+        <main>
+          <Hero />
+          <TickerTape />
+          <CelebrationBanner />
+          <BookStore books={localizedBooks} activeIds={activeIds} />
+          <WhyBuy />
+          <TelegramSection />
+          <WarningSection />
+          <QuoteSection />
+          <Testimonials />
+          <FAQ />
+          <Newsletter />
+        </main>
 
-      <Footer />
-    </SiteConfigProvider>
+        <Footer />
+      </SiteConfigProvider>
+    </I18nProvider>
   );
 }

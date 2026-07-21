@@ -4,6 +4,7 @@ import * as React from "react";
 import { Loader2, Lock, ShoppingCart } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
+import { useT } from "@/components/providers/I18nProvider";
 import { type Book } from "@/config";
 import { cn } from "@/lib/utils";
 
@@ -31,15 +32,17 @@ interface Props extends Pick<ButtonProps, "variant" | "size" | "className"> {
  */
 export function BuyButton({
   book,
-  label = "Buy Now",
+  label,
   variant,
   size = "lg",
   className,
 }: Props) {
+  const t = useT();
   const [state, setState] = React.useState<"idle" | "loading" | "unavailable">(
     "idle"
   );
   const { paymentUrl } = useSiteConfig();
+  const buyLabel = label ?? t.buy.now;
 
   const accentVariant =
     variant ?? (book.cover.accent === "emerald" ? "emerald" : "gold");
@@ -85,26 +88,24 @@ export function BuyButton({
         onClick={handleBuy}
         disabled={state === "loading"}
         className={cn("w-full", className)}
-        aria-label={`${label} — ${book.title}`}
+        aria-label={`${buyLabel} — ${book.title}`}
       >
         {state === "loading" ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            Opening secure checkout…
+            {t.buy.loading}
           </>
         ) : (
           <>
             <ShoppingCart className="h-5 w-5" />
-            {label}
+            {buyLabel}
           </>
         )}
       </Button>
 
       <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-soft/45">
         <Lock className="h-3 w-3" />
-        {state === "unavailable"
-          ? "Checkout opens soon — payment link is being finalized."
-          : "Secure crypto checkout · instant delivery"}
+        {state === "unavailable" ? t.buy.unavailable : t.buy.secure}
       </p>
     </div>
   );

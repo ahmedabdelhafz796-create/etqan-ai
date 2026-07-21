@@ -2,6 +2,7 @@
 
 import { useOfferActive } from "@/hooks/useOfferActive";
 import { useBookPricing } from "@/components/providers/SiteConfigProvider";
+import { useT } from "@/components/providers/I18nProvider";
 import { formatUSD, discountPercent, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { Book } from "@/config";
@@ -18,6 +19,7 @@ export function PriceTag({
   book: Book;
   className?: string;
 }) {
+  const t = useT();
   const { active, ready } = useOfferActive();
   const pricing = useBookPricing(book.id);
   const originalPrice = pricing.originalPrice;
@@ -40,7 +42,7 @@ export function PriceTag({
 
       {showOffer && (
         <div className="mb-1 flex items-center gap-2">
-          <Badge variant="emerald">Save {formatUSD(originalPrice - offerPrice)}</Badge>
+          <Badge variant="emerald">{t.store.save} {formatUSD(originalPrice - offerPrice)}</Badge>
           <Badge variant="gold">-{pct}%</Badge>
         </div>
       )}

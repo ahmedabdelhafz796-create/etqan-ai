@@ -1,24 +1,9 @@
-import {
-  CandlestickChart,
-  Instagram,
-  Send,
-  Youtube,
-} from "lucide-react";
-import { siteConfig, links } from "@/config";
+"use client";
 
-const nav = {
-  Library: [
-    { label: "Triple Analysis", href: "#store" },
-    { label: "Advanced AI Trading", href: "#store" },
-    { label: "Why Buy", href: "#why" },
-    { label: "FAQ", href: "#faq" },
-  ],
-  Community: [
-    { label: "Telegram Signals", href: "#telegram" },
-    { label: "Newsletter", href: "#top" },
-    { label: "Testimonials", href: "#top" },
-  ],
-};
+import { CandlestickChart, Instagram, Send, Youtube } from "lucide-react";
+import { siteConfig } from "@/config";
+import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
+import { useT, fill } from "@/components/providers/I18nProvider";
 
 // Simple X (Twitter) glyph — lucide has no brand mark.
 function XIcon({ className }: { className?: string }) {
@@ -29,15 +14,37 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-const socials = [
-  { icon: Send, href: links.telegramUrl, label: "Telegram" },
-  { icon: XIcon, href: siteConfig.social.twitter, label: "X" },
-  { icon: Youtube, href: siteConfig.social.youtube, label: "YouTube" },
-  { icon: Instagram, href: siteConfig.social.instagram, label: "Instagram" },
-];
-
 export function Footer() {
+  const t = useT();
+  const { telegramUrl } = useSiteConfig();
   const year = new Date().getFullYear();
+
+  const socials = [
+    { icon: Send, href: telegramUrl, label: "Telegram" },
+    { icon: XIcon, href: siteConfig.social.twitter, label: "X" },
+    { icon: Youtube, href: siteConfig.social.youtube, label: "YouTube" },
+    { icon: Instagram, href: siteConfig.social.instagram, label: "Instagram" },
+  ];
+
+  const groups = [
+    {
+      title: t.footer.groups.library,
+      items: [
+        { label: "Triple Analysis", href: "#store" },
+        { label: "Advanced AI Trading", href: "#store" },
+        { label: t.footer.links.whyBuy, href: "#why" },
+        { label: t.footer.links.faq, href: "#faq" },
+      ],
+    },
+    {
+      title: t.footer.groups.community,
+      items: [
+        { label: t.footer.links.telegramSignals, href: "#telegram" },
+        { label: t.footer.links.newsletter, href: "#top" },
+        { label: t.footer.links.testimonials, href: "#top" },
+      ],
+    },
+  ];
 
   return (
     <footer className="relative border-t border-white/10 bg-night-900/60">
@@ -53,9 +60,7 @@ export function Footer() {
               </span>
             </a>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-soft/55">
-              {siteConfig.tagline} Institutional-grade trading books and signals
-              for traders who are serious about mastering the markets — and
-              themselves.
+              {t.footer.tagline}
             </p>
             <div className="mt-6 flex gap-3">
               {socials.map((s) => (
@@ -73,13 +78,13 @@ export function Footer() {
             </div>
           </div>
 
-          {Object.entries(nav).map(([title, items]) => (
-            <div key={title}>
+          {groups.map((group) => (
+            <div key={group.title}>
               <h3 className="text-xs font-semibold uppercase tracking-widest text-soft/45">
-                {title}
+                {group.title}
               </h3>
               <ul className="mt-4 space-y-3">
-                {items.map((item) => (
+                {group.items.map((item) => (
                   <li key={item.label}>
                     <a
                       href={item.href}
@@ -99,30 +104,26 @@ export function Footer() {
         {/* Disclaimer */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
           <p className="text-xs leading-relaxed text-soft/45">
-            <span className="font-medium text-soft/70">Risk disclaimer:</span>{" "}
-            Trading financial markets carries substantial risk and is not
-            suitable for every investor. The content sold and published by{" "}
-            {siteConfig.name} is educational in nature and does not constitute
-            financial, investment or trading advice. Past performance and
-            examples are not indicative of future results. You are solely
-            responsible for your own trading decisions and any resulting profit
-            or loss. Never risk capital you cannot afford to lose.
+            <span className="font-medium text-soft/70">
+              {t.footer.disclaimerLabel}
+            </span>{" "}
+            {fill(t.footer.disclaimer, { name: siteConfig.name })}
           </p>
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 text-xs text-soft/40 sm:flex-row">
           <p>
-            © {year} {siteConfig.name}. All rights reserved.
+            © {year} {siteConfig.name}. {t.footer.rights}
           </p>
           <div className="flex items-center gap-5">
             <a href="#" className="transition-colors hover:text-soft/70">
-              Terms
+              {t.footer.terms}
             </a>
             <a href="#" className="transition-colors hover:text-soft/70">
-              Privacy
+              {t.footer.privacy}
             </a>
             <a href="#" className="transition-colors hover:text-soft/70">
-              Refund Policy
+              {t.footer.refund}
             </a>
           </div>
         </div>

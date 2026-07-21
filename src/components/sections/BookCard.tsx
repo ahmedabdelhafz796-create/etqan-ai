@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { useT } from "@/components/providers/I18nProvider";
 import { Badge } from "@/components/ui/badge";
 import { BookCover } from "@/components/visuals/BookCover";
 import { PriceTag } from "@/components/sections/PriceTag";
@@ -11,6 +12,7 @@ import type { Book } from "@/config";
 import { cn } from "@/lib/utils";
 
 export function BookCard({ book, index }: { book: Book; index: number }) {
+  const t = useT();
   const flipped = index % 2 === 1;
 
   return (
@@ -46,7 +48,7 @@ export function BookCard({ book, index }: { book: Book; index: number }) {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={book.cover.accent === "emerald" ? "emerald" : "gold"}>
-              Book {book.order}
+              {t.store.book} {book.order}
             </Badge>
             <Badge variant="muted">{book.badge}</Badge>
           </div>

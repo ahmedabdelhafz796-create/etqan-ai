@@ -25,6 +25,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useT, fill } from "@/components/providers/I18nProvider";
 import { cn } from "@/lib/utils";
 import type { Book } from "@/config";
 
@@ -44,6 +45,7 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 export function Curriculum({ book }: { book: Book }) {
+  const t = useT();
   const [open, setOpen] = React.useState(false);
 
   const totalChapters = book.curriculum.reduce(
@@ -64,11 +66,11 @@ export function Curriculum({ book }: { book: Book }) {
           </span>
           <div>
             <p className="font-display text-base font-semibold text-soft">
-              Inside the Book
+              {t.store.inside}
             </p>
             <p className="text-xs text-soft/50">
-              {book.curriculum.length} modules · {totalChapters} chapters ·
-              full curriculum
+              {book.curriculum.length}{" "}
+              {fill(t.store.insideMeta, { chapters: totalChapters })}
             </p>
           </div>
         </div>
@@ -143,7 +145,7 @@ export function Curriculum({ book }: { book: Book }) {
               {/* What's included */}
               <div className="mt-5 rounded-xl border border-emerald/20 bg-emerald/[0.06] p-4">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-emerald-light">
-                  Every copy includes
+                  {t.store.includes}
                 </p>
                 <ul className="grid gap-2 sm:grid-cols-2">
                   {book.includes.map((inc, i) => (

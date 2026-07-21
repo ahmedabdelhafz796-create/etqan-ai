@@ -4,6 +4,8 @@ import { siteConfig } from "@/config";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { AmbientBackground } from "@/components/visuals/AmbientBackground";
 import { Analytics, AnalyticsNoscript } from "@/components/Analytics";
+import { getCurrentLocale } from "@/lib/locale";
+import { dirFor } from "@/i18n/config";
 import "./globals.css";
 
 const inter = Inter({
@@ -64,14 +66,17 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getCurrentLocale();
+  const dir = dirFor(locale);
   return (
     <html
-      lang="en"
+      lang={locale}
+      dir={dir}
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >

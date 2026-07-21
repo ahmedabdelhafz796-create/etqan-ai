@@ -1,0 +1,26 @@
+export const locales = ["en", "ar", "tr"] as const;
+export type Locale = (typeof locales)[number];
+
+export const defaultLocale: Locale = "en";
+
+export const localeNames: Record<Locale, string> = {
+  en: "English",
+  ar: "العربية",
+  tr: "Türkçe",
+};
+
+export const localeDir: Record<Locale, "ltr" | "rtl"> = {
+  en: "ltr",
+  ar: "rtl",
+  tr: "ltr",
+};
+
+export const LOCALE_COOKIE = "NEXT_LOCALE";
+
+export function isLocale(value: string | undefined | null): value is Locale {
+  return !!value && (locales as readonly string[]).includes(value);
+}
+
+export function dirFor(locale: Locale): "ltr" | "rtl" {
+  return localeDir[locale];
+}

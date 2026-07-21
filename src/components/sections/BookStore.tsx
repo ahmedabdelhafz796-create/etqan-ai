@@ -1,23 +1,34 @@
+"use client";
+
 import { SectionHeading } from "@/components/ui/section-heading";
 import { BookCard } from "@/components/sections/BookCard";
-import { books } from "@/config";
+import { useT } from "@/components/providers/I18nProvider";
+import type { Book } from "@/config";
 
-export function BookStore({ activeIds }: { activeIds?: string[] }) {
+export function BookStore({
+  books,
+  activeIds,
+}: {
+  books: Book[];
+  activeIds?: string[];
+}) {
+  const t = useT();
   const visible = activeIds
     ? books.filter((b) => activeIds.includes(b.id))
     : books;
+
   return (
     <section id="store" className="relative scroll-mt-24 py-24 sm:py-28">
       <div className="container-tight">
         <SectionHeading
-          eyebrow="The Library"
+          eyebrow={t.store.eyebrow}
           title={
             <>
-              Two books. One institutional{" "}
-              <span className="text-gradient-gold">edge.</span>
+              {t.store.title1}{" "}
+              <span className="text-gradient-gold">{t.store.titleGold}</span>
             </>
           }
-          description="Each title is a complete, self-contained education — designed to take you from reading price like a professional to building your own trading systems."
+          description={t.store.description}
         />
 
         <div className="mt-14 space-y-10">

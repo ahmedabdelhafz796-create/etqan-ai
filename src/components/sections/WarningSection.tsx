@@ -3,17 +3,10 @@
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
-
-const fundamentals = [
-  "Technical Analysis",
-  "Market Structure",
-  "Price Action",
-  "Risk Management",
-  "Trading Psychology",
-  "Institutional Concepts",
-];
+import { useT } from "@/components/providers/I18nProvider";
 
 export function WarningSection() {
+  const t = useT();
   return (
     <section className="relative py-16 sm:py-20">
       <div className="container-tight">
@@ -33,20 +26,14 @@ export function WarningSection() {
 
               <div>
                 <h2 className="font-display text-2xl font-semibold text-soft sm:text-3xl">
-                  Important Warning for Beginners
+                  {t.warning.title}
                 </h2>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-soft/65">
-                  The{" "}
-                  <span className="font-medium text-soft/90">AI Version</span>{" "}
-                  of the books should{" "}
-                  <span className="font-semibold text-loss">never</span> be your
-                  first learning source. Automation and AI amplify whatever
-                  skill you already have — including the gaps. Every beginner
-                  must first genuinely understand the fundamentals:
+                  {t.warning.body1}
                 </p>
 
                 <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
-                  {fundamentals.map((f, i) => (
+                  {t.warning.fundamentals.map((f, i) => (
                     <motion.li
                       key={f}
                       initial={{ opacity: 0, x: -12 }}
@@ -62,10 +49,7 @@ export function WarningSection() {
                 </ul>
 
                 <p className="mt-6 max-w-2xl rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-relaxed text-soft/70">
-                  Only after mastering these foundations should the AI Version be
-                  used — as a force multiplier, not a shortcut. Respect the
-                  order, and the tools will serve you. Skip it, and they will
-                  cost you.
+                  {t.warning.body2}
                 </p>
               </div>
             </div>

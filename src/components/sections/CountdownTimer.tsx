@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
+import { useT } from "@/components/providers/I18nProvider";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -15,15 +16,16 @@ function pad(n: number) {
 }
 
 export function CountdownTimer({ className, compact = false }: Props) {
+  const t = useT();
   const { offerEndsAt } = useSiteConfig();
   const { days, hours, minutes, seconds, expired, ready } =
     useCountdown(offerEndsAt);
 
   const units = [
-    { label: "Days", value: days },
-    { label: "Hours", value: hours },
-    { label: "Minutes", value: minutes },
-    { label: "Seconds", value: seconds },
+    { label: t.countdown.days, value: days },
+    { label: t.countdown.hours, value: hours },
+    { label: t.countdown.minutes, value: minutes },
+    { label: t.countdown.seconds, value: seconds },
   ];
 
   if (ready && expired) {
@@ -35,10 +37,8 @@ export function CountdownTimer({ className, compact = false }: Props) {
         )}
       >
         <p className="font-display text-lg font-medium text-soft/80">
-          Offer has ended.
-          <span className="ml-2 text-soft/50">
-            Original prices have been restored.
-          </span>
+          {t.countdown.ended}
+          <span className="ms-2 text-soft/50">{t.countdown.endedRestored}</span>
         </p>
       </div>
     );

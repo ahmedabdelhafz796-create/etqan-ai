@@ -5,10 +5,12 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
+import { useT } from "@/components/providers/I18nProvider";
 
 type Status = "idle" | "loading" | "success" | "error";
 
 export function Newsletter() {
+  const t = useT();
   const [email, setEmail] = React.useState("");
   const [status, setStatus] = React.useState<Status>("idle");
   const [message, setMessage] = React.useState("");
@@ -26,7 +28,7 @@ export function Newsletter() {
       const data = (await res.json()) as { message?: string };
       if (res.ok) {
         setStatus("success");
-        setMessage(data.message || "You're on the list. Welcome aboard.");
+        setMessage(data.message || t.newsletter.success);
         setEmail("");
       } else {
         setStatus("error");
@@ -51,12 +53,10 @@ export function Newsletter() {
                   <Mail className="h-5 w-5" />
                 </span>
                 <h2 className="mt-5 font-display text-2xl font-semibold text-soft sm:text-3xl">
-                  Get the trader&apos;s edge in your inbox
+                  {t.newsletter.title}
                 </h2>
                 <p className="mt-3 max-w-md text-sm leading-relaxed text-soft/60">
-                  Occasional deep-dives on market structure, liquidity and
-                  psychology — plus early access to new editions and the signals
-                  launch. No spam, ever.
+                  {t.newsletter.description}
                 </p>
               </div>
 
@@ -78,9 +78,9 @@ export function Newsletter() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@email.com"
+                        placeholder={t.newsletter.placeholder}
                         className="h-12 w-full flex-1 rounded-full border border-white/15 bg-white/[0.05] px-5 text-sm text-soft placeholder:text-soft/40 outline-none transition-colors focus:border-gold/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-gold/30"
-                        aria-label="Email address"
+                        aria-label={t.newsletter.emailLabel}
                       />
                       <Button
                         type="submit"
@@ -92,10 +92,10 @@ export function Newsletter() {
                         {status === "loading" ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            Joining…
+                            {t.newsletter.joining}
                           </>
                         ) : (
-                          "Subscribe"
+                          t.newsletter.subscribe
                         )}
                       </Button>
                     </div>
@@ -103,7 +103,7 @@ export function Newsletter() {
                       <p className="px-2 text-xs text-loss">{message}</p>
                     )}
                     <p className="px-2 text-xs text-soft/40">
-                      By subscribing you agree to receive occasional emails. Unsubscribe anytime.
+                      {t.newsletter.agree}
                     </p>
                   </form>
                 )}
