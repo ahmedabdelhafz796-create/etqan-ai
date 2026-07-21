@@ -51,6 +51,8 @@ export const siteConfig = {
  */
 export const analytics = {
   gaId: process.env.NEXT_PUBLIC_GA_ID || "", // e.g. G-XXXXXXXXXX
+  gtmId: process.env.NEXT_PUBLIC_GTM_ID || "", // e.g. GTM-XXXXXXX
+  metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID || "", // e.g. 1234567890
   plausibleDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN || "", // e.g. etqan-ai.com
 } as const;
 

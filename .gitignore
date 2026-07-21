@@ -37,3 +37,6 @@ next-env.d.ts.bak
 # local scratch / audit scripts
 _*.mjs
 *.log
+
+# private product files (paid PDFs) — never commit
+/private/
