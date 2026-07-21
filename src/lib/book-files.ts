@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 
 /**
  * Maps a book id to its private product file. The files live outside the web
@@ -27,10 +28,23 @@ export interface ResolvedBookFile {
   downloadName: string;
 }
 
+export const UPLOADS_DIR = path.join(FILES_DIR, "uploads");
+
+export function uploadPathFor(bookId: string): string {
+  // bookId is validated against the known catalog before use.
+  return path.join(UPLOADS_DIR, `${path.basename(bookId)}.pdf`);
+}
+
 export function resolveBookFile(bookId: string): ResolvedBookFile | null {
   const entry = BOOK_FILES[bookId];
   if (!entry) return null;
-  // Guard against path traversal — only known basenames are used.
-  const absolutePath = path.join(FILES_DIR, path.basename(entry.file));
+
+  // Prefer an admin-uploaded file if one exists; else the bundled default.
+  const uploaded = uploadPathFor(bookId);
+  const absolutePath =
+    fs.existsSync(uploaded)
+      ? uploaded
+      : path.join(FILES_DIR, path.basename(entry.file));
+
   return { absolutePath, downloadName: entry.downloadName };
 }
