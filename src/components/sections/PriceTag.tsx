@@ -1,6 +1,7 @@
 "use client";
 
 import { useOfferActive } from "@/hooks/useOfferActive";
+import { useBookPricing } from "@/components/providers/SiteConfigProvider";
 import { formatUSD, discountPercent, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { Book } from "@/config";
@@ -18,25 +19,28 @@ export function PriceTag({
   className?: string;
 }) {
   const { active, ready } = useOfferActive();
-  const showOffer = !ready || active; // optimistic before hydration
-  const pct = discountPercent(book.originalPrice, book.offerPrice);
+  const pricing = useBookPricing(book.id);
+  const originalPrice = pricing.originalPrice;
+  const offerPrice = pricing.offerPrice;
+  const showOffer = (!ready || active) && offerPrice < originalPrice; // optimistic before hydration
+  const pct = discountPercent(originalPrice, offerPrice);
 
   return (
     <div className={cn("flex flex-wrap items-end gap-x-4 gap-y-2", className)}>
       <div className="flex items-end gap-3">
         <span className="font-display text-4xl font-semibold text-soft sm:text-5xl">
-          {formatUSD(showOffer ? book.offerPrice : book.originalPrice)}
+          {formatUSD(showOffer ? offerPrice : originalPrice)}
         </span>
         {showOffer && (
           <span className="mb-1.5 font-mono text-lg text-soft/40 line-through">
-            {formatUSD(book.originalPrice)}
+            {formatUSD(originalPrice)}
           </span>
         )}
       </div>
 
       {showOffer && (
         <div className="mb-1 flex items-center gap-2">
-          <Badge variant="emerald">Save {formatUSD(book.originalPrice - book.offerPrice)}</Badge>
+          <Badge variant="emerald">Save {formatUSD(originalPrice - offerPrice)}</Badge>
           <Badge variant="gold">-{pct}%</Badge>
         </div>
       )}

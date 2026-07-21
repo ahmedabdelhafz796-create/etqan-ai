@@ -2,7 +2,10 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { BookCard } from "@/components/sections/BookCard";
 import { books } from "@/config";
 
-export function BookStore() {
+export function BookStore({ activeIds }: { activeIds?: string[] }) {
+  const visible = activeIds
+    ? books.filter((b) => activeIds.includes(b.id))
+    : books;
   return (
     <section id="store" className="relative scroll-mt-24 py-24 sm:py-28">
       <div className="container-tight">
@@ -18,7 +21,7 @@ export function BookStore() {
         />
 
         <div className="mt-14 space-y-10">
-          {books.map((book, i) => (
+          {visible.map((book, i) => (
             <BookCard key={book.id} book={book} index={i} />
           ))}
         </div>

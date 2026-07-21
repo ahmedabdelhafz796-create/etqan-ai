@@ -3,7 +3,8 @@
 import * as React from "react";
 import { Loader2, Lock, ShoppingCart } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
-import { links, type Book } from "@/config";
+import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
+import { type Book } from "@/config";
 import { cn } from "@/lib/utils";
 
 const PLACEHOLDER = "PAYMENT_URL_PLACEHOLDER";
@@ -38,6 +39,7 @@ export function BuyButton({
   const [state, setState] = React.useState<"idle" | "loading" | "unavailable">(
     "idle"
   );
+  const { paymentUrl } = useSiteConfig();
 
   const accentVariant =
     variant ?? (book.cover.accent === "emerald" ? "emerald" : "gold");
@@ -65,8 +67,8 @@ export function BuyButton({
     }
 
     // 2) Fall back to a configured direct payment link.
-    if (links.paymentUrl && links.paymentUrl !== PLACEHOLDER) {
-      window.location.href = links.paymentUrl;
+    if (paymentUrl && paymentUrl !== PLACEHOLDER) {
+      window.location.href = paymentUrl;
       return;
     }
 

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useCountdown } from "@/hooks/useCountdown";
-import { offerConfig } from "@/config";
+import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -15,9 +15,9 @@ function pad(n: number) {
 }
 
 export function CountdownTimer({ className, compact = false }: Props) {
-  const { days, hours, minutes, seconds, expired, ready } = useCountdown(
-    offerConfig.offerEndsAt
-  );
+  const { offerEndsAt } = useSiteConfig();
+  const { days, hours, minutes, seconds, expired, ready } =
+    useCountdown(offerEndsAt);
 
   const units = [
     { label: "Days", value: days },

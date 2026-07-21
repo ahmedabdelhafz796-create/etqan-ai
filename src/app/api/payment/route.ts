@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getBook, offerConfig } from "@/config";
+import { getBook } from "@/config";
+import { getEffectiveConfig } from "@/lib/site-settings";
 import {
   createInvoice,
   isPaymentConfigured,
@@ -38,9 +39,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown book." }, { status: 404 });
   }
 
-  // Offer-aware pricing (server-authoritative).
-  const offerActive = Date.now() < new Date(offerConfig.offerEndsAt).getTime();
-  const priceAmount = offerActive ? book.offerPrice : book.originalPrice;
+  // Offer-aware pricing (server-authoritative), honoring admin overrides.
+  const eff = await getEffectiveConfig();
+  const pricing = eff.books[book.id] ?? {
+    originalPrice: book.originalPrice,
+    offerPrice: book.offerPrice,
+  };
+  const offerActive = Date.now() < new Date(eff.offerEndsAt).getTime();
+  const priceAmount =
+    offerActive && pricing.offerPrice < pricing.originalPrice
+      ? pricing.offerPrice
+      : pricing.originalPrice;
 
   if (!isPaymentConfigured()) {
     return NextResponse.json(

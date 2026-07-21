@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Magnetic } from "@/components/ui/magnetic";
 import { Reveal } from "@/components/ui/reveal";
-import { links, offerConfig } from "@/config";
+import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
+import { offerConfig } from "@/config";
 
 const features = [
   { icon: BarChart2, title: "Daily Analysis", desc: "Structured market breakdowns before every session." },
@@ -27,6 +28,7 @@ const features = [
 ];
 
 export function TelegramSection() {
+  const { telegramUrl } = useSiteConfig();
   return (
     <section
       id="telegram"
@@ -76,7 +78,7 @@ export function TelegramSection() {
                       className="w-full sm:w-auto"
                     >
                       <a
-                        href={links.telegramUrl}
+                        href={telegramUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
