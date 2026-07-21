@@ -11,7 +11,35 @@ import { log } from "@/lib/repositories";
 
 export const runtime = "nodejs";
 
+// Lightweight in-memory brute-force limiter (per-IP). For multi-instance
+// serverless, back this with KV; the short window keeps it effective here.
+const WINDOW_MS = 5 * 60 * 1000;
+const MAX_ATTEMPTS = 8;
+const attempts = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimited(ip: string): boolean {
+  const now = Date.now();
+  const rec = attempts.get(ip);
+  if (!rec || rec.resetAt < now) {
+    attempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+  rec.count += 1;
+  return rec.count > MAX_ATTEMPTS;
+}
+
 export async function POST(request: Request) {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
+  if (rateLimited(ip)) {
+    return NextResponse.json(
+      { error: "rate_limited", message: "Too many attempts. Try again later." },
+      { status: 429 }
+    );
+  }
+
   if (!isAdminConfigured()) {
     return NextResponse.json(
       {

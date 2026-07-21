@@ -45,7 +45,10 @@ export function StructuredData() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{
+        // Escape `<` so a stray "</script>" in data can never break out.
+        __html: JSON.stringify(data).replace(/</g, "\\u003c"),
+      }}
     />
   );
 }
