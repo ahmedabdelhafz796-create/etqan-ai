@@ -95,6 +95,31 @@ export async function createInvoice(
   return (await res.json()) as NowPaymentsInvoice;
 }
 
+export interface PaymentStatus {
+  payment_id: string;
+  payment_status: string;
+  order_id: string;
+  order_description: string;
+  price_amount: number;
+  price_currency: string;
+}
+
+/**
+ * Look up a payment's status by id (used by the thank-you page to confirm a
+ * purchase before revealing the download link). Server-side only.
+ */
+export async function getPaymentStatus(
+  paymentId: string
+): Promise<PaymentStatus | null> {
+  if (!isPaymentConfigured()) return null;
+  const res = await fetch(`${API_URL}/payment/${encodeURIComponent(paymentId)}`, {
+    headers: { "x-api-key": API_KEY },
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  return (await res.json()) as PaymentStatus;
+}
+
 /**
  * Fetch the list of currencies your NOWPayments account accepts.
  * Useful for rendering a coin selector at checkout.

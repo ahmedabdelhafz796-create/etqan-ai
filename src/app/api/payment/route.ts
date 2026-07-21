@@ -62,11 +62,17 @@ export async function POST(request: Request) {
     );
   }
 
+  // Send buyers back to our thank-you page (which auto-issues the download).
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+
   try {
     const invoice = await createInvoice({
       priceAmount,
       orderId: `${book.id}-${Date.now()}`,
       orderDescription: `${book.title} — Etqan AI Trading Library`,
+      successUrl: `${origin}/thank-you`,
+      cancelUrl: `${origin}/#store`,
     });
     return NextResponse.json({
       checkoutUrl: invoice.invoice_url,

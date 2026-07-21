@@ -5,6 +5,7 @@
   "description": "Premium digital bookstore for professional trading books",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/prepare-downloads.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

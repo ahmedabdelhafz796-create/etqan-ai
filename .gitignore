@@ -44,3 +44,6 @@ _*.mjs
 # local libSQL database
 /local.db
 /local.db-*
+
+# generated decrypted downloads (build output only)
+/public/dl/
