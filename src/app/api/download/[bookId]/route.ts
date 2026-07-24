@@ -67,7 +67,15 @@ export async function GET(
     );
   }
 
-  // Redirect to the CDN-served decrypted PDF.
-  const origin = new URL(request.url).origin;
-  return NextResponse.redirect(`${origin}/dl/${hash}.pdf`, { status: 302 });
+  // Redirect to the CDN-served decrypted PDF. Resolve the public origin from
+  // proxy headers (robust behind Vercel / custom domains), then env, then URL.
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const host =
+    request.headers.get("x-forwarded-host") || request.headers.get("host");
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (host ? `${proto}://${host}` : new URL(request.url).origin);
+  return NextResponse.redirect(`${origin.replace(/\/$/, "")}/dl/${hash}.pdf`, {
+    status: 302,
+  });
 }
