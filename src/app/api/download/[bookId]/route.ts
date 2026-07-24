@@ -7,7 +7,7 @@ import {
 import { downloadStore } from "@/lib/download-store";
 import { consumeGrant } from "@/lib/repositories";
 import { fileHash } from "@/lib/download-hash";
-import { getBook } from "@/config";
+import { getPurchasable } from "@/lib/purchasable";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,9 +37,10 @@ export async function GET(
     return NextResponse.json({ error: verified.reason, message }, { status });
   }
 
-  if (verified.bookId !== bookId || !getBook(bookId)) {
+  const item = getPurchasable(bookId);
+  if (verified.bookId !== bookId || !item) {
     return NextResponse.json(
-      { error: "mismatch", message: "Token does not match this book." },
+      { error: "mismatch", message: "Token does not match this product." },
       { status: 403 }
     );
   }
@@ -75,7 +76,7 @@ export async function GET(
   const origin =
     process.env.NEXT_PUBLIC_SITE_URL ||
     (host ? `${proto}://${host}` : new URL(request.url).origin);
-  return NextResponse.redirect(`${origin.replace(/\/$/, "")}/dl/${hash}.pdf`, {
+  return NextResponse.redirect(`${origin.replace(/\/$/, "")}/dl/${hash}.${item.ext}`, {
     status: 302,
   });
 }

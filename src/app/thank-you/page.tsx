@@ -8,7 +8,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { links, getBook } from "@/config";
+import { links } from "@/config";
+import { getPurchasable } from "@/lib/purchasable";
 import { getPaymentStatus } from "@/lib/payment";
 import { issueDownloadToken, DOWNLOAD_MAX } from "@/lib/download-token";
 import { createGrant } from "@/lib/repositories";
@@ -47,7 +48,7 @@ export default async function ThankYouPage({
     if (status) {
       const bookId =
         status.order_id?.split("-").slice(0, -1).join("-") || status.order_id;
-      const book = getBook(bookId);
+      const book = getPurchasable(bookId);
       if (isPaidStatus(status.payment_status) && book) {
         const issued = issueDownloadToken(book.id);
         await createGrant({

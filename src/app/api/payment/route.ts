@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getBook } from "@/config";
+import { getProduct } from "@/catalog";
 import { getEffectiveConfig } from "@/lib/site-settings";
 import {
   createInvoice,
@@ -35,21 +36,36 @@ export async function POST(request: Request) {
   }
 
   const book = getBook(bookId);
-  if (!book) {
-    return NextResponse.json({ error: "Unknown book." }, { status: 404 });
+  const product = book ? null : getProduct(bookId);
+  if (!book && !product) {
+    return NextResponse.json({ error: "Unknown product." }, { status: 404 });
   }
 
-  // Offer-aware pricing (server-authoritative), honoring admin overrides.
+  // Offer-aware pricing (server-authoritative), honoring admin overrides for
+  // legacy books and the catalog's own prices for courses/bundles.
   const eff = await getEffectiveConfig();
-  const pricing = eff.books[book.id] ?? {
-    originalPrice: book.originalPrice,
-    offerPrice: book.offerPrice,
-  };
   const offerActive = Date.now() < new Date(eff.offerEndsAt).getTime();
-  const priceAmount =
-    offerActive && pricing.offerPrice < pricing.originalPrice
-      ? pricing.offerPrice
-      : pricing.originalPrice;
+
+  let priceAmount: number;
+  let title: string;
+  if (book) {
+    const pricing = eff.books[book.id] ?? {
+      originalPrice: book.originalPrice,
+      offerPrice: book.offerPrice,
+    };
+    priceAmount =
+      offerActive && pricing.offerPrice < pricing.originalPrice
+        ? pricing.offerPrice
+        : pricing.originalPrice;
+    title = book.title;
+  } else {
+    priceAmount =
+      offerActive && product!.offerPrice < product!.originalPrice
+        ? product!.offerPrice
+        : product!.originalPrice;
+    title = product!.title;
+  }
+  const productId = book ? book.id : product!.id;
 
   if (!isPaymentConfigured()) {
     return NextResponse.json(
@@ -69,10 +85,10 @@ export async function POST(request: Request) {
   try {
     const invoice = await createInvoice({
       priceAmount,
-      orderId: `${book.id}-${Date.now()}`,
-      orderDescription: `${book.title} — Etqan AI Trading Library`,
+      orderId: `${productId}-${Date.now()}`,
+      orderDescription: `${title} — E-tqan`,
       successUrl: `${origin}/thank-you`,
-      cancelUrl: `${origin}/#store`,
+      cancelUrl: `${origin}/#courses`,
     });
     return NextResponse.json({
       checkoutUrl: invoice.invoice_url,

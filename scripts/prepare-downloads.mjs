@@ -18,6 +18,7 @@ import { decrypt, fileHash } from "./lib/crypto.mjs";
 
 const BOOKS = ["triple-analysis", "ai-trading"];
 const ASSETS_DIR = path.join(process.cwd(), "assets", "books");
+const COURSES_DIR = path.join(process.cwd(), "assets", "courses");
 const OUT_DIR = path.join(process.cwd(), "public", "dl");
 
 const secret =
@@ -47,4 +48,27 @@ for (const id of BOOKS) {
     console.error(`[prepare-downloads] failed for ${id}:`, err.message);
   }
 }
-console.log(`[prepare-downloads] prepared ${ok}/${BOOKS.length} product file(s).`);
+console.log(`[prepare-downloads] prepared ${ok}/${BOOKS.length} book file(s).`);
+
+// Courses & bundles: each assets/courses/<id>.enc is an encrypted ZIP of that
+// product's trilingual PDFs. The product id is derived from the filename, so
+// this stays in sync with the catalog automatically — no hardcoded list.
+let cok = 0;
+let ctotal = 0;
+if (fs.existsSync(COURSES_DIR)) {
+  const encs = fs.readdirSync(COURSES_DIR).filter((f) => f.endsWith(".enc"));
+  ctotal = encs.length;
+  for (const file of encs) {
+    const id = file.replace(/\.enc$/, "");
+    try {
+      const plain = decrypt(fs.readFileSync(path.join(COURSES_DIR, file)), secret);
+      const outPath = path.join(OUT_DIR, `${fileHash(id, secret)}.zip`);
+      fs.writeFileSync(outPath, plain);
+      cok++;
+      console.log(`[prepare-downloads] ${id} → public/dl/${path.basename(outPath)} (${(plain.length / 1048576).toFixed(1)}MB)`);
+    } catch (err) {
+      console.error(`[prepare-downloads] failed for ${id}:`, err.message);
+    }
+  }
+}
+console.log(`[prepare-downloads] prepared ${cok}/${ctotal} course file(s).`);

@@ -36,7 +36,7 @@ export const siteConfig = {
     "risk management",
   ],
   social: {
-    telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "TELEGRAM_URL_PLACEHOLDER",
+    telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/Ahm_t_AHZ01",
     twitter: process.env.NEXT_PUBLIC_TWITTER_URL || "https://x.com/",
     youtube: process.env.NEXT_PUBLIC_YOUTUBE_URL || "https://youtube.com/",
     instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/",
@@ -68,11 +68,11 @@ export const payment = {
 /**
  * Master placeholders. Replace ONE variable each and you're live.
  *   - PAYMENT_URL_PLACEHOLDER  → your NOWPayments / checkout link
- *   - TELEGRAM_URL_PLACEHOLDER → your Telegram invite link
+ *   - Telegram support handle defaults to @Ahm_t_AHZ01
  */
 export const links = {
   paymentUrl: process.env.NEXT_PUBLIC_PAYMENT_URL || "PAYMENT_URL_PLACEHOLDER",
-  telegramUrl: process.env.NEXT_PUBLIC_TELEGRAM_URL || "TELEGRAM_URL_PLACEHOLDER",
+  telegramUrl: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/Ahm_t_AHZ01",
 } as const;
 
 /**

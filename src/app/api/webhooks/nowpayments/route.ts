@@ -10,7 +10,8 @@ import {
   createGrant,
   log,
 } from "@/lib/repositories";
-import { getBook, siteConfig } from "@/config";
+import { siteConfig } from "@/config";
+import { getPurchasable } from "@/lib/purchasable";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
     typeof payload.customer_email === "string" ? payload.customer_email : null;
   // order_id is issued as `${bookId}-${timestamp}` by the invoice route.
   const bookId = orderId.split("-").slice(0, -1).join("-") || orderId;
-  const book = getBook(bookId);
+  const book = getPurchasable(bookId);
 
   // Persist the order + customer regardless of status (idempotent upsert).
   await recordOrder({
