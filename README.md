@@ -1,118 +1,87 @@
-# ETQAN AI — Premium Trading Bookstore
+# E-tqan — Premium Digital Course Library
 
-A production-ready, dark-luxury digital bookstore for selling professional
-trading books. Built with **Next.js (App Router) · TypeScript · TailwindCSS ·
-Framer Motion · Radix UI · Lucide** and a NOWPayments-ready checkout
-architecture.
+A production-ready, dark-luxury educational marketplace selling **premium,
+trilingual (English · العربية · Türkçe) courses** in programming, AI, web,
+design, productivity and trading. Built with **Next.js 16 (App Router) ·
+TypeScript · TailwindCSS · Framer Motion · Radix UI · Lucide**, with
+server-side crypto/card checkout and encrypted, automatic delivery.
 
-Design language: TradingView × Binance × Bloomberg × Apple × Stripe — glass,
-glow, animated candlesticks, gold & emerald accents on deep night black.
+Design language: Apple × Stripe × Linear — glass, glow, gold & emerald accents
+on deep night black. Books are rendered by a bespoke engine into premium PDFs
+(covers, clickable ToC, diagrams, code, exercises, quizzes, projects).
 
-## 🚀 Deploy in one click
+## Documentation
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/ahmedabdelhafz796-create/etqan-ai)
-&nbsp;
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/ahmedabdelhafz796-create/etqan-ai)
-
-No environment variables required to launch — see **[DEPLOYMENT.md](./DEPLOYMENT.md)**
-for the step-by-step guide and the optional config table.
-
----
+- **[FINAL_COMPLETION_REPORT.md](./FINAL_COMPLETION_REPORT.md)** — requirement-by-requirement audit
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** — env vars + deploy
+- **[PAYMENT_SETUP.md](./PAYMENT_SETUP.md)** — NOWPayments + Lemon Squeezy
+- **[ADMIN_GUIDE.md](./ADMIN_GUIDE.md)** — the admin dashboard
+- **[SECURITY_REPORT.md](./SECURITY_REPORT.md)** — security posture
+- **[CONTENT_REPORT.md](./CONTENT_REPORT.md)** — the book library + engine
+- **[marketing/PROMO_PACKAGE.md](./marketing/PROMO_PACKAGE.md)** — promo video brief
+- **[bookgen/README.md](./bookgen/README.md)** — the book-generation engine
 
 ## Quick start
 
 ```bash
 npm install
-npm run dev
+npm run dev            # http://localhost:3000
 ```
 
-Open <http://localhost:3000>.
-
-Build for production:
+Quality gates:
 
 ```bash
-npm run build && npm start
+npm run lint
+npm run typecheck
+npm test
+NOWPAYMENTS_IPN_SECRET=dev-secret npm run build
 ```
 
----
+## Configuration
 
-## One-file configuration
+- **Catalog** (courses, bundles, prices, categories): `src/catalog.ts`.
+- **Legacy trading books + site strings**: `src/config.ts`.
+- **Environment**: copy `.env.example` and set values in your host. The only
+  required-for-live values are payment keys and (optionally) the database;
+  see DEPLOYMENT_GUIDE.md. No placeholders remain in code.
 
-Everything you'll want to edit lives in **`src/config.ts`**:
-
-- Book titles, subtitles, descriptions & curricula
-- **Prices & discounts** (`originalPrice`, `offerPrice`)
-- **Countdown / offer end date** (`offerConfig.offerEndsAt`)
-- **Telegram link placeholder** → `TELEGRAM_URL_PLACEHOLDER`
-- **Payment URL placeholder** → `PAYMENT_URL_PLACEHOLDER`
-- Brand, social links, SEO strings
-
-When the countdown expires, discounts hide automatically and original
-prices are restored across the whole site — no code changes needed.
-
-## Go-live checklist (replace ONE variable each)
-
-| What | Where |
-| --- | --- |
-| Direct checkout link | `NEXT_PUBLIC_PAYMENT_URL` (replaces `PAYMENT_URL_PLACEHOLDER`) |
-| Telegram invite | `NEXT_PUBLIC_TELEGRAM_URL` (replaces `TELEGRAM_URL_PLACEHOLDER`) |
-| NOWPayments API | `NOWPAYMENTS_API_KEY` in `.env.local` |
-
-Copy `.env.example` → `.env.local` and fill in values.
-
----
-
-## NOWPayments integration
-
-The project ships a **real, typed** integration surface — no fake success:
-
-- `src/lib/payment.ts` — service that calls the NOWPayments REST API.
-- `src/app/api/payment/route.ts` — server route that creates an offer-aware
-  invoice and returns the hosted checkout URL.
-- The **Buy Now** button (`src/components/sections/BuyButton.tsx`) calls the
-  route; if no API key is configured yet it gracefully falls back to the
-  payment URL placeholder — nothing is faked.
-
-Set `NOWPAYMENTS_API_KEY` (and optionally `NOWPAYMENTS_IPN_SECRET`) to go live.
-
----
-
-## Project structure
+## Architecture
 
 ```
 src/
-  config.ts                  # single source of truth (prices, dates, links, books)
+  catalog.ts                 # courses & bundles (single source of truth)
+  config.ts                  # trading books, brand, offer, links
   app/
     layout.tsx               # fonts + SEO metadata
-    page.tsx                 # landing page composition
-    globals.css
-    sitemap.ts / robots.ts / manifest.ts
-    icon.svg
-    thank-you/               # post-payment page
+    page.tsx                 # landing composition (Marketplace centerpiece)
+    sitemap.ts / robots / manifest / opengraph-image
+    thank-you/               # post-payment auto-delivery page
+    admin/                   # dashboard, orders, customers, courses, coupons, settings, logs
     api/
-      payment/route.ts       # NOWPayments invoice endpoint
-      newsletter/route.ts    # newsletter opt-in endpoint
-  components/
-    ui/                      # button, accordion, badge, reveal, section-heading
-    visuals/                 # candlesticks, ticker tape, confetti, book cover
-    sections/                # hero, banner, countdown, store, telegram, warning…
-  hooks/                     # useCountdown, useOfferActive
-  lib/                       # utils, pricing, payment service
+      payment/route.ts       # NOWPayments + Lemon Squeezy checkout (+ coupons, rate-limited)
+      download/[bookId]/      # signed, expiring, count-limited downloads → CDN
+      webhooks/{nowpayments,lemonsqueezy}/
+      newsletter/ · admin/{settings,coupons,upload,login,logout}/
+  components/                # ui, visuals, sections, admin, providers
+  lib/                       # payment, lemonsqueezy, download-token, rate-limit, repositories, db, …
+  i18n/                      # EN/AR/TR dictionaries + localized book text
+bookgen/                     # premium book engine (encrypted sources vault)
+assets/{books,courses}/*.enc # AES-256-GCM encrypted deliverables
+scripts/                     # prepare-downloads, pack-courses, pack-premium
+tests/                       # node:test (crypto round-trip, catalog integrity)
 ```
 
 ## Features
 
-- 🕯️ Animated candlestick hero background & live market ticker tape
-- 🎉 First-Edition celebration banner with confetti
-- ⏳ Live countdown timer (auto-restores prices on expiry)
-- 📚 Premium book cards with expandable institutional curricula
-- 💳 NOWPayments-ready **Buy Now** flow
-- 📡 Telegram signals section (launches Aug 1, 2026)
-- ⚠️ Beginner warning + luxury psychology quote
-- ⭐ Why-buy grid, FAQ accordion, testimonials, newsletter
-- 🔍 SEO: metadata, Open Graph, JSON-LD, sitemap, robots, manifest
-- ♿ Accessible, responsive, reduced-motion aware
+- 🎓 Trilingual premium course marketplace with category filter & bundles
+- 💳 Server-side checkout: NOWPayments crypto + optional Lemon Squeezy card/PayPal
+- 🔐 Encrypted delivery, signed & expiring download links (max-2), auto-delivery
+- 🎟️ Server-authoritative coupons
+- 🛡️ CSP + secure headers, rate limiting, HMAC-verified webhooks
+- 🧑‍💼 Admin: orders, customers, courses, books, coupons, settings, logs
+- 🔍 SEO: metadata, Open Graph, Course/Book JSON-LD, sitemap, robots, manifest
+- ♿ Accessible, responsive, reduced-motion aware, RTL for Arabic
 
 ---
 
-_Educational content only. Trading involves substantial risk._
+_All content is original educational material produced by E-tqan._
