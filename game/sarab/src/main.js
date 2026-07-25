@@ -47,6 +47,14 @@ const PROPS = {
   speed:    { id: "speed",    ar: "السرعة",   en: "SPEED",    color: 0x7fe3e0 },
 };
 
+/** Four things want you dead, and each one answers to a different property. */
+const KINDS = {
+  shade:  { hp: 100, speed: 1.0,  scale: 1.15, visor: 0xff6a5a, dmg: 1.0,  score: 20, ar: "ظل" },
+  runner: { hp: 55,  speed: 1.95, scale: 0.92, visor: 0xffb04a, dmg: 0.7,  score: 30, ar: "راكض" },
+  heavy:  { hp: 320, speed: 0.55, scale: 1.65, visor: 0xd14aff, dmg: 1.8,  score: 60, ar: "ثقيل" },
+  debtor: { hp: 150, speed: 1.25, scale: 1.3,  visor: 0x7fe3e0, dmg: 0.4,  score: 45, ar: "الدائن" },
+};
+
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const lerp = (a, b, t) => a + (b - a) * t;
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -124,6 +132,11 @@ class Audio {
     src.connect(f); f.connect(g); g.connect(this.master);
     src.start(t);
   }
+  toggleMute() {
+    if (!this.master) return;
+    this.muted = !this.muted;
+    this.master.gain.value = this.muted ? 0 : 0.55;
+  }
   steal()  { this.blip({ freq: 220, type: "triangle", dur: 0.3, gain: 0.22, slide: 900 }); this.noise({ dur: 0.2, gain: 0.12, freq: 2200, q: 2 }); }
   give()   { this.blip({ freq: 900, type: "triangle", dur: 0.22, gain: 0.2, slide: -700 }); }
   hit()    { this.noise({ dur: 0.16, gain: 0.5, freq: 260, q: 0.7 }); this.blip({ freq: 90, type: "square", dur: 0.1, gain: 0.25, slide: -40 }); }
@@ -170,7 +183,8 @@ class Game {
   /* ── renderer ── */
   initRenderer() {
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: false, powerPreference: "high-performance" });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    const coarse = matchMedia("(pointer: coarse)").matches;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, coarse ? 1.2 : 1.75));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = false;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -181,8 +195,10 @@ class Game {
   initPost() {
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
+    const coarse = matchMedia("(pointer: coarse)").matches;
     this.bloom = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight), 0.55, 0.6, 0.5
+      new THREE.Vector2(window.innerWidth, window.innerHeight).multiplyScalar(coarse ? 0.6 : 1),
+      coarse ? 0.45 : 0.55, 0.6, 0.5
     );
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
@@ -347,7 +363,7 @@ class Game {
   }
 
   buildMotes() {
-    const n = 260, pos = [];
+    const n = matchMedia("(pointer: coarse)").matches ? 120 : 260, pos = [];
     for (let i = 0; i < n; i++) pos.push(rand(-23, 23), rand(0.4, 12), rand(-23, 23));
     const g = new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
     this.dust = new THREE.Points(g, new THREE.PointsMaterial({
@@ -375,6 +391,8 @@ class Game {
     this.timeScale = 1;
     this.hitStop = 0;
     this.tut = { step: 0, yaw0: 0, moved: 0, lastPos: new THREE.Vector3() };
+    this.combo = 0; this.comboT = 0; this.returns = 0; this.steals = 0;
+    this.best = Number(localStorage.getItem("sarab.best") || 0);
   }
 
   /* ── input ── */
@@ -385,7 +403,9 @@ class Game {
     addEventListener("keydown", (e) => {
       this.keys[e.code] = true;
       if (e.code === "Space") e.preventDefault();
-      if (this.state === "menu" || this.state === "dead") this.begin();
+      if (e.code === "Escape" || e.code === "KeyP") return this.togglePause();
+      if (e.code === "KeyM") return this.audio.toggleMute();
+      if (this.state === "menu" || this.state === "dead" || this.state === "won") this.begin();
     });
     addEventListener("keyup", (e) => { this.keys[e.code] = false; });
 
@@ -463,6 +483,8 @@ class Game {
     this.player.yaw = 0; this.player.pitch = 0;
     this.score = 0; this.wave = 0; this.waveTimer = 1.2;
     this.tut = { step: 0, yaw0: this.player.yaw, moved: 0, lastPos: this.player.pos.clone() };
+    this.combo = 0; this.comboT = 0; this.returns = 0; this.steals = 0;
+    this.boss = null; this.ending = null;
     if (this.ring) this.ring.visible = true;
     this.timeScale = 1;
     /* restore every prop the previous run drained */
@@ -478,8 +500,30 @@ class Game {
       }
     }
   }
+  setLang(lang) {
+    if (!TXT[lang] || lang === this.lang) return;
+    this.lang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    this.hud = new HUD(this);
+    this.hud.setScreen(this.state === "play" ? null : this.state === "menu" ? "menu" : this.state);
+  }
+
+  togglePause() {
+    if (this.state === "play") {
+      this.state = "paused";
+      document.exitPointerLock?.();
+      this.hud.setScreen("paused");
+    } else if (this.state === "paused") {
+      this.state = "play";
+      this.hud.setScreen(null);
+      if (!this.isTouch()) this.canvas.requestPointerLock?.();
+    }
+  }
+
   begin() {
     if (this.state === "play") return;
+    if (this.state === "paused") return this.togglePause();
     this.audio.start();
     this.reset();
     this.state = "play";
@@ -487,6 +531,8 @@ class Game {
     if (!this.isTouch()) this.canvas.requestPointerLock();
   }
   die() {
+    if (this.state !== "play") return;
+    this.saveBest();
     this.state = "dead";
     this.audio.die();
     document.exitPointerLock?.();
@@ -502,6 +548,7 @@ class Game {
     const meshes = [
       ...this.props.filter((p) => p.visible),
       ...this.enemies.filter((e) => e.alive).map((e) => e.hitbox),
+      ...(this.boss ? this.boss.cores.filter((c) => c.alive).map((c) => c.core) : []),
     ];
     const hit = ray.intersectObjects(meshes, false)[0];
     return hit ? hit.object : null;
@@ -511,6 +558,15 @@ class Game {
     const t = this.targetUnderCrosshair();
     if (!t) return;
     const p = this.player;
+
+    if (t.userData.boss) {
+      if (p.memory < CFG.stealCost) return this.audio.blip({ freq: 120, dur: 0.1, gain: 0.15 });
+      p.memory -= CFG.stealCost;
+      p.held = "hardness";
+      this.audio.steal();
+      this.hitBossCore(t);
+      return;
+    }
 
     /* stealing from an enemy strips its behaviour — and kills the weak ones */
     if (t.userData.enemy) {
@@ -530,6 +586,7 @@ class Game {
 
     p.memory -= CFG.stealCost;
     p.held = prop;
+    this.steals++;
     t.userData.drained = true;
     this.audio.steal();
     this.spawnSpark(t.position, PROPS[prop].color, 30);
@@ -558,7 +615,11 @@ class Game {
 
     if (!p.held) {
       /* bare hands still count — a weak shove */
-      if (t && t.userData.enemy) this.damageEnemy(t.userData.enemy, 34);
+      if (t && t.userData.enemy) {
+        const e = t.userData.enemy;
+        if (e.kind === "heavy") { this.audio.blip({ freq: 110, type: "square", dur: 0.12, gain: 0.2 }); this.hud.toast(TXT[this.lang].tooHard); }
+        else this.damageEnemy(e, 34);
+      }
       this.audio.blip({ freq: 260, type: "square", dur: 0.07, gain: 0.12 });
       return;
     }
@@ -599,6 +660,7 @@ class Game {
       if (!BOXES.includes(t.userData.collider)) BOXES.push(t.userData.collider);
       p.memory = clamp(p.memory + CFG.returnGain, 0, CFG.memoryMax);
       p.held = null;
+      this.returns++;
       this.score += 15;
       this.audio.give();
       this.spawnSpark(t.position, PROPS[prop].color, 18);
@@ -645,18 +707,133 @@ class Game {
   }
 
   /* ── enemies ── */
+  /** Each wave introduces exactly one new idea, then mixes. */
   spawnWave() {
     this.wave++;
     this.audio.wave();
     this.hud.flashWave(this.wave);
-    const count = Math.min(3 + this.wave * 2, 16);
-    for (let i = 0; i < count; i++) {
-      const a = rand(0, Math.PI * 2), r = rand(11, 17);
-      this.spawnEnemy(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r));
+    if (this.wave === 6) return this.spawnBoss();
+
+    const mix = {
+      1: { shade: 4 },
+      2: { shade: 4, runner: 2 },
+      3: { shade: 4, runner: 3, heavy: 1 },
+      4: { shade: 5, runner: 4, heavy: 2 },
+      5: { shade: 6, runner: 5, heavy: 3 },
+    }[this.wave] || { shade: 6 + this.wave, runner: 4 + this.wave, heavy: 2 + Math.floor(this.wave / 2) };
+
+    for (const [kind, n] of Object.entries(mix)) {
+      for (let i = 0; i < n; i++) {
+        const a = rand(0, Math.PI * 2), r = rand(11, 18);
+        this.spawnEnemy(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r), kind);
+      }
     }
   }
 
-  spawnEnemy(pos) {
+  /**
+   * الحاضنة — the Incubator. Not a monster: a machine keeping a ward alive by
+   * pulling the warmth out of everything near it, including you. It has three
+   * cores; each one you steal makes it more desperate.
+   */
+  spawnBoss() {
+    const g = new THREE.Group();
+    const shell = new THREE.Mesh(
+      new THREE.OctahedronGeometry(3.2, 1),
+      new THREE.MeshStandardMaterial({ color: 0x0d1420, roughness: 0.4, metalness: 0.7, flatShading: true })
+    );
+    g.add(shell);
+    g.add(new THREE.LineSegments(
+      new THREE.EdgesGeometry(shell.geometry),
+      new THREE.LineBasicMaterial({ color: 0x7fe3e0, transparent: true, opacity: 0.7 })
+    ));
+
+    const cores = [];
+    for (let i = 0; i < 3; i++) {
+      const core = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.62, 0),
+        new THREE.MeshBasicMaterial({ color: 0xffc46b })
+      );
+      const ring = new THREE.Group();
+      ring.rotation.set(rand(-0.6, 0.6), (i / 3) * 6.28, rand(-0.6, 0.6));
+      core.position.set(4.6, 0, 0);
+      core.userData.boss = true;
+      core.userData.coreIndex = i;
+      ring.add(core);
+      g.add(ring);
+      const l = new THREE.PointLight(0xffc46b, 1.6, 12, 2);
+      core.add(l);
+      cores.push({ core, ring, alive: true });
+    }
+    g.position.set(0, 6.2, -6);
+    this.scene.add(g);
+    this.boss = { group: g, shell, cores, hp: 3, pulseT: 3, rage: 0 };
+    this.hud.toast(TXT[this.lang].bossIn);
+    this.audio.blip({ freq: 70, type: "sawtooth", dur: 2.2, gain: 0.32, slide: 40 });
+  }
+
+  updateBoss(dt) {
+    const b = this.boss, p = this.player;
+    if (!b) return;
+    b.group.rotation.y += dt * (0.25 + b.rage * 0.2);
+    b.shell.rotation.x += dt * 0.4;
+    for (const c of b.cores) if (c.alive) c.ring.rotation.y += dt * (0.9 + b.rage * 0.5);
+
+    b.pulseT -= dt;
+    if (b.pulseT <= 0) {
+      b.pulseT = Math.max(2.2, 5.2 - b.rage * 1.1);
+      /* it drinks the room — and you are in the room */
+      p.memory = clamp(p.memory - (7 + b.rage * 3), 0, CFG.memoryMax);
+      p.shake = Math.max(p.shake, 0.7);
+      this.audio.blip({ freq: 300, type: "sine", dur: 0.9, gain: 0.22, slide: -220 });
+      this.hud.toast(TXT[this.lang].drain);
+      this.spawnSpark(p.pos.clone().add(new THREE.Vector3(0, -0.4, -1.5)), 0x7fe3e0, 20);
+      const a = rand(0, 6.28);
+      this.spawnEnemy(new THREE.Vector3(Math.cos(a) * 12, 0, Math.sin(a) * 12), b.rage > 1 ? "runner" : "shade");
+      if (p.memory <= 0) this.die();
+    }
+  }
+
+  hitBossCore(core) {
+    const b = this.boss;
+    const c = b.cores[core.userData.coreIndex];
+    if (!c || !c.alive) return;
+    c.alive = false;
+    c.core.visible = false;
+    b.hp--; b.rage++;
+    this.score += Math.round(400 * this.comboMul());
+    this.audio.kill();
+    this.hitStop = 0.12;
+    this.player.shake = 1.2;
+    this.spawnSpark(c.core.getWorldPosition(new THREE.Vector3()), 0xffc46b, 40);
+    if (b.hp <= 0) this.winRun();
+    else this.hud.toast(TXT[this.lang].coreOut.replace("{n}", b.hp));
+  }
+
+  /** Three endings, decided by how you played rather than what you clicked. */
+  winRun() {
+    const p = this.player;
+    const memPct = p.memory / CFG.memoryMax;
+    this.ending = memPct >= 0.5 && this.returns >= 3 ? "faithful"
+      : this.returns === 0 && this.steals >= 8 ? "greedy"
+      : "stranger";
+    this.score += Math.round(1000 * memPct);
+    for (const e of this.enemies) this.killEnemy(e, true);
+    if (this.boss) { this.scene.remove(this.boss.group); this.boss = null; }
+    this.state = "won";
+    this.saveBest();
+    document.exitPointerLock?.();
+    this.hud.setScreen("won");
+    this.audio.blip({ freq: 180, type: "sine", dur: 2.6, gain: 0.3, slide: 320 });
+  }
+  saveBest() {
+    if (this.score > this.best) {
+      this.best = this.score;
+      try { localStorage.setItem("sarab.best", String(this.best)); } catch { /* private mode */ }
+    }
+  }
+
+  spawnEnemy(pos, kind = "shade") {
+    const K = KINDS[kind];
     const g = new THREE.Group();
     const mat = new THREE.MeshStandardMaterial({ color: 0x070a10, roughness: 0.5, metalness: 0.25, emissive: 0x18305e, emissiveIntensity: 0.3 });
 
@@ -674,11 +851,11 @@ class Game {
 
     const visor = new THREE.Mesh(
       new THREE.BoxGeometry(0.34, 0.07, 0.06),
-      new THREE.MeshBasicMaterial({ color: 0xff6a5a })
+      new THREE.MeshBasicMaterial({ color: K.visor })
     );
     visor.position.set(0, 1.97, 0.22);
     g.add(visor);
-    const eye = new THREE.PointLight(0xff5a45, 0.9, 3.2, 2);
+    const eye = new THREE.PointLight(K.visor, 0.9, 3.4, 2);
     eye.position.set(0, 1.97, 0.3);
     g.add(eye);
     for (const part of [torso, head]) {
@@ -701,20 +878,22 @@ class Game {
     hitbox.position.y = 1.05;
     g.add(hitbox);
 
-    g.scale.setScalar(1.15);
+    g.scale.setScalar(K.scale);
     g.position.copy(pos);
     this.scene.add(g);
 
     const carries = ["weight", "hardness", "speed"][Math.floor(rand(0, 3))];
     const e = {
       group: g, hitbox, parts: { legL, legR, armL, armR, torso, head },
-      alive: true, hp: 100, phase: rand(0, 6.28),
-      speed: CFG.enemyBaseSpeed + this.wave * 0.16 + rand(-0.3, 0.3),
-      atkCd: rand(0.4, 1.4), slowT: 0, carries,
+      alive: true, kind, hp: K.hp, maxHp: K.hp, phase: rand(0, 6.28),
+      speed: (CFG.enemyBaseSpeed + this.wave * 0.13 + rand(-0.25, 0.25)) * K.speed,
+      atkCd: rand(0.4, 1.4), slowT: 0, carries, fleeT: 0,
     };
     hitbox.userData.enemy = e;
     this.enemies.push(e);
   }
+
+  comboMul() { return 1 + Math.min(this.combo, 20) * 0.2; }
 
   damageEnemy(e, dmg) {
     if (!e.alive) return;
@@ -729,7 +908,9 @@ class Game {
   killEnemy(e, burst) {
     if (!e.alive) return;
     e.alive = false;
-    this.score += 20;
+    this.comboT = 2.6;
+    this.combo = Math.min(this.combo + 1, 25);
+    this.score += Math.round((KINDS[e.kind] || KINDS.shade).score * this.comboMul());
     this.audio.kill();
     const p = e.group.position;
     for (const part of Object.values(e.parts)) {
@@ -820,7 +1001,14 @@ class Game {
         e.atkCd -= wdt;
         if (e.atkCd <= 0) {
           e.atkCd = 1.1;
-          const dmg = CFG.enemyDamage * (hard ? 0.35 : 1);
+          if (e.kind === "debtor" && p.held) {
+            p.held = null;
+            this.hud.toast(TXT[this.lang].tookIt);
+            this.audio.hurt();
+            this.killEnemy(e, true);
+            continue;
+          }
+          const dmg = CFG.enemyDamage * (KINDS[e.kind] || KINDS.shade).dmg * (hard ? 0.35 : 1);
           p.hp -= dmg;
           p.hurtT = 0.45;
           p.shake = Math.max(p.shake, 0.8);
@@ -833,9 +1021,10 @@ class Game {
     this.enemies = this.enemies.filter((e) => e.alive);
 
     this.updateTutorial(dt);
+    if (this.boss) this.updateBoss(dt);
 
     /* waves — held back until the player has been taught */
-    if (this.tut.step >= 5 && this.enemies.length === 0) {
+    if (this.tut.step >= 5 && !this.boss && this.enemies.length === 0) {
       this.waveTimer -= dt;
       if (this.waveTimer <= 0) { this.spawnWave(); this.waveTimer = CFG.waveGap + 1.5; }
     }
@@ -853,6 +1042,20 @@ class Game {
     }
     for (const d of this.debris.filter((x) => x.life <= 0)) this.scene.remove(d.mesh);
     this.debris = this.debris.filter((d) => d.life > 0);
+
+    this.comboT -= dt;
+    if (this.comboT <= 0 && this.combo) { this.combo = 0; }
+
+    /* hold a stolen property too long and the debt comes to collect */
+    if (p.held) {
+      this.debtT = (this.debtT || 0) + dt;
+      if (this.debtT > 9 && this.tut.step >= 6 && !this.enemies.some((e) => e.kind === "debtor")) {
+        const a = rand(0, 6.28);
+        this.spawnEnemy(new THREE.Vector3(Math.cos(a) * 13, 0, Math.sin(a) * 13), "debtor");
+        this.hud.toast(TXT[this.lang].debt);
+        this.debtT = 0;
+      }
+    } else this.debtT = 0;
 
     /* memory bleeds while you hold a stolen property — you cannot hoard */
     if (p.held) p.memory -= 1.6 * dt;
@@ -974,6 +1177,7 @@ class Game {
     let dt = Math.min(this.clock.getDelta(), 0.05);
     if (this.hitStop > 0) { this.hitStop -= dt; dt *= 0.08; }
     if (this.state === "play") this.update(dt);
+    else if (this.state === "paused") { /* frozen */ }
     else {
       this.camera.position.set(Math.sin(performance.now() * 0.00012) * 20, 6, Math.cos(performance.now() * 0.00012) * 20);
       this.camera.lookAt(0, 2, 0);
@@ -1008,6 +1212,19 @@ const TXT = {
       throw_t: "الصفة في يدك. صوّب على الظل وانقر الشاشة",
       ready: "كلما سرقت، نقصت ذاكرتك. استعدّ.",
     },
+    tooHard: "قبضتك لا تكفي — اسرق صلابة وارمِها عليه",
+    debt: "الدَّيْن قادم ليأخذ ما سرقت",
+    tookIt: "أخذ الصفة منك",
+    bossIn: "الحاضنة استيقظت",
+    drain: "إنها تشرب ذاكرتك",
+    coreOut: "بقي {n} من نوياتها",
+    best: "الأفضل", combo: "متتالية",
+    won: "نجوت", endings: {
+      faithful: { t: "الوفاء", d: "خرجت وأنت تتذكّر لماذا دخلت. أعدت ما أخذت، فبقيت أنت أنت." },
+      stranger: { t: "الغريب", d: "انتصرت… ولم تعد تعرف على من انتصرت. الاسم الذي جئت من أجله لم يعد في رأسك." },
+      greedy:   { t: "الجَشِع", d: "لم تُعد شيئًا قط. القاعة خلفك خاوية، وأنت أقوى ممّا ينبغي وأخف ممّا كنت." },
+    },
+    pause: "توقّف", resume: "متابعة", restart: "من البداية", sound: "الصوت",
     touch: ["اسحب يسار الشاشة للحركة", "اسحب يمينها للنظر · انقر للضرب", "زر السرقة تحت"],
   },
   en: {
@@ -1032,8 +1249,57 @@ const TXT = {
       throw_t: "It is in your hand. Aim at the shadow and tap the screen",
       ready: "Every theft costs memory. Get ready.",
     },
+    tooHard: "Your fist is not enough — steal hardness first",
+    debt: "The Debt is coming for what you took",
+    tookIt: "It took the property back",
+    bossIn: "THE INCUBATOR IS AWAKE",
+    drain: "It is drinking your memory",
+    coreOut: "{n} cores left",
+    best: "BEST", combo: "COMBO",
+    won: "YOU SURVIVED", endings: {
+      faithful: { t: "THE FAITHFUL", d: "You walked out still remembering why you walked in. What you took, you returned." },
+      stranger: { t: "THE STRANGER", d: "You won, and no longer know who you beat. The name you came for is gone." },
+      greedy:   { t: "THE GREEDY", d: "You returned nothing. The hall behind you is empty, and you are lighter than you were." },
+    },
+    pause: "PAUSED", resume: "Resume", restart: "Restart", sound: "Sound",
     touch: ["Drag left side to move", "Drag right side to look · tap to strike", "Steal button below"],
   },
+};
+TXT.tr = {
+  title: "SERAP", sub: "Silahın yok. Odadan bir özellik çal ve seni öldürmek isteyene fırlat.",
+  start: "Başlamak için tıkla", wave: "DALGA", score: "SKOR", memory: "HAFIZA", hp: "BEDEN",
+  hold: "ELİNDE", empty: "BOŞ",
+  help: [
+    "Oyun sana adım adım öğretir — sadece başla",
+    "Silah yok: odadan özellik çal, düşmana fırlat",
+    "Her hırsızlık hafızandan yer — geri vermek onu geri kazandırır",
+  ],
+  dead: "SÖNDÜN", again: "Tekrar denemek için tıkla", final: "SKOR",
+  tut: {
+    look: "Etrafa bakmak için fareyi hareket ettir",
+    look_t: "Bakmak için ekranın sağını sürükle",
+    move: "W A S D ile yürü",
+    move_t: "Yürümek için ekranın solunu sürükle",
+    aim: "İşaretli sütuna nişan al",
+    steal: "Sağ tık — özelliğini çal",
+    steal_t: "⟡ düğmesine bas — özelliğini çal",
+    throw: "Elinde. Gölgeye nişan al ve sol tıkla",
+    throw_t: "Elinde. Gölgeye nişan al ve ekrana dokun",
+    ready: "Her hırsızlık hafızandan yer. Hazır ol.",
+  },
+  tooHard: "Yumruğun yetmez — önce sertlik çal",
+  debt: "Borç, çaldığını almaya geliyor",
+  tookIt: "Özelliği senden geri aldı",
+  bossIn: "KULUÇKA UYANDI",
+  drain: "Hafızanı içiyor",
+  coreOut: "{n} çekirdek kaldı",
+  best: "EN İYİ", combo: "KOMBO",
+  won: "HAYATTA KALDIN", endings: {
+    faithful: { t: "VEFALI", d: "Neden girdiğini hatırlayarak çıktın. Aldığını geri verdin." },
+    stranger: { t: "YABANCI", d: "Kazandın ama kimi yendiğini bilmiyorsun. Uğruna geldiğin isim gitti." },
+    greedy:   { t: "AÇGÖZLÜ", d: "Hiçbir şeyi geri vermedin. Arkandaki salon boş, sen ise olduğundan hafifsin." },
+  },
+  pause: "DURAKLATILDI", resume: "Devam", restart: "Baştan", sound: "Ses",
 };
 
 class HUD {
@@ -1049,7 +1315,8 @@ class HUD {
         <div class="bar"><span class="lbl">${this.t.memory}</span><div class="track"><i id="mem"></i></div></div>
         <div class="bar"><span class="lbl">${this.t.hp}</span><div class="track"><i id="hp" class="hp"></i></div></div>
       </div>
-      <div id="stats"><span id="wave"></span><span id="score"></span></div>
+      <div id="stats"><span id="wave"></span><span id="score"></span><span id="combo"></span></div>
+      <div id="toast"></div>
       <div id="hand"><span class="lbl">${this.t.hold}</span><b id="handv">${this.t.empty}</b></div>
       <button id="stealbtn" aria-label="steal">⟡</button>
       <div id="wavemsg"></div>
@@ -1065,6 +1332,8 @@ class HUD {
     this.obj = this.root.querySelector("#objective");
     this.objText = this.obj.firstElementChild;
     this.cross = this.root.querySelector("#crosshair");
+    this.comboEl = this.root.querySelector("#combo");
+    this.toastEl = this.root.querySelector("#toast");
     const sb = this.root.querySelector("#stealbtn");
     sb.addEventListener("touchstart", (e) => { e.preventDefault(); e.stopPropagation(); this.g.steal(); });
     sb.addEventListener("click", (e) => { e.stopPropagation(); this.g.steal(); });
@@ -1074,20 +1343,50 @@ class HUD {
   }
   setScreen(kind) {
     const t = this.t, g = this.g;
-    if (!kind) { this.screen.style.display = "none"; return; }
+    if (!kind) { this.screen.style.display = "none"; this.root.classList.remove("screened"); return; }
     this.screen.style.display = "grid";
-    const help = (g.isTouch() ? t.touch : t.help).map((h) => `<li>${h}</li>`).join("");
-    this.screen.innerHTML = kind === "menu"
-      ? `<div class="card">
-           <h1>${t.title}</h1><p class="sub">${t.sub}</p>
-           <ul class="help">${help}</ul>
-           <div class="cta">${t.start}</div>
-         </div>`
-      : `<div class="card">
-           <h1 class="dead">${t.dead}</h1>
-           <p class="final">${t.final} <b>${g.score}</b> · ${t.wave} ${g.wave}</p>
-           <div class="cta">${t.again}</div>
-         </div>`;
+    this.root.classList.add("screened");
+    const best = g.best ? `<p class="best">${t.best} <b>${g.best}</b></p>` : "";
+    const langs = `<div class="langs">${["ar", "en", "tr"]
+      .map((l) => `<button data-lang="${l}" class="${l === g.lang ? "on" : ""}">${{ ar: "العربية", en: "English", tr: "Türkçe" }[l]}</button>`)
+      .join("")}</div>`;
+
+    if (kind === "menu") {
+      this.screen.innerHTML = `<div class="card">
+        <h1>${t.title}</h1><p class="sub">${t.sub}</p>
+        <ul class="help">${t.help.map((h) => `<li>${h}</li>`).join("")}</ul>
+        ${best}<div class="cta">${t.start}</div>${langs}</div>`;
+    } else if (kind === "dead") {
+      this.screen.innerHTML = `<div class="card">
+        <h1 class="dead">${t.dead}</h1>
+        <p class="final">${t.final} <b>${g.score}</b> · ${t.wave} ${g.wave}</p>
+        ${best}<div class="cta">${t.again}</div></div>`;
+    } else if (kind === "won") {
+      const e = t.endings[g.ending] || t.endings.stranger;
+      this.screen.innerHTML = `<div class="card">
+        <p class="kicker">${t.won}</p>
+        <h1 class="win">${e.t}</h1>
+        <p class="sub">${e.d}</p>
+        <p class="final">${t.final} <b>${g.score}</b></p>
+        ${best}<div class="cta">${t.again}</div></div>`;
+    } else if (kind === "paused") {
+      this.screen.innerHTML = `<div class="card">
+        <h1 class="pause">${t.pause}</h1>
+        <p class="final">${t.final} <b>${g.score}</b></p>
+        <div class="cta">${t.resume}</div>${langs}</div>`;
+    }
+    for (const btn of this.screen.querySelectorAll("[data-lang]")) {
+      btn.addEventListener("pointerdown", (ev) => {
+        ev.stopPropagation();
+        this.g.setLang(btn.dataset.lang);
+      });
+    }
+  }
+  toast(text) {
+    this.toastEl.textContent = text;
+    this.toastEl.classList.remove("show");
+    void this.toastEl.offsetWidth;
+    this.toastEl.classList.add("show");
   }
   objective(text) {
     if (this.objText.textContent === text) return;
@@ -1117,6 +1416,7 @@ class HUD {
     this.hp.style.width = clamp(p.hp, 0, 100).toFixed(0) + "%";
     this.waveEl.textContent = `${this.t.wave} ${g.wave}`;
     this.scoreEl.textContent = `${this.t.score} ${g.score}`;
+    this.comboEl.textContent = g.combo > 1 ? `${this.t.combo} ×${g.comboMul().toFixed(1)}` : "";
     const held = p.held ? PROPS[p.held] : null;
     this.handEl.textContent = held ? held[g.lang] || held.en : this.t.empty;
     this.handEl.style.color = held ? "#" + held.color.toString(16).padStart(6, "0") : "#6d7a8c";

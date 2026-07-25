@@ -12,7 +12,7 @@
     -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
 
-  #hud{position:fixed;inset:0;pointer-events:none;z-index:2}
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:2;direction:ltr}
   #crosshair{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;
     border:1px solid rgba(220,227,234,.55);border-radius:50%}
   #crosshair::after{content:"";position:absolute;inset:5px;background:var(--prop);border-radius:50%;opacity:.85;
@@ -42,6 +42,22 @@
 
   #stats{position:absolute;right:1.2rem;top:1.1rem;display:flex;flex-direction:column;gap:.25rem;
     text-align:right;font-size:.78rem;color:var(--muted);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+  #toast{position:absolute;left:50%;top:24%;transform:translateX(-50%);opacity:0;text-align:center;
+    font-size:.92rem;font-weight:700;color:#ffd9a0;text-shadow:0 2px 12px rgba(0,0,0,.9);max-width:80vw}
+  #toast.show{animation:tst 2.6s ease-out}
+  @keyframes tst{0%{opacity:0;transform:translate(-50%,6px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
+  #combo{color:var(--prop);font-weight:700}
+
+  .card .kicker{font-size:.75rem;letter-spacing:.3em;color:var(--prop)}
+  .card h1.win{color:var(--mem)}
+  .card h1.pause{color:var(--ivory);font-size:clamp(2rem,8vw,3.4rem)}
+  .card .best{margin-top:.5rem;font-size:.85rem;color:var(--muted);letter-spacing:.12em}
+  .card .best b{color:var(--mem)}
+  .langs{display:flex;gap:.5rem;justify-content:center;margin-top:1.6rem;flex-wrap:wrap}
+  .langs button{font-family:inherit;font-size:.78rem;padding:.35rem .9rem;border-radius:2rem;cursor:pointer;
+    border:1px solid rgba(220,227,234,.18);background:transparent;color:var(--muted)}
+  .langs button.on{border-color:var(--prop);color:var(--prop)}
+
   #hand{position:absolute;left:50%;bottom:1.3rem;transform:translateX(-50%);text-align:center}
   #hand .lbl{display:block;font-size:.56rem;letter-spacing:.2em;color:var(--muted)}
   #hand b{font-size:1rem;letter-spacing:.05em}
@@ -57,7 +73,11 @@
   @keyframes wm{0%{opacity:0;transform:translateX(-50%) scale(.9)}15%{opacity:1}70%{opacity:1}100%{opacity:0}}
 
   #screen{position:absolute;inset:0;display:grid;place-items:center;pointer-events:auto;
-    background:radial-gradient(60% 60% at 50% 45%,rgba(5,7,11,.6),rgba(5,7,11,.93))}
+    background:radial-gradient(70% 70% at 50% 45%,rgba(5,7,11,.88),rgba(5,7,11,.97));
+    backdrop-filter:blur(3px)}
+  /* while a card is up, the in-game overlays get out of its way */
+  #hud.screened #stats,#hud.screened #bars,#hud.screened #hand,#hud.screened #toast,
+  #hud.screened #objective,#hud.screened #crosshair,#hud.screened #stealbtn,#hud.screened #wavemsg{display:none}
   .card{max-width:34rem;padding:2rem;text-align:center}
   .card h1{font-size:clamp(3rem,12vw,5.5rem);font-weight:700;letter-spacing:.06em;line-height:1}
   .card h1.dead{color:var(--blood);font-size:clamp(2.2rem,9vw,4rem)}
