@@ -1,0 +1,1029 @@
+<!--
+  E-tqan — promotional video scene engine.
+
+  A deterministic, frame-locked motion-graphics stage: every visual is a pure
+  function of time, so `window.__seek(seconds)` + a screenshot always produces
+  the same frame. `render.mjs` drives it with Playwright and pipes the frames
+  into ffmpeg. Nothing here animates on its own (no CSS animations, no
+  requestAnimationFrame, no Math.random at draw time) — that is what makes the
+  output reproducible.
+
+  Layout adapts to the viewport: landscape (16:9), portrait (9:16) or square.
+-->
+<meta charset="utf-8" />
+<title>E-tqan — Promo Stage</title>
+<style>
+  /* @font-face rules are injected here by render.mjs (base64, self-hosted). */
+  /*FONTS*/
+  :root {
+    /* One unit system for every aspect ratio. */
+    font-size: calc(min(100vw, 100vh) / 40);
+    --ink: #0B0906;
+    --ivory: #FCFBF7;
+    --muted: #A79E8E;
+    --gold: #F4D98B;
+    --gold-deep: #C9A227;
+    --emerald: #12B981;
+    --royal: #2F5FD0;
+    --violet: #7A42C9;
+    --cyan: #0E7C93;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+  body {
+    font-family: Sora, Inter, system-ui, sans-serif;
+    color: var(--ivory);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+  #stage { position: fixed; inset: 0; overflow: hidden; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #grain { pointer-events: none; }
+
+  .scene {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    opacity: 0;
+    will-change: opacity;
+  }
+  .cam { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
+  .pad { width: 84%; max-width: 34rem; }
+  .pad.wide { max-width: 38rem; }
+  body.portrait .pad { width: 88%; max-width: 30rem; }
+
+  /* ── type ───────────────────────────────────────────── */
+  .ar { font-family: Cairo, Sora, sans-serif; direction: rtl; }
+  .h1 { font-weight: 800; font-size: 2.5rem; line-height: 1.18; letter-spacing: -0.02em; }
+  .h1.ar { font-size: 2.1rem; line-height: 1.4; letter-spacing: 0; }
+  .h2 { font-weight: 700; font-size: 1.5rem; line-height: 1.25; }
+  .h2.ar { font-size: 1.35rem; line-height: 1.5; }
+  .sub { font-family: Inter, sans-serif; font-weight: 400; font-size: 0.86rem; color: var(--muted); line-height: 1.6; }
+  .sub.ar { font-family: Cairo, sans-serif; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+  .serif { font-family: "Source Serif 4", Georgia, serif; }
+  .gold { color: var(--gold); }
+  .goldgrad {
+    background: linear-gradient(100deg, #FBEDC2 0%, var(--gold) 38%, var(--gold-deep) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .center { text-align: center; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: Inter, sans-serif; font-weight: 600; font-size: 0.6rem;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold); padding: 0.34rem 0.8rem; border-radius: 999px;
+    border: 1px solid rgba(244, 217, 139, 0.32);
+    background: rgba(244, 217, 139, 0.07);
+  }
+  .chip.ar { letter-spacing: 0; text-transform: none; font-family: Cairo, sans-serif; font-size: 0.66rem; }
+
+  /* ── brand ──────────────────────────────────────────── */
+  .mono-mark {
+    display: grid; place-items: center;
+    width: 2.2rem; height: 2.2rem; border-radius: 0.62rem;
+    background: linear-gradient(135deg, #F7E4B0, var(--gold-deep));
+    color: #100C05; font-weight: 800; font-size: 1.25rem; line-height: 1;
+    box-shadow: 0 0.6rem 1.6rem rgba(201, 162, 39, 0.34);
+  }
+  #watermark {
+    position: absolute; top: 1.5rem; left: 1.7rem;
+    display: flex; align-items: center; gap: 0.55rem; opacity: 0;
+  }
+  #watermark .mono-mark { width: 1.35rem; height: 1.35rem; border-radius: 0.38rem; font-size: 0.8rem; box-shadow: none; }
+  #watermark .wm-t { font-weight: 700; font-size: 0.78rem; letter-spacing: -0.01em; color: rgba(252, 251, 247, 0.82); }
+
+  /* ── subtitles ──────────────────────────────────────── */
+  #sub {
+    position: absolute; left: 0; right: 0; bottom: 2.1rem;
+    display: grid; place-items: center; opacity: 0; padding: 0 6%;
+  }
+  body.portrait #sub { bottom: 7.6rem; }
+  #sub .bar {
+    font-family: Cairo, sans-serif; direction: rtl;
+    font-size: 0.96rem; font-weight: 400; line-height: 1.65; text-align: center;
+    color: #FDF6E3; max-width: 30rem;
+    padding: 0.5rem 1.1rem; border-radius: 0.5rem;
+    background: linear-gradient(180deg, rgba(6, 5, 3, 0.0), rgba(6, 5, 3, 0.62) 22%, rgba(6, 5, 3, 0.62) 78%, rgba(6, 5, 3, 0.0));
+    text-shadow: 0 0.1rem 0.5rem rgba(0, 0, 0, 0.9);
+  }
+  body.portrait #sub .bar { font-size: 1.05rem; max-width: 26rem; }
+
+  /* ── cards & panels ─────────────────────────────────── */
+  .card {
+    border-radius: 0.9rem;
+    border: 1px solid rgba(252, 251, 247, 0.1);
+    background: linear-gradient(160deg, rgba(28, 24, 18, 0.86), rgba(10, 9, 6, 0.92));
+    box-shadow: 0 1.4rem 3.4rem rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+  }
+  .book {
+    position: relative; width: 9.4rem; height: 13.4rem; border-radius: 0.5rem;
+    box-shadow: 0 1.6rem 3.6rem rgba(0, 0, 0, 0.66), inset 0 0 0 1px rgba(252, 251, 247, 0.09);
+    padding: 1.05rem 0.95rem; display: flex; flex-direction: column; justify-content: space-between;
+    overflow: hidden; flex: none;
+  }
+  .book .spineline { position: absolute; inset: 0 auto 0 0; width: 0.42rem; background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(0,0,0,0.34)); }
+  .book .sheen { position: absolute; inset: -30% -60%; background: linear-gradient(74deg, transparent 42%, rgba(255,255,255,0.16) 50%, transparent 58%); }
+  .book .bt { font-weight: 800; font-size: 1.16rem; line-height: 1.12; letter-spacing: -0.02em; }
+  .book .bs { font-family: Inter, sans-serif; font-size: 0.52rem; line-height: 1.45; color: rgba(252, 251, 247, 0.72); margin-top: 0.34rem; }
+  .book .bf { font-family: Inter, sans-serif; font-size: 0.44rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(244, 217, 139, 0.9); }
+  .book .brule { height: 1px; background: linear-gradient(90deg, rgba(244,217,139,0.75), transparent); margin-bottom: 0.4rem; }
+
+  .panel { position: relative; border-radius: 0.7rem; overflow: hidden; border: 1px solid rgba(252,251,247,0.09); background: rgba(9, 8, 5, 0.72); }
+  .plabel { position: absolute; left: 0.6rem; top: 0.5rem; font-family: Inter, sans-serif; font-size: 0.48rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(244,217,139,0.82); }
+
+  .page { background: #F7F4EA; color: #191510; border-radius: 0.28rem; box-shadow: 0 1.2rem 3rem rgba(0,0,0,0.6); }
+  .page .ph { font-weight: 800; font-size: 0.82rem; color: #171208; }
+  .page .pr { height: 0.24rem; border-radius: 999px; background: #DCD5C4; }
+  .page .pk { font-family: Inter, sans-serif; font-size: 0.46rem; letter-spacing: 0.18em; text-transform: uppercase; color: #A08B4E; }
+
+  .fcard { border-radius: 0.42rem; border: 1px solid rgba(244,217,139,0.24); background: rgba(244,217,139,0.06); padding: 0.48rem 0.5rem; }
+  .fcard .n { font-family: Inter, sans-serif; font-size: 0.46rem; color: rgba(244,217,139,0.85); }
+  .fcard .l { font-family: Cairo, sans-serif; direction: rtl; font-size: 0.6rem; line-height: 1.35; color: rgba(252,251,247,0.92); margin-top: 0.12rem; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    font-family: Inter, sans-serif; font-weight: 600; font-size: 0.68rem;
+    padding: 0.62rem 1.15rem; border-radius: 0.6rem; color: #120D04;
+    background: linear-gradient(135deg, #F7E4B0, var(--gold-deep));
+    box-shadow: 0 0.7rem 1.8rem rgba(201,162,39,0.35);
+  }
+  .spine {
+    flex: none; border-radius: 0.16rem 0.16rem 0.06rem 0.06rem;
+    writing-mode: vertical-rl; text-orientation: mixed;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 0.66rem; letter-spacing: 0.02em;
+    color: rgba(252,251,247,0.94);
+    box-shadow: inset -1px 0 0 rgba(255,255,255,0.14), inset 1px 0 0 rgba(0,0,0,0.4), 0 0.5rem 1.4rem rgba(0,0,0,0.5);
+    padding: 0.5rem 0;
+    overflow: hidden;
+  }
+  .spine.ar { font-family: Cairo, sans-serif; }
+  .cover {
+    flex: none; border-radius: 0.24rem; padding: 0.42rem 0.38rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: 0 0.7rem 1.8rem rgba(0,0,0,0.55), inset 0 0 0 1px rgba(252,251,247,0.08);
+  }
+  .cover .ct { font-weight: 800; font-size: 0.5rem; line-height: 1.1; }
+  .cover .cf { font-family: Inter, sans-serif; font-size: 0.3rem; letter-spacing: 0.16em; color: rgba(244,217,139,0.9); }
+  .row { display: flex; }
+  .col { display: flex; flex-direction: column; }
+</style>
+
+<div id="stage">
+  <canvas id="bg"></canvas>
+  <div id="scenes"></div>
+  <div id="watermark"><div class="mono-mark">E</div><div class="wm-t">E-tqan</div></div>
+  <div id="sub"><div class="bar"></div></div>
+  <canvas id="grain"></canvas>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   Utilities — deterministic maths only
+   ════════════════════════════════════════════════════════ */
+const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
+const lerp = (a, b, t) => a + (b - a) * t;
+const win = (t, a, b) => clamp((t - a) / (b - a));
+const eOut = (t) => 1 - Math.pow(1 - clamp(t), 3);
+const eIn = (t) => Math.pow(clamp(t), 3);
+const eio = (t) => { t = clamp(t); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const eBack = (t) => { t = clamp(t); const c = 1.70158, c3 = c + 1; return 1 + c3 * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+function mulberry(seed) {
+  let s = seed >>> 0;
+  return function () {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let x = Math.imul(s ^ (s >>> 15), 1 | s);
+    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const fmt2 = (n) => String(Math.max(0, Math.floor(n))).padStart(2, "0");
+
+const ACCENT = {
+  emerald: ["#0E3B31", "#12B981"],
+  gold:    ["#3A2E10", "#F4D98B"],
+  royal:   ["#132347", "#2F5FD0"],
+  cyan:    ["#0A2C34", "#0E7C93"],
+  violet:  ["#241237", "#7A42C9"],
+};
+function bookStyle(accent) {
+  const [dark, light] = ACCENT[accent];
+  return `background: linear-gradient(155deg, ${dark} 0%, #0A0906 62%), radial-gradient(120% 90% at 10% 0%, ${light}33, transparent 60%);`;
+}
+
+/* Catalogue used on screen (mirrors src/catalog.ts). */
+const COURSES = [
+  { t: "Python",       ar: "بايثون",              tr: "Python",        a: "emerald" },
+  { t: "JavaScript",   ar: "جافاسكريبت",          tr: "JavaScript",    a: "gold" },
+  { t: "Java",         ar: "جافا",                tr: "Java",          a: "royal" },
+  { t: "HTML",         ar: "HTML",                tr: "HTML",          a: "cyan" },
+  { t: "CSS",          ar: "CSS",                 tr: "CSS",           a: "violet" },
+  { t: "SQL",          ar: "SQL",                 tr: "SQL",           a: "emerald" },
+  { t: "AI Arsenal",   ar: "ترسانة الذكاء",       tr: "AI Cephaneliği",a: "gold" },
+  { t: "AI Apps",      ar: "تطبيقات الذكاء",      tr: "AI Uygulama",   a: "royal" },
+  { t: "Websites",     ar: "بناء المواقع",        tr: "Web Siteleri",  a: "cyan" },
+  { t: "Excel + AI",   ar: "إكسل والذكاء",        tr: "Excel + AI",    a: "emerald" },
+  { t: "Design",       ar: "التصميم",             tr: "Tasarım",       a: "violet" },
+  { t: "Languages",    ar: "حزمة اللغات",         tr: "Diller Paketi", a: "royal" },
+  { t: "Future Skills",ar: "مهارات المستقبل",     tr: "Gelecek",       a: "emerald" },
+  { t: "Gold Master",  ar: "المكتبة الذهبية",     tr: "Altın Kütüphane",a: "gold" },
+];
+
+/* Arabic subtitle cues — mirrors marketing/subtitles/ar.srt. */
+const CUES = [
+  [7, 16,  "في عالمٍ يتغيّر كل يوم… المهارة الحقيقية هي ما لا يفقد قيمته أبدًا."],
+  [17, 30, "برمجة، ذكاء اصطناعي، ويب، تصميم، وإنتاجية — في مكتبةٍ واحدة."],
+  [31, 45, "كل دورة… بالإنجليزية والعربية والتركية. تعلّم باللغة التي تفكّر بها."],
+  [46, 65, "ليست مجرد صفحات — بل دروسٌ وتمارينُ ومشاريعُ حقيقية تبنيها بيديك."],
+  [66, 85, "ومع «ترسانة الذكاء الاصطناعي»… تتحوّل كل فكرة إلى دراسة جدوى متكاملة."],
+  [86, 105,"ادفع بأمان… ونزّل فورًا. لا انتظار، لا تعقيد."],
+  [106,125,"آلافٌ بدؤوا رحلتهم… والنتيجة مهارةٌ تبقى مدى الحياة."],
+  [126,142,"عرض الإطلاق مستمرٌّ حتى الثلاثين من يوليو — هذه لحظتك."],
+  [143,150,"E-tqan. ابدأ اليوم."],
+];
+
+/* ════════════════════════════════════════════════════════
+   Stage plumbing
+   ════════════════════════════════════════════════════════ */
+const stage = document.getElementById("stage");
+const scenesEl = document.getElementById("scenes");
+const bg = document.getElementById("bg");
+const grain = document.getElementById("grain");
+const subEl = document.getElementById("sub");
+const subBar = subEl.firstElementChild;
+const wm = document.getElementById("watermark");
+let W = 0, H = 0, bgx, gx, PORTRAIT = false;
+
+function measure() {
+  W = window.innerWidth; H = window.innerHeight;
+  const ratio = W / H;
+  PORTRAIT = ratio < 0.85;
+  document.body.className = PORTRAIT ? "portrait" : ratio > 1.2 ? "landscape" : "square";
+  for (const c of [bg, grain]) { c.width = W; c.height = H; }
+  bgx = bg.getContext("2d"); gx = grain.getContext("2d");
+  buildVignette(); buildGrainTiles(); layoutNodes(); buildMonogramTargets();
+}
+
+/* ── background node network ─────────────────────────── */
+let NODES = [];
+function layoutNodes() {
+  const r = mulberry(20260725);
+  NODES = [];
+  for (let i = 0; i < 84; i++) {
+    NODES.push({
+      x: r() * 1.2 - 0.1, y: r() * 1.2 - 0.1,
+      p: r() * Math.PI * 2, s: 0.4 + r() * 0.9, z: 0.35 + r() * 0.65,
+    });
+  }
+}
+
+/* Sample an "E" glyph into particle targets for the ignition scene. */
+let MONO_PTS = [];
+function buildMonogramTargets() {
+  const S = 220, c = document.createElement("canvas");
+  c.width = S; c.height = S;
+  const x = c.getContext("2d");
+  x.fillStyle = "#fff";
+  x.font = "800 190px Sora, sans-serif";
+  x.textAlign = "center"; x.textBaseline = "middle";
+  x.fillText("E", S / 2, S / 2 + 6);
+  const d = x.getImageData(0, 0, S, S).data;
+  MONO_PTS = [];
+  for (let y = 0; y < S; y += 5) {
+    for (let px = 0; px < S; px += 5) {
+      if (d[(y * S + px) * 4 + 3] > 140) MONO_PTS.push([px / S - 0.5, y / S - 0.5]);
+    }
+  }
+}
+
+/* ── vignette + film grain ───────────────────────────── */
+let vign = null, GRAIN = [];
+function buildVignette() {
+  vign = document.createElement("canvas");
+  vign.width = W; vign.height = H;
+  const v = vign.getContext("2d");
+  const g = v.createRadialGradient(W / 2, H * 0.46, Math.min(W, H) * 0.16, W / 2, H / 2, Math.max(W, H) * 0.78);
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(0.62, "rgba(0,0,0,0.16)");
+  g.addColorStop(1, "rgba(0,0,0,0.62)");
+  v.fillStyle = g; v.fillRect(0, 0, W, H);
+}
+function buildGrainTiles() {
+  GRAIN = [];
+  for (let k = 0; k < 6; k++) {
+    const T = 220, c = document.createElement("canvas");
+    c.width = T; c.height = T;
+    const x = c.getContext("2d"), img = x.createImageData(T, T), r = mulberry(1000 + k);
+    for (let i = 0; i < T * T; i++) {
+      const v = 128 + (r() - 0.5) * 150;
+      img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v;
+      img.data[i * 4 + 3] = 15;
+    }
+    x.putImageData(img, 0, 0);
+    GRAIN.push(c);
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   Scene registry
+   ════════════════════════════════════════════════════════ */
+const SCENES = [];
+function scene(id, a, b, html, up) {
+  const el = document.createElement("section");
+  el.className = "scene";
+  el.dataset.id = id;
+  el.innerHTML = `<div class="cam">${html}</div>`;
+  scenesEl.appendChild(el);
+  SCENES.push({ id, a, b, el, cam: el.firstElementChild, up, q: (s) => el.querySelector(s), qa: (s) => [...el.querySelectorAll(s)] });
+}
+const FADE = 0.45;
+
+/* ── helpers that emit markup ────────────────────────── */
+function bookHTML(title, sub, accent, badge) {
+  return `<div class="book" style="${bookStyle(accent)}">
+    <div class="spineline"></div><div class="sheen"></div>
+    <div><div class="bf">${badge}</div></div>
+    <div><div class="brule"></div><div class="bt goldgrad">${title}</div><div class="bs">${sub}</div></div>
+  </div>`;
+}
+function coverHTML(c, w, h) {
+  return `<div class="cover" style="${bookStyle(c.a)} width:${w}rem; height:${h}rem;">
+    <div class="cf">E-TQAN</div><div class="ct goldgrad">${c.t}</div></div>`;
+}
+
+/* ══════════════ 1 · Ignition (0:00–0:06) ══════════════ */
+scene("ignition", 0, 6, `
+  <div class="center">
+    <div id="ig-mark" class="mono-mark" style="width:4.6rem;height:4.6rem;border-radius:1.3rem;font-size:2.6rem;margin:0 auto;opacity:0"></div>
+    <div id="ig-word" style="opacity:0;margin-top:1.1rem" class="h2">E-tqan</div>
+  </div>`,
+(s, lt) => {
+  const mark = s.q("#ig-mark"), word = s.q("#ig-word");
+  const on = win(lt, 3.5, 4.6);
+  mark.textContent = "E";
+  mark.style.opacity = on;
+  mark.style.transform = `scale(${lerp(0.72, 1, eBack(on))})`;
+  const w = win(lt, 4.5, 5.4);
+  word.style.opacity = w;
+  word.style.letterSpacing = `${lerp(0.42, -0.02, eOut(w))}em`;
+  word.style.transform = `translateY(${lerp(10, 0, eOut(w))}px)`;
+  s.cam.style.transform = `scale(${lerp(1.08, 1, eio(lt / 6))})`;
+});
+
+/* ══════════════ 2 · Floating books (0:06–0:16) ════════ */
+scene("books", 6, 16, `
+  <div class="pad center">
+    <div id="bk-row" class="row" style="justify-content:center;gap:1.5rem;perspective:1400px;transform-style:preserve-3d">
+      ${bookHTML("Python", "From Zero to Confident Coder", "emerald", "Programming")}
+      ${bookHTML("AI Arsenal 2026", "Every AI Tool + 200 Project Ideas", "gold", "AI")}
+      ${bookHTML("CSS", "Design Beautiful Interfaces", "violet", "Web")}
+    </div>
+    <div id="bk-h" class="h1 ar center" style="margin-top:2.1rem;opacity:0">تعلّم المهارات التي <span class="goldgrad">تُدِرّ دخلًا حقيقيًا</span></div>
+    <div id="bk-s" class="sub center" style="margin-top:0.7rem;opacity:0">Learn the skills that actually pay · EN · AR · TR</div>
+  </div>`,
+(s, lt) => {
+  const books = s.qa(".book");
+  books.forEach((b, i) => {
+    const d = i * 0.22, p = eOut(win(lt, 0.15 + d, 1.5 + d));
+    const bob = Math.sin((lt * 0.62 + i * 1.9)) * 0.5;
+    const rot = lerp(24, 8, eio(win(lt, 0, 9))) * (i === 1 ? 0.4 : 1) * (i === 2 ? -1 : 1);
+    b.style.opacity = p;
+    b.style.transform =
+      `translateY(${lerp(46, 0, p) + bob * 6}px) translateZ(${i === 1 ? 60 : 0}px) ` +
+      `rotateY(${rot}deg) rotateX(${bob}deg) scale(${lerp(0.9, i === 1 ? 1.06 : 0.97, p)})`;
+    b.querySelector(".sheen").style.transform = `translateX(${lerp(-60, 60, win(lt, 1.2 + d, 3.4 + d))}%)`;
+  });
+  const h = win(lt, 1.6, 2.5);
+  s.q("#bk-h").style.opacity = h;
+  s.q("#bk-h").style.filter = `blur(${lerp(9, 0, eOut(h))}px)`;
+  s.q("#bk-h").style.transform = `translateY(${lerp(20, 0, eOut(h))}px)`;
+  const g = win(lt, 2.4, 3.2);
+  s.q("#bk-s").style.opacity = g * 0.95;
+  s.q("#bk-s").style.transform = `translateY(${lerp(14, 0, eOut(g))}px)`;
+  s.cam.style.transform = `translateX(${lerp(2.2, -2.2, eio(lt / 10))}%) scale(${lerp(1.02, 1.06, lt / 10)})`;
+});
+
+/* ══════════════ 3 · Montage (0:16–0:30) ═══════════════ */
+const CODE = [
+  [["def ", "k"], ["etqan", "f"], ["(skill):\n", "p"]],
+  [["    ", "p"], ["return ", "k"], ["f\"", "s"], ["{skill}", "v"], [" → income\"\n\n", "s"]],
+  [["print", "f"], ["(etqan(", "p"], ["\"Python\"", "s"], ["))", "p"]],
+];
+scene("montage", 16, 30, `
+  <div class="pad wide">
+    <div id="mo-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+      <div class="panel" data-p="0" style="aspect-ratio:16/10;padding:1.5rem 0.8rem 0.8rem">
+        <div class="plabel">Programming</div>
+        <pre id="mo-code" class="mono" style="font-size:0.5rem;line-height:1.7;white-space:pre-wrap"></pre>
+      </div>
+      <div class="panel" data-p="1" style="aspect-ratio:16/10">
+        <div class="plabel" style="z-index:3">AI</div>
+        <div id="mo-ai" style="position:absolute;inset:0;background:
+             radial-gradient(60% 70% at 28% 30%, #F4D98B88, transparent 60%),
+             radial-gradient(70% 60% at 74% 66%, #7A42C999, transparent 62%),
+             radial-gradient(50% 50% at 52% 88%, #12B98188, transparent 60%), #0A0805"></div>
+        <div id="mo-aibar" style="position:absolute;left:0.7rem;right:0.7rem;bottom:0.7rem;height:0.16rem;border-radius:999px;background:rgba(252,251,247,0.16);z-index:3">
+          <div style="height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#F7E4B0,#C9A227)"></div></div>
+      </div>
+      <div class="panel" data-p="2" style="aspect-ratio:16/10;padding:1.5rem 0.9rem 0.9rem">
+        <div class="plabel">Web</div>
+        <svg id="mo-chart" viewBox="0 0 200 100" preserveAspectRatio="none" style="width:100%;height:100%">
+          <g stroke="rgba(252,251,247,0.08)"><line x1="0" y1="25" x2="200" y2="25"/><line x1="0" y1="50" x2="200" y2="50"/><line x1="0" y1="75" x2="200" y2="75"/></g>
+          <g id="mo-bars"></g>
+          <path id="mo-line" fill="none" stroke="#F4D98B" stroke-width="2" stroke-linecap="round"
+                d="M6 84 L38 70 L70 74 L102 52 L134 44 L166 22 L194 14"/>
+        </svg>
+      </div>
+      <div class="panel" data-p="3" style="aspect-ratio:16/10;padding:1.5rem 0.9rem 0.9rem">
+        <div class="plabel">Design</div>
+        <svg id="mo-design" viewBox="0 0 200 100" style="width:100%;height:100%">
+          <g id="mo-guides" stroke="#0E7C93" stroke-dasharray="3 4" opacity="0">
+            <line x1="24" y1="0" x2="24" y2="100"/><line x1="176" y1="0" x2="176" y2="100"/><line x1="0" y1="50" x2="200" y2="50"/>
+          </g>
+          <rect class="ds" x="24" y="18" width="70" height="26" rx="5" fill="#7A42C9"/>
+          <rect class="ds" x="104" y="18" width="72" height="26" rx="5" fill="rgba(252,251,247,0.16)"/>
+          <rect class="ds" x="24" y="56" width="46" height="26" rx="5" fill="rgba(252,251,247,0.1)"/>
+          <rect class="ds" x="78" y="56" width="98" height="26" rx="5" fill="#F4D98B"/>
+        </svg>
+      </div>
+    </div>
+    <div id="mo-labels" class="row" style="justify-content:center;gap:0.55rem;margin-top:1.2rem;flex-wrap:wrap"></div>
+  </div>`,
+(s, lt) => {
+  const words = ["Programming", "AI", "Web", "Design"];
+  const lab = s.q("#mo-labels");
+  if (!lab.dataset.built) {
+    lab.dataset.built = "1";
+    lab.innerHTML = words.map((w) => `<span class="chip">${w}</span>`).join("");
+  }
+  const beat = Math.min(3, Math.floor(lt / 3.4));
+  s.qa("#mo-labels .chip").forEach((c, i) => {
+    const on = i === beat;
+    c.style.opacity = i <= beat ? 1 : 0.28;
+    c.style.color = on ? "#F4D98B" : "rgba(252,251,247,0.55)";
+    c.style.borderColor = on ? "rgba(244,217,139,0.5)" : "rgba(252,251,247,0.14)";
+    c.style.transform = `scale(${on ? 1.06 : 1})`;
+  });
+  s.qa(".panel").forEach((p, i) => {
+    const b = i * 3.4;
+    const shown = lt >= b - 0.05 ? 1 : 0;               // hard cut on the beat
+    p.style.opacity = shown;
+    p.style.transform = `scale(${lerp(0.985, 1.005, eOut(win(lt, b, b + 3.4)))})`;
+  });
+  /* a) typing */
+  const src = CODE.flat();
+  const total = src.reduce((n, t) => n + t[0].length, 0);
+  const n = Math.floor(eio(win(lt, 0.25, 3.1)) * total);
+  const COL = { k: "#F4D98B", f: "#12B981", s: "#0E9FBB", v: "#7A42C9", p: "rgba(252,251,247,0.86)" };
+  let left = n, out = "";
+  for (const [txt, kind] of src) {
+    if (left <= 0) break;
+    const part = txt.slice(0, left);
+    left -= part.length;
+    out += `<span style="color:${COL[kind]}">${part.replace(/</g, "&lt;")}</span>`;
+  }
+  const caret = lt < 3.2 && Math.floor(lt * 2) % 2 === 0 ? `<span style="color:#F4D98B">▌</span>` : "";
+  s.q("#mo-code").innerHTML = out + caret;
+  /* b) AI resolve */
+  const ai = win(lt, 3.5, 6.6);
+  s.q("#mo-ai").style.filter = `blur(${lerp(30, 1, eOut(ai))}px) contrast(${lerp(0.7, 1.12, ai)}) saturate(${lerp(0.5, 1.15, ai)})`;
+  s.q("#mo-aibar").firstElementChild.style.width = `${eio(ai) * 100}%`;
+  /* c) chart */
+  const bars = s.q("#mo-bars");
+  if (!bars.dataset.built) {
+    bars.dataset.built = "1";
+    bars.innerHTML = Array.from({ length: 7 }, (_, i) =>
+      `<rect x="${8 + i * 27}" width="17" rx="2" fill="rgba(18,185,129,0.55)"/>`).join("");
+  }
+  const HB = [34, 48, 42, 62, 70, 84, 92];
+  s.qa("#mo-bars rect").forEach((r, i) => {
+    const p = eOut(win(lt, 7.1 + i * 0.16, 8.4 + i * 0.16));
+    const h = HB[i] * p;
+    r.setAttribute("height", h.toFixed(1));
+    r.setAttribute("y", (96 - h).toFixed(1));
+  });
+  const ln = s.q("#mo-line"), L = 260;
+  ln.style.strokeDasharray = L;
+  ln.style.strokeDashoffset = L * (1 - eio(win(lt, 8.0, 10.1)));
+  /* d) design snap */
+  s.q("#mo-guides").style.opacity = win(lt, 10.4, 10.9) * 0.7;
+  s.qa(".ds").forEach((r, i) => {
+    const p = eBack(win(lt, 10.5 + i * 0.2, 11.5 + i * 0.2));
+    r.setAttribute("transform", `translate(${lerp(i % 2 ? 22 : -22, 0, p)} ${lerp(i < 2 ? -14 : 14, 0, p)})`);
+    r.style.opacity = clamp(p * 1.2);
+  });
+  s.cam.style.transform = `scale(${lerp(1, 1.03, lt / 14)})`;
+});
+
+/* ══════════════ 4 · Trilingual shelf (0:30–0:45) ══════ */
+scene("shelf", 30, 45, `
+  <div class="pad wide center">
+    <div id="sh-row" class="row" style="align-items:flex-end;justify-content:center;gap:0.3rem;height:14rem"></div>
+    <div style="height:0.4rem;margin:0 auto;width:96%;border-radius:0.1rem;
+         background:linear-gradient(180deg,#F4D98B55,#2A2114 40%,#0C0A07);
+         box-shadow:0 0.5rem 1.6rem rgba(0,0,0,0.7)"></div>
+    <div style="height:0.28rem;margin:0 auto;width:88%;border-radius:0 0 0.4rem 0.4rem;
+         background:linear-gradient(180deg,rgba(0,0,0,0.6),transparent)"></div>
+    <div id="sh-h" class="h2 ar center" style="margin-top:1.5rem">كل دورة <span class="goldgrad">بالإنجليزية · العربية · التركية</span></div>
+    <div id="sh-lang" class="row" style="justify-content:center;gap:0.5rem;margin-top:0.9rem"></div>
+  </div>`,
+(s, lt) => {
+  const row = s.q("#sh-row");
+  if (!row.dataset.built) {
+    row.dataset.built = "1";
+    row.innerHTML = COURSES.map((c, i) => {
+      const [dark, light] = ACCENT[c.a];
+      const h = 11.2 + ((i * 37) % 5) * 0.5;
+      return `<div class="spine" data-i="${i}" style="height:${h}rem;width:${i % 3 === 0 ? 1.5 : 1.25}rem;
+        background:linear-gradient(180deg,${dark},#0A0906 78%);border-top:2px solid ${light}">
+        <span class="sp-t"></span></div>`;
+    }).join("");
+    s.q("#sh-lang").innerHTML = ["English", "العربية", "Türkçe"]
+      .map((l, i) => `<span class="chip${i === 1 ? " ar" : ""}">${l}</span>`).join("");
+  }
+  const stage3 = lt < 5 ? 0 : lt < 10 ? 1 : 2;
+  const key = ["t", "ar", "tr"][stage3];
+  s.qa(".spine").forEach((sp, i) => {
+    const d = i * 0.09, p = eOut(win(lt, 0.1 + d, 1.1 + d));
+    sp.style.opacity = p;
+    sp.style.transform = `translateY(${lerp(90, 0, p)}px)`;
+    const t = sp.querySelector(".sp-t");
+    const want = COURSES[i][key];
+    if (t.textContent !== want) t.textContent = want;
+    sp.classList.toggle("ar", key === "ar");
+    /* language swap flash */
+    const sw = stage3 === 0 ? 0 : win(lt, stage3 * 5, stage3 * 5 + 0.5);
+    sp.style.filter = `brightness(${lerp(1.5, 1, sw || 1)})`;
+  });
+  s.qa("#sh-lang .chip").forEach((c, i) => {
+    const on = i === stage3;
+    c.style.opacity = on ? 1 : 0.3;
+    c.style.transform = `translateY(${on ? -2 : 0}px) scale(${on ? 1.08 : 1})`;
+  });
+  s.q("#sh-h").style.opacity = win(lt, 1.4, 2.3);
+  s.cam.style.transform = `translateX(${lerp(4, -4, eio(lt / 15))}%) scale(1.02)`;
+});
+
+/* ══════════════ 5 · Inside the book (0:45–1:05) ═══════ */
+const SPREADS = [
+  { h: "Chapter 3 · Functions", k: "Lesson", right: "diagram" },
+  { h: "Exercises & Quiz", k: "Practice", right: "quiz" },
+  { h: "Project · Build a CLI", k: "Project", right: "project" },
+];
+scene("pages", 45, 65, `
+  <div class="pad center">
+    <div id="pg-book" class="row" style="justify-content:center;gap:0.22rem;perspective:1600px">
+      <div class="page" id="pg-l" style="width:12rem;height:15.4rem;padding:1.1rem 1rem"></div>
+      <div class="page" id="pg-r" style="width:12rem;height:15.4rem;padding:1.1rem 1rem"></div>
+    </div>
+    <div id="pg-h" class="h2 ar center" style="margin-top:1.6rem">دروس · تمارين · <span class="goldgrad">مشاريع حقيقية</span></div>
+  </div>`,
+(s, lt) => {
+  const idx = clamp(Math.floor(lt / 6.4), 0, 2);
+  const sp = SPREADS[idx];
+  const L = s.q("#pg-l"), R = s.q("#pg-r");
+  if (L.dataset.i !== String(idx)) {
+    L.dataset.i = String(idx);
+    L.innerHTML = `<div class="pk">${sp.k}</div><div class="ph" style="margin:0.4rem 0 0.7rem">${sp.h}</div>` +
+      Array.from({ length: 9 }, (_, i) =>
+        `<div class="pr" style="width:${[100, 94, 88, 97, 62, 100, 91, 84, 55][i]}%;margin-bottom:0.42rem;
+          opacity:${i === 4 ? 0.55 : 1}"></div>`).join("") +
+      `<div style="margin-top:0.5rem;border-left:2px solid #C9A227;padding-left:0.5rem">
+         <div class="pr" style="width:86%;margin-bottom:0.3rem;background:#C9A22755"></div>
+         <div class="pr" style="width:64%;background:#C9A22755"></div></div>`;
+    R.innerHTML = ({
+      diagram: `<div class="pk">Diagram</div>
+        <svg viewBox="0 0 200 150" style="width:100%;margin-top:0.5rem">
+          <g fill="none" stroke="#C9A227" stroke-width="1.4">
+            <rect x="62" y="8" width="76" height="24" rx="6"/><rect x="12" y="62" width="76" height="24" rx="6"/>
+            <rect x="112" y="62" width="76" height="24" rx="6"/><rect x="62" y="116" width="76" height="24" rx="6"/>
+            <path d="M100 32 V47 H50 V62 M100 47 H150 V62 M50 86 V101 H100 V116 M150 86 V101 H100"/>
+          </g>
+          <g fill="#171208" font-size="9" font-family="Inter,sans-serif" text-anchor="middle">
+            <text x="100" y="24">input</text><text x="50" y="78">validate</text>
+            <text x="150" y="78">transform</text><text x="100" y="132">return</text></g>
+        </svg>
+        <div class="pr" style="width:92%;margin-top:0.6rem"></div><div class="pr" style="width:78%;margin-top:0.4rem"></div>`,
+      quiz: `<div class="pk">Quiz</div>
+        <div class="ph" style="margin:0.4rem 0 0.6rem;font-size:0.66rem">Which call is pure?</div>
+        ${["a) writes to disk", "b) returns a new list", "c) mutates a global"].map((o, i) =>
+          `<div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.45rem">
+             <div style="width:0.62rem;height:0.62rem;border-radius:999px;border:1.5px solid ${i === 1 ? "#C9A227" : "#C4BCA8"};
+               background:${i === 1 ? "#C9A227" : "transparent"}"></div>
+             <div style="font-family:Inter,sans-serif;font-size:0.5rem">${o}</div></div>`).join("")}
+        <div class="pk" style="margin-top:0.7rem">Exercises</div>
+        ${[1, 2, 3].map((i) => `<div style="display:flex;gap:0.4rem;margin-top:0.4rem;align-items:center">
+            <div style="width:0.55rem;height:0.55rem;border:1.4px solid #A08B4E;border-radius:0.14rem"></div>
+            <div class="pr" style="width:${[82, 70, 60][i - 1]}%"></div></div>`).join("")}`,
+      project: `<div class="pk">Project</div>
+        <div class="ph" style="margin:0.4rem 0 0.5rem;font-size:0.66rem">Ship a real tool</div>
+        <div style="border:1px solid #D9D1BC;border-radius:0.3rem;padding:0.5rem;background:#FDFBF4">
+          <div class="mono" style="font-size:0.44rem;color:#3C3423">$ python etqan.py --report<br/>✓ 42 rows · report.pdf</div></div>
+        <div class="pk" style="margin-top:0.7rem">Deliverables</div>
+        ${["CLI + tests", "README", "Deployed demo"].map((d) =>
+          `<div style="display:flex;gap:0.4rem;margin-top:0.4rem;align-items:center">
+            <div style="color:#12B981;font-size:0.6rem">✓</div>
+            <div style="font-family:Inter,sans-serif;font-size:0.5rem">${d}</div></div>`).join("")}
+        <div class="pk" style="margin-top:0.7rem">Case study</div>
+        <div class="pr" style="width:88%;margin-top:0.35rem"></div><div class="pr" style="width:72%;margin-top:0.35rem"></div>`,
+    })[sp.right];
+  }
+  /* page turn: the right page flips over the gutter at each boundary */
+  const local = lt - idx * 6.4;
+  const turn = idx === 0 ? 1 : eio(win(local, 0, 0.85));
+  R.style.transformOrigin = "left center";
+  R.style.transform = `rotateY(${lerp(-86, 0, turn)}deg)`;
+  R.style.boxShadow = `${lerp(-1.4, 0, turn)}rem 0.6rem 2.4rem rgba(0,0,0,${lerp(0.8, 0.6, turn)})`;
+  const open = eOut(win(lt, 0.1, 1.5));
+  s.q("#pg-book").style.transform = `scale(${lerp(0.9, 1, open)})`;
+  s.q("#pg-book").style.filter = `blur(${lerp(7, 0, open)}px)`;
+  s.q("#pg-h").style.opacity = win(lt, 1.5, 2.4);
+  s.cam.style.transform = `scale(${lerp(1.01, 1.05, eio(lt / 20))})`;
+});
+
+/* ══════════════ 6 · Idea → feasibility study (1:05–1:25) */
+const FEAS = ["المشكلة", "الحل", "السوق", "الجمهور", "التقنيات", "المعمارية", "خطة التنفيذ", "زمن التطوير",
+  "التكلفة", "نموذج الربح", "التسعير", "التسويق", "التوسّع", "فرص الذكاء", "الأتمتة", "المخاطر", "التطوير القادم"];
+scene("blueprint", 65, 85, `
+  <div class="pad wide center">
+    <div style="position:relative;display:grid;place-items:center">
+      <svg id="bp-bulb" viewBox="0 0 100 130" style="position:absolute;width:6.2rem">
+        <g fill="none" stroke="#F4D98B" stroke-width="3" stroke-linecap="round">
+          <path id="bp-p1" d="M50 12 A26 26 0 0 1 76 38 C76 54 62 60 62 76 H38 C38 60 24 54 24 38 A26 26 0 0 1 50 12 Z"/>
+          <path id="bp-p2" d="M38 86 H62 M41 96 H59 M45 106 H55"/>
+        </g>
+      </svg>
+      <div id="bp-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.42rem;width:100%;opacity:0"></div>
+    </div>
+    <div id="bp-h" class="h1 ar center" style="margin-top:1.7rem;opacity:0">من فكرة… إلى <span class="goldgrad">دراسة جدوى متكاملة</span></div>
+    <div id="bp-c" style="margin-top:0.9rem;opacity:0"><span class="chip ar">١٧ نقطة لكل مشروع · ٢٠٠ فكرة</span></div>
+  </div>`,
+(s, lt) => {
+  const grid = s.q("#bp-grid");
+  if (!grid.dataset.built) {
+    grid.dataset.built = "1";
+    grid.innerHTML = FEAS.map((f, i) =>
+      `<div class="fcard"><div class="n">${String(i + 1).padStart(2, "0")}</div><div class="l">${f}</div></div>`).join("");
+  }
+  if (PORTRAIT) grid.style.gridTemplateColumns = "repeat(3,1fr)";
+  const draw = eio(win(lt, 0.2, 2.2)), L = 260;
+  const p1 = s.q("#bp-p1"), p2 = s.q("#bp-p2");
+  p1.style.strokeDasharray = L; p1.style.strokeDashoffset = L * (1 - draw);
+  p2.style.opacity = win(lt, 1.8, 2.6);
+  const morph = win(lt, 3.4, 4.6);
+  s.q("#bp-bulb").style.opacity = 1 - morph;
+  s.q("#bp-bulb").style.transform = `scale(${lerp(1, 1.5, eOut(morph))})`;
+  s.q("#bp-bulb").style.filter = `blur(${lerp(0, 8, morph)}px)`;
+  grid.style.opacity = win(lt, 3.9, 4.8);
+  s.qa(".fcard").forEach((c, i) => {
+    const p = eOut(win(lt, 4.0 + i * 0.14, 4.9 + i * 0.14));
+    c.style.opacity = p;
+    c.style.transform = `translateY(${lerp(14, 0, p)}px) scale(${lerp(0.94, 1, p)})`;
+    c.style.borderColor = `rgba(244,217,139,${lerp(0.5, 0.24, p)})`;
+  });
+  s.q("#bp-h").style.opacity = win(lt, 5.0, 6.0);
+  s.q("#bp-c").style.opacity = win(lt, 6.2, 7.0);
+  s.cam.style.transform = `scale(${lerp(1.22, 1.0, eio(win(lt, 3.2, 12)))})`;
+});
+
+/* ══════════════ 7 · Secure checkout (1:25–1:45) ═══════ */
+scene("checkout", 85, 105, `
+  <div class="pad center" style="display:grid;place-items:center">
+    <div style="position:relative;width:19rem;max-width:100%">
+      <div class="card" style="padding:1.1rem">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <div class="row" style="gap:0.7rem;align-items:center">
+            ${coverHTML(COURSES[0], 2.6, 3.6)}
+            <div style="text-align:left">
+              <div class="h2" style="font-size:0.94rem">Python</div>
+              <div class="sub" style="font-size:0.56rem">From Zero to Confident Coder · EN·AR·TR</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="sub" style="font-size:0.56rem;text-decoration:line-through">$15</div>
+            <div class="h2 goldgrad" style="font-size:1.2rem">$10</div>
+          </div>
+        </div>
+        <div id="ck-btn" class="btn" style="margin-top:1rem;width:100%">Get this course</div>
+        <div id="ck-lock" class="sub" style="margin-top:0.6rem;font-size:0.54rem;opacity:0;display:flex;align-items:center;justify-content:center;gap:0.35rem">
+          <svg viewBox="0 0 24 24" style="width:0.62rem;height:0.62rem;flex:none">
+            <path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="#F4D98B" stroke-width="2"/>
+            <rect x="4" y="10" width="16" height="11" rx="2.5" fill="#F4D98B"/></svg>
+          Encrypted checkout · crypto &amp; card</div>
+      </div>
+      <div id="ck-dl" class="card" style="margin-top:0.8rem;padding:0.85rem 1rem;opacity:0">
+        <div class="row" style="justify-content:space-between;align-items:center;gap:0.6rem">
+          <div style="text-align:left">
+            <div class="sub" style="font-size:0.52rem;color:#F4D98B">Download ready</div>
+            <div style="font-family:Inter,sans-serif;font-size:0.62rem">Python — E-tqan Premium.pdf</div>
+          </div>
+          <div id="ck-ok" style="color:#12B981;font-size:1rem;opacity:0">✓</div>
+        </div>
+        <div style="margin-top:0.6rem;height:0.2rem;border-radius:999px;background:rgba(252,251,247,0.14)">
+          <div id="ck-bar" style="height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#12B981,#F4D98B)"></div></div>
+      </div>
+      <svg id="ck-cur" viewBox="0 0 24 24" style="position:absolute;width:1.1rem;filter:drop-shadow(0 2px 6px rgba(0,0,0,.8))">
+        <path d="M5 2 L5 20 L10 15 L13.5 22 L16.5 20.5 L13 14 L20 13.5 Z" fill="#FCFBF7" stroke="#0B0906" stroke-width="1"/>
+      </svg>
+    </div>
+    <div id="ck-h" class="h2 ar center" style="margin-top:1.7rem">دفع آمن · <span class="goldgrad">تسليم فوري</span></div>
+  </div>`,
+(s, lt) => {
+  const btn = s.q("#ck-btn"), cur = s.q("#ck-cur");
+  const move = eio(win(lt, 0.6, 2.6));
+  cur.style.opacity = win(lt, 0.4, 0.8) * (1 - win(lt, 7.4, 8.2));
+  cur.style.left = `${lerp(76, 46, move)}%`;
+  cur.style.top = `${lerp(94, 63, move)}%`;
+  const click = win(lt, 2.7, 3.0);
+  btn.style.transform = `scale(${1 - click * (1 - win(lt, 3.0, 3.35)) * 0.04})`;
+  btn.textContent = lt < 3.0 ? "Get this course" : lt < 4.6 ? "Securing…" : "Paid · unlocking";
+  btn.style.filter = `brightness(${lerp(1, 1.18, win(lt, 2.7, 3.1) - win(lt, 3.2, 3.8))})`;
+  s.q("#ck-lock").style.opacity = win(lt, 3.2, 4.0) * 0.9;
+  const dl = win(lt, 5.0, 5.8);
+  s.q("#ck-dl").style.opacity = dl;
+  s.q("#ck-dl").style.transform = `translateY(${lerp(18, 0, eOut(dl))}px)`;
+  s.q("#ck-bar").style.width = `${eio(win(lt, 5.4, 8.4)) * 100}%`;
+  s.q("#ck-ok").style.opacity = win(lt, 8.4, 8.9);
+  s.q("#ck-ok").style.transform = `scale(${lerp(0.6, 1, eBack(win(lt, 8.4, 9.1)))})`;
+  s.q("#ck-h").style.opacity = win(lt, 9.2, 10.2);
+  s.cam.style.transform = `scale(${lerp(1, 1.05, eOut(win(lt, 1.6, 4)))})`;
+});
+
+/* ══════════════ 8 · Results (1:45–2:05) ═══════════════ */
+scene("results", 105, 125, `
+  <div class="pad center" style="position:relative">
+    <div id="rs-1" class="card" style="padding:0;overflow:hidden;max-width:22rem;margin:0 auto">
+      <div class="row" style="gap:0.3rem;padding:0.55rem 0.7rem;background:rgba(252,251,247,0.05)">
+        <span style="width:0.4rem;height:0.4rem;border-radius:999px;background:#F4756B"></span>
+        <span style="width:0.4rem;height:0.4rem;border-radius:999px;background:#F4D98B"></span>
+        <span style="width:0.4rem;height:0.4rem;border-radius:999px;background:#12B981"></span>
+      </div>
+      <pre id="rs-code" class="mono" style="text-align:left;padding:0.9rem 1rem;font-size:0.5rem;line-height:1.7;color:rgba(252,251,247,0.8)"></pre>
+      <div id="rs-toast" style="margin:0 1rem 1rem;opacity:0;display:inline-flex;gap:0.4rem;align-items:center;
+           font-family:Inter,sans-serif;font-size:0.56rem;color:#12B981;border:1px solid rgba(18,185,129,0.4);
+           background:rgba(18,185,129,0.1);padding:0.4rem 0.7rem;border-radius:0.4rem">✓ Deployed · live in 12s</div>
+    </div>
+    <div id="rs-2" style="position:absolute;inset:0;display:grid;place-items:center;opacity:0">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;width:100%;max-width:22rem"></div>
+    </div>
+    <div id="rs-3" style="position:absolute;inset:0;display:grid;place-items:center;opacity:0">
+      <div class="row" style="gap:2rem;justify-content:center"></div>
+    </div>
+    <div id="rs-h" class="h2 ar center" style="margin-top:1.7rem">نتائج <span class="goldgrad">يشعر بها الناس</span></div>
+  </div>`,
+(s, lt) => {
+  const g2 = s.q("#rs-2 div"), g3 = s.q("#rs-3 div");
+  if (!g2.dataset.built) {
+    g2.dataset.built = "1";
+    g2.innerHTML = ["Portfolio", "Dashboard", "Landing", "Bot", "Store", "Report"].map((t, i) =>
+      `<div class="card" style="padding:0.6rem;aspect-ratio:4/3;display:grid;place-items:center">
+         <div style="text-align:center">
+           <div style="width:1.5rem;height:1.5rem;margin:0 auto 0.35rem;border-radius:0.35rem;
+             background:linear-gradient(135deg,${ACCENT[["emerald","gold","royal","cyan","violet","emerald"][i]][1]},transparent)"></div>
+           <div style="font-family:Inter,sans-serif;font-size:0.5rem;color:rgba(252,251,247,0.8)">${t}</div></div></div>`).join("");
+    g3.innerHTML = [["14", "دورة ومكتبة"], ["42", "نسخة كتاب"], ["3", "لغات"]].map(([n, l]) =>
+      `<div class="center"><div class="h1 goldgrad" data-n="${n}" style="font-size:2.6rem">0</div>
+        <div class="sub ar" style="font-size:0.62rem">${l}</div></div>`).join("");
+  }
+  const cut = lt < 6.4 ? 0 : lt < 12.8 ? 1 : 2;
+  s.q("#rs-1").style.opacity = cut === 0 ? 1 : 0;
+  s.q("#rs-2").style.opacity = cut === 1 ? 1 : 0;
+  s.q("#rs-3").style.opacity = cut === 2 ? 1 : 0;
+  /* cut 1 */
+  const src = "$ git push etqan main\nBuilding…\n✓ 42 modules · 0 errors\n✓ https://my-first-project.app";
+  s.q("#rs-code").textContent = src.slice(0, Math.floor(eio(win(lt, 0.3, 4.4)) * src.length));
+  s.q("#rs-toast").style.opacity = win(lt, 4.6, 5.2);
+  /* cut 2 */
+  s.qa("#rs-2 .card").forEach((c, i) => {
+    const p = eBack(win(lt, 6.5 + i * 0.16, 7.5 + i * 0.16));
+    c.style.opacity = clamp(p * 1.3);
+    c.style.transform = `scale(${lerp(0.86, 1, p)})`;
+  });
+  /* cut 3 */
+  s.qa("#rs-3 [data-n]").forEach((el, i) => {
+    const p = eio(win(lt, 13.0 + i * 0.25, 15.4 + i * 0.25));
+    el.textContent = String(Math.round(Number(el.dataset.n) * p));
+  });
+  s.q("#rs-h").style.opacity = win(lt, 1.2, 2.2);
+  s.cam.style.transform = `scale(${lerp(1.0, 1.03, (lt % 6.4) / 6.4)})`;
+});
+
+/* ══════════════ 9 · The library + offer (2:05–2:22) ═══ */
+scene("library", 125, 142, `
+  <div class="pad center">
+    <div id="lb-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0.42rem"></div>
+    <div id="lb-h" class="h2 ar center" style="margin-top:1.8rem;opacity:0">عرض الإطلاق — <span class="goldgrad">حتى ٣٠ يوليو</span></div>
+    <div id="lb-t" class="row" style="justify-content:center;gap:0.5rem;margin-top:0.9rem;opacity:0"></div>
+  </div>`,
+(s, lt) => {
+  const grid = s.q("#lb-grid");
+  if (!grid.dataset.built) {
+    grid.dataset.built = "1";
+    grid.innerHTML = COURSES.map((c) => coverHTML(c, 4.4, 6.1)).join("");
+    s.q("#lb-t").innerHTML = ["أيام", "ساعات", "دقائق", "ثوانٍ"].map((l) =>
+      `<div class="card" style="padding:0.4rem 0.6rem;min-width:3rem">
+        <div class="h2 goldgrad" data-v style="font-size:1.05rem">00</div>
+        <div class="sub ar" style="font-size:0.5rem">${l}</div></div>`).join("");
+  }
+  if (PORTRAIT) grid.style.gridTemplateColumns = "repeat(4,1fr)";
+  s.qa(".cover").forEach((c, i) => {
+    const p = eOut(win(lt, 0.1 + i * 0.07, 1.2 + i * 0.07));
+    c.style.opacity = p;
+    c.style.transform = `translateY(${lerp(26, 0, p)}px)`;
+    const glow = 0.5 + 0.5 * Math.sin(lt * 1.1 + i * 0.7);
+    c.style.boxShadow = `0 0.7rem 1.8rem rgba(0,0,0,0.55), 0 0 ${lerp(0.2, 1.1, glow)}rem rgba(244,217,139,${lerp(0.05, 0.3, glow) * p})`;
+  });
+  s.q("#lb-h").style.opacity = win(lt, 1.6, 2.6);
+  s.q("#lb-t").style.opacity = win(lt, 2.2, 3.2);
+  const left = 4 * 86400 + 11 * 3600 + 42 * 60 + 8 - lt;   /* deterministic countdown */
+  const v = [Math.floor(left / 86400), Math.floor(left / 3600) % 24, Math.floor(left / 60) % 60, Math.floor(left) % 60];
+  s.qa("#lb-t [data-v]").forEach((el, i) => { el.textContent = fmt2(v[i]); });
+  s.cam.style.transform = `scale(${lerp(1.32, 0.92, eio(lt / 12))})`;
+});
+
+/* ══════════════ 10 · Logo lockup (2:22–2:30) ══════════ */
+scene("lockup", 142, 150, `
+  <div class="center">
+    <div style="display:grid;place-items:center;position:relative">
+      <svg id="lk-svg" viewBox="0 0 100 100" style="width:5.4rem">
+        <rect id="lk-rect" x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#F4D98B" stroke-width="3"/>
+      </svg>
+      <div id="lk-fill" class="mono-mark" style="position:absolute;width:5.4rem;height:5.4rem;border-radius:1.55rem;font-size:3.1rem;opacity:0">E</div>
+    </div>
+    <div id="lk-w" class="h1" style="margin-top:1.3rem;opacity:0">E-tqan</div>
+    <div id="lk-t" class="h2 ar" style="margin-top:0.5rem;opacity:0"><span class="goldgrad">ابدأ اليوم</span></div>
+    <div id="lk-u" class="sub" style="margin-top:1.1rem;opacity:0;letter-spacing:0.06em">etqan · support @Ahm_t_AHZ01</div>
+  </div>`,
+(s, lt) => {
+  const r = s.q("#lk-rect"), L = 4 * 92;
+  const draw = eio(win(lt, 0.15, 1.5));
+  r.style.strokeDasharray = L;
+  r.style.strokeDashoffset = L * (1 - draw);
+  const fill = win(lt, 1.4, 2.1);
+  s.q("#lk-fill").style.opacity = fill;
+  s.q("#lk-svg").style.opacity = 1 - fill;
+  const w = win(lt, 2.0, 2.9);
+  s.q("#lk-w").style.opacity = w;
+  s.q("#lk-w").style.letterSpacing = `${lerp(0.3, -0.02, eOut(w))}em`;
+  s.q("#lk-t").style.opacity = win(lt, 2.8, 3.6);
+  s.q("#lk-u").style.opacity = win(lt, 3.6, 4.4) * 0.92;
+  s.cam.style.transform = `scale(${lerp(0.96, 1, eOut(win(lt, 0, 2.4)))})`;
+});
+
+/* ════════════════════════════════════════════════════════
+   Background painter
+   ════════════════════════════════════════════════════════ */
+function paintBg(t) {
+  const x = bgx;
+  x.clearRect(0, 0, W, H);
+  /* base */
+  const gr = x.createRadialGradient(W * 0.5, H * 0.28, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.9);
+  const warm = 0.5 + 0.5 * Math.sin(t * 0.12);
+  gr.addColorStop(0, `rgba(${22 + warm * 10},${18 + warm * 7},${10 + warm * 4},1)`);
+  gr.addColorStop(0.45, "#0C0A07");
+  gr.addColorStop(1, "#050403");
+  x.fillStyle = gr; x.fillRect(0, 0, W, H);
+
+  /* ignition spark (scene 1) */
+  const spark = win(t, 0.35, 1.1) * (1 - win(t, 4.4, 5.6));
+  if (spark > 0.01) {
+    const R = lerp(Math.min(W, H) * 0.02, Math.min(W, H) * 0.5, eOut(win(t, 0.4, 3.2)));
+    const sg = x.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, R);
+    sg.addColorStop(0, `rgba(255,240,205,${0.85 * spark})`);
+    sg.addColorStop(0.25, `rgba(244,217,139,${0.32 * spark})`);
+    sg.addColorStop(1, "rgba(244,217,139,0)");
+    x.fillStyle = sg; x.fillRect(0, 0, W, H);
+  }
+
+  /* node network — converges onto the monogram during scene 1 */
+  const conv = eio(win(t, 1.2, 3.6)) * (1 - win(t, 3.9, 5.0));
+  const amb = 0.10 + 0.10 * Math.sin(t * 0.2);
+  const scale = Math.min(W, H) * 0.62;
+  const pts = [];
+  for (let i = 0; i < NODES.length; i++) {
+    const n = NODES[i];
+    const fx = (n.x + Math.sin(t * 0.16 * n.s + n.p) * 0.02) * W;
+    const fy = (n.y + Math.cos(t * 0.14 * n.s + n.p) * 0.02) * H;
+    let px = fx, py = fy;
+    if (conv > 0.001 && MONO_PTS.length) {
+      const m = MONO_PTS[(i * 7) % MONO_PTS.length];
+      px = lerp(fx, W / 2 + m[0] * scale, conv);
+      py = lerp(fy, H / 2 + m[1] * scale, conv);
+    }
+    pts.push([px, py, n.z]);
+  }
+  const alpha = lerp(amb, 0.85, conv);
+  x.lineWidth = 1;
+  for (let i = 0; i < pts.length; i++) {
+    for (let j = i + 1; j < pts.length; j++) {
+      const dx = pts[i][0] - pts[j][0], dy = pts[i][1] - pts[j][1];
+      const d2 = dx * dx + dy * dy, lim = (Math.min(W, H) * (conv > 0.3 ? 0.10 : 0.17)) ** 2;
+      if (d2 < lim) {
+        const f = 1 - d2 / lim;
+        x.strokeStyle = `rgba(244,217,139,${(alpha * f * 0.5).toFixed(3)})`;
+        x.beginPath(); x.moveTo(pts[i][0], pts[i][1]); x.lineTo(pts[j][0], pts[j][1]); x.stroke();
+      }
+    }
+  }
+  for (const [px, py, z] of pts) {
+    const r = lerp(1.0, 2.4, z) * (1 + conv * 0.7);
+    x.fillStyle = `rgba(252,240,208,${(alpha * lerp(0.5, 1, z)).toFixed(3)})`;
+    x.beginPath(); x.arc(px, py, r, 0, 6.2832); x.fill();
+  }
+
+  /* gold bloom for the library pull-back + final sting */
+  const bloom = Math.max(win(t, 128, 138) * 0.5, win(t, 142.2, 143.4) * (1 - win(t, 144.6, 146)));
+  if (bloom > 0.01) {
+    const bg2 = x.createRadialGradient(W / 2, H * 0.62, 0, W / 2, H * 0.62, Math.max(W, H) * 0.7);
+    bg2.addColorStop(0, `rgba(244,217,139,${0.16 * bloom})`);
+    bg2.addColorStop(1, "rgba(244,217,139,0)");
+    x.fillStyle = bg2; x.fillRect(0, 0, W, H);
+  }
+}
+
+function paintGrain(frame) {
+  gx.clearRect(0, 0, W, H);
+  gx.drawImage(vign, 0, 0);
+  const tile = GRAIN[frame % GRAIN.length];
+  const off = (frame * 37) % tile.width;
+  gx.globalAlpha = 0.5;
+  for (let y = -off; y < H; y += tile.height) {
+    for (let x2 = -off; x2 < W; x2 += tile.width) gx.drawImage(tile, x2, y);
+  }
+  gx.globalAlpha = 1;
+}
+
+/* ════════════════════════════════════════════════════════
+   Seek — the only public entry point
+   ════════════════════════════════════════════════════════ */
+function seek(t, frame = 0) {
+  paintBg(t);
+  for (const s of SCENES) {
+    const vis = clamp((t - (s.a - FADE)) / FADE) * (1 - clamp((t - s.b) / FADE));
+    s.el.style.opacity = vis.toFixed(4);
+    s.el.style.display = vis <= 0.001 ? "none" : "grid";
+    if (vis > 0.001) s.up(s, clamp(t - s.a, 0, s.b - s.a), (t - s.a) / (s.b - s.a));
+  }
+  /* watermark: present through the body of the film */
+  wm.style.opacity = (win(t, 6, 7) * (1 - win(t, 140, 141.5)) * 0.7).toFixed(3);
+  /* subtitles */
+  const cue = CUES.find(([a, b]) => t >= a && t <= b);
+  if (cue) {
+    if (subBar.textContent !== cue[2]) subBar.textContent = cue[2];
+    const fin = Math.min(win(t, cue[0], cue[0] + 0.35), 1 - win(t, cue[1] - 0.3, cue[1]));
+    subEl.style.opacity = clamp(fin).toFixed(3);
+  } else {
+    subEl.style.opacity = 0;
+  }
+  paintGrain(frame);
+}
+
+/* ════════════════════════════════════════════════════════
+   Thumbnail composition (YouTube 1280×720, EN + AR)
+   ════════════════════════════════════════════════════════ */
+const thumb = document.createElement("div");
+thumb.id = "thumb";
+thumb.style.cssText = "position:absolute;inset:0;display:none;place-items:center;padding:0 6%";
+thumb.innerHTML = `
+  <div id="th-in" class="row" style="width:100%;align-items:center;gap:2rem">
+    <div id="th-text" style="flex:1.15">
+      <div id="th-l1" class="h1" style="font-size:3.1rem;line-height:1.06"></div>
+      <div id="th-l2" class="h1 goldgrad" style="font-size:3.1rem;line-height:1.06"></div>
+      <div style="margin-top:1.4rem"><span class="chip">EN · AR · TR</span></div>
+    </div>
+    <div id="th-books" class="row" style="flex:1;justify-content:center;gap:-1rem;perspective:1400px">
+      ${bookHTML("Python", "From Zero to Confident Coder", "emerald", "Programming")}
+      ${bookHTML("AI Arsenal", "Every AI Tool + 200 Ideas", "gold", "AI")}
+      ${bookHTML("CSS", "Design Beautiful Interfaces", "violet", "Web")}
+    </div>
+  </div>
+  <div style="position:absolute;right:2.2rem;bottom:1.8rem;display:flex;align-items:center;gap:0.6rem">
+    <div class="mono-mark" style="width:1.7rem;height:1.7rem;border-radius:0.48rem;font-size:1rem">E</div>
+    <div style="font-weight:700;font-size:0.9rem">E-tqan</div>
+  </div>`;
+stage.insertBefore(thumb, grain);
+
+window.__thumb = function (lang) {
+  paintBg(129.5);                        /* library-glow background */
+  for (const s of SCENES) s.el.style.display = "none";
+  subEl.style.opacity = 0; wm.style.opacity = 0;
+  thumb.style.display = "grid";
+  const ar = lang === "ar";
+  const l1 = thumb.querySelector("#th-l1"), l2 = thumb.querySelector("#th-l2");
+  l1.className = "h1" + (ar ? " ar" : ""); l2.className = "h1 goldgrad" + (ar ? " ar" : "");
+  l1.textContent = ar ? "تعلّم المهارات" : "Learn the skills";
+  l2.textContent = ar ? "التي تُدِرّ دخلًا" : "that actually pay";
+  thumb.querySelector("#th-in").style.flexDirection = ar ? "row-reverse" : "row";
+  thumb.querySelector("#th-text").style.textAlign = ar ? "right" : "left";
+  thumb.querySelectorAll(".book").forEach((b, i) => {
+    b.style.transform = `rotateY(${[16, 4, -14][i]}deg) translateX(${[10, 0, -10][i]}%) translateZ(${i === 1 ? 40 : 0}px) scale(${i === 1 ? 1.08 : 0.94})`;
+    b.querySelector(".sheen").style.transform = "translateX(14%)";
+  });
+  paintGrain(3);
+};
+
+measure();
+window.__seek = seek;
+window.__ready = document.fonts.ready.then(() => { buildMonogramTargets(); seek(0, 0); return true; });
+</script>
