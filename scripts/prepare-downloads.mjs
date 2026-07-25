@@ -22,7 +22,7 @@ const COURSES_DIR = path.join(process.cwd(), "assets", "courses");
 const OUT_DIR = path.join(process.cwd(), "public", "dl");
 
 const secret =
-  process.env.NOWPAYMENTS_IPN_SECRET || process.env.DOWNLOAD_SIGNING_SECRET || "";
+  process.env.DOWNLOAD_SIGNING_SECRET || process.env.NOWPAYMENTS_IPN_SECRET || "";
 
 if (!secret) {
   console.log("[prepare-downloads] no secret set — skipping (downloads inactive).");

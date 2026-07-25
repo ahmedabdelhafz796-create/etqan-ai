@@ -14,7 +14,7 @@ import { encrypt } from "./lib/crypto.mjs";
  *   NOWPAYMENTS_IPN_SECRET=… node scripts/pack-premium.mjs python
  *   NOWPAYMENTS_IPN_SECRET=… node scripts/pack-premium.mjs python javascript …
  */
-const secret = process.env.NOWPAYMENTS_IPN_SECRET || process.env.DOWNLOAD_SIGNING_SECRET || "";
+const secret = process.env.DOWNLOAD_SIGNING_SECRET || process.env.NOWPAYMENTS_IPN_SECRET || "";
 if (!secret) { console.error("[pack-premium] set NOWPAYMENTS_IPN_SECRET."); process.exit(1); }
 
 const ROOT = process.cwd();

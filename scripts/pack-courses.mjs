@@ -18,7 +18,7 @@ import { encrypt } from "./lib/crypto.mjs";
  */
 
 const secret =
-  process.env.NOWPAYMENTS_IPN_SECRET || process.env.DOWNLOAD_SIGNING_SECRET || "";
+  process.env.DOWNLOAD_SIGNING_SECRET || process.env.NOWPAYMENTS_IPN_SECRET || "";
 if (!secret) {
   console.error("[pack-courses] set NOWPAYMENTS_IPN_SECRET to pack.");
   process.exit(1);

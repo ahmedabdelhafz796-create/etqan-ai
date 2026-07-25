@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "rekey": "node scripts/rekey-assets.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",

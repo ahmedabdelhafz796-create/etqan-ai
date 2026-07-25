@@ -12,6 +12,7 @@ on deep night black. Books are rendered by a bespoke engine into premium PDFs
 
 ## Documentation
 
+- **[GO_LIVE_CHECKLIST.md](./GO_LIVE_CHECKLIST.md)** — ⭐ start here to launch
 - **[FINAL_COMPLETION_REPORT.md](./FINAL_COMPLETION_REPORT.md)** — requirement-by-requirement audit
 - **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** — env vars + deploy
 - **[PAYMENT_SETUP.md](./PAYMENT_SETUP.md)** — NOWPayments + Lemon Squeezy

@@ -20,7 +20,7 @@ import { encrypt, decrypt } from "../scripts/lib/crypto.mjs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BOOKS = path.join(__dirname, "books");
 const VAULT = path.join(__dirname, "books.vault.enc");
-const secret = process.env.NOWPAYMENTS_IPN_SECRET || process.env.DOWNLOAD_SIGNING_SECRET || "";
+const secret = process.env.DOWNLOAD_SIGNING_SECRET || process.env.NOWPAYMENTS_IPN_SECRET || "";
 
 if (!secret) { console.error("[vault] set NOWPAYMENTS_IPN_SECRET (or DOWNLOAD_SIGNING_SECRET)."); process.exit(1); }
 const cmd = process.argv[2];
