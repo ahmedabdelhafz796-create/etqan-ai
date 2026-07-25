@@ -152,3 +152,60 @@ export function tocFrom(chapters) {
     return { id: c.id, no: c.no, title: c.title, secs };
   });
 }
+
+/* ============================================================
+   APPENDIX BLOCKS — summary, cheat sheet, glossary, references,
+   learning roadmap. Used to close every E-tqan book with the
+   reference material a premium commercial title is expected to have.
+   ============================================================ */
+
+/** Chapter summary: the key takeaways, numbered. */
+export function summary(items, heading = "Chapter Summary") {
+  return `<h3 id="${slug(heading)}">${md(heading)}</h3>` +
+    `<div class="callout key"><span class="lbl">${esc(heading)}</span>${ol(items)}</div>`;
+}
+
+/**
+ * Cheat sheet: compact two-column reference cards.
+ * items: [{ t: "Section", rows: [[label, value], …] }]
+ */
+export function cheatSheet(items, heading = "Cheat Sheet") {
+  const cards = items.map((sec) => {
+    const rows = (sec.rows || []).map(
+      ([k, v]) => `<tr><td style="width:42%"><code>${esc(k)}</code></td><td>${md(v)}</td></tr>`
+    ).join("");
+    return `<div class="card"><div class="ct">${md(sec.t)}</div>` +
+      `<table style="margin:.4em 0 0"><tbody>${rows}</tbody></table></div>`;
+  }).join("");
+  return `<h3 id="${slug(heading)}">${md(heading)}</h3><div class="grid2">${cards}</div>`;
+}
+
+/** Glossary: alphabetical term → definition table. */
+export function glossary(entries, heading = "Glossary") {
+  const rows = [...entries]
+    .sort((a, b) => String(a.term).localeCompare(String(b.term)))
+    .map((e) => [`**${e.term}**`, e.def]);
+  return `<h3 id="${slug(heading)}">${md(heading)}</h3>` + table(["Term", "Meaning"], rows);
+}
+
+/** References & further reading: annotated list. */
+export function references(items, heading = "References & Further Reading") {
+  const lis = items.map((r) =>
+    `<li><strong>${md(r.name)}</strong>${r.note ? ` — ${md(r.note)}` : ""}${r.url ? `<br><span style="font-family:'JetBrains Mono';font-size:.8em;color:var(--ink-faint)">${esc(r.url)}</span>` : ""}</li>`
+  ).join("");
+  return `<h3 id="${slug(heading)}">${md(heading)}</h3><ul>${lis}</ul>`;
+}
+
+/**
+ * Learning roadmap: a staged plan table plus a visual flow of the stages.
+ * stages: [{ when: "Week 1–2", focus: "…" }]
+ */
+export function roadmap(stages, heading = "Learning Roadmap") {
+  const rows = stages.map((s) => [s.when, s.focus]);
+  const flowNodes = stages.map((s) => String(s.when));
+  return `<h3 id="${slug(heading)}">${md(heading)}</h3>` +
+    table(["Stage", "Focus"], rows) +
+    (flowNodes.length >= 2 && flowNodes.length <= 5
+      ? flow(flowNodes, { caption: "Your path through this book, stage by stage." })
+      : "");
+}

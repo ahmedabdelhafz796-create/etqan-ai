@@ -19,6 +19,7 @@ on deep night black. Books are rendered by a bespoke engine into premium PDFs
 - **[SECURITY_REPORT.md](./SECURITY_REPORT.md)** — security posture
 - **[CONTENT_REPORT.md](./CONTENT_REPORT.md)** — the book library + engine
 - **[marketing/PROMO_PACKAGE.md](./marketing/PROMO_PACKAGE.md)** — promo video brief
+- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** — every directory explained
 - **[bookgen/README.md](./bookgen/README.md)** — the book-generation engine
 
 ## Quick start

@@ -27,24 +27,27 @@ repo. Rendered PDFs are packed into encrypted delivery blobs
 
 Each book includes: a premium cover, colophon, **clickable table of contents /
 PDF bookmarks**, chapter openers with learning goals, rich body with diagrams,
-comparison tables, callouts, highlighted code, **exercises, quizzes (with answer
-keys), projects and real-world case studies**, and a capstone.
+flowcharts, comparison tables, callouts, highlighted code, **exercises, quizzes
+(with answer keys), mini projects, professional projects and real-world case
+studies**, a capstone, and a closing **Appendix** chapter containing chapter
+summary/key takeaways, a printable **cheat sheet**, a full **glossary**, a staged
+**learning roadmap** and **references & further reading**.
 
 ## The library (11 courses + 3 bundles, trilingual)
 
 | Course | Chapters | Languages | Delivery |
 |--------|:--------:|-----------|----------|
-| Python | 10 | EN · AR · TR | `python.enc` |
-| JavaScript | 7 | EN · AR · TR | `javascript.enc` |
-| Java | 6 | EN · AR · TR | `java.enc` |
-| HTML | 5 | EN · AR · TR | `html.enc` |
-| CSS | 5 | EN · AR · TR | `css.enc` |
-| SQL | 5 | EN · AR | `sql.enc` |
-| AI App Building | 6 | EN · AR · TR | `ai-app-building.enc` |
-| Building Any Website | 5 | EN · AR · TR | `building-websites.enc` |
-| Excel + AI | 5 | EN · AR · TR | `excel-ai.enc` |
-| Design & Graphics | 5 | EN · AR · TR | `design-graphics.enc` |
-| **AI Arsenal 2026** | 7 | EN · AR · TR | `ai-arsenal.enc` |
+| Python | 11 | EN · AR · TR | `python.enc` |
+| JavaScript | 8 | EN · AR · TR | `javascript.enc` |
+| Java | 7 | EN · AR · TR | `java.enc` |
+| HTML | 6 | EN · AR · TR | `html.enc` |
+| CSS | 6 | EN · AR · TR | `css.enc` |
+| SQL | 6 | EN · AR | `sql.enc` |
+| AI App Building | 7 | EN · AR · TR | `ai-app-building.enc` |
+| Building Any Website | 6 | EN · AR · TR | `building-websites.enc` |
+| Excel + AI | 6 | EN · AR · TR | `excel-ai.enc` |
+| Design & Graphics | 6 | EN · AR · TR | `design-graphics.enc` |
+| **AI Arsenal 2026** | 8 | EN · AR · TR | `ai-arsenal.enc` |
 | Bundle — Programming Languages | — | trilingual | `bundle-languages.enc` |
 | Bundle — Future Skills | — | trilingual | `bundle-future-skills.enc` |
 | Bundle — Gold Master Library | — | trilingual | `bundle-gold.enc` |
@@ -58,8 +61,10 @@ keys), projects and real-world case studies**, and a capstone.
 The AI Arsenal source's "project ideas" were transformed, per the master prompt,
 into an actionable framework rather than a list:
 
-- A **nine-part business-blueprint framework** (problem, solution, market, stack,
-  monetization, costs, revenue, risks, scaling + AI leverage).
+- A **seventeen-point feasibility study**: problem, solution, market, target
+  audience, technology stack, architecture, implementation roadmap, development
+  time, estimated cost, revenue model, pricing, marketing strategy, scaling
+  strategy, AI opportunities, automation, risks, future improvements.
 - Fully **worked blueprints** (niche newsletter, productized AI agency,
   micro-SaaS) with realistic numbers, risks and monetization.
 - A **categorized 200-idea bank** across ten categories to run through the

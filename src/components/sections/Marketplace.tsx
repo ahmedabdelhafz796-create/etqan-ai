@@ -4,15 +4,19 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import {
   Code, Sparkles, LayoutGrid, Table, Palette, Layers,
-  Check, Loader2, ShoppingCart, Lock, Star,
+  Check, Loader2, ShoppingCart, Lock, Star, Search, Heart, X,
   type LucideIcon,
 } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useOfferActive } from "@/hooks/useOfferActive";
+import { useWishlist } from "@/hooks/useWishlist";
 import { formatUSD, discountPercent, cn } from "@/lib/utils";
-import { categories, products, type Product, type Accent } from "@/catalog";
+import {
+  categories, products, searchProducts, recommendationsFor,
+  type Product, type Accent,
+} from "@/catalog";
 
 const CAT_ICON: Record<string, LucideIcon> = {
   code: Code, sparkles: Sparkles, layout: LayoutGrid, table: Table, palette: Palette, layers: Layers,
@@ -26,11 +30,13 @@ const ACCENT: Record<Accent, { text: string; ring: string; grad: string; chip: s
   cyan: { text: "text-[#67e8f9]", ring: "hover:border-[#22d3ee]/40", grad: "from-[#22d3ee]/20", chip: "border-[#22d3ee]/30 bg-[#22d3ee]/10 text-[#67e8f9]" },
 };
 
-function ProductCard({ p }: { p: Product }) {
+function ProductCard({ p, onOpen }: { p: Product; onOpen: (id: string) => void }) {
   const { active, ready } = useOfferActive();
   const showOffer = (!ready || active) && p.offerPrice < p.originalPrice;
   const a = ACCENT[p.accent];
   const [state, setState] = React.useState<"idle" | "loading" | "unavailable">("idle");
+  const { has, toggle } = useWishlist();
+  const saved = has(p.id);
 
   async function buy() {
     if (state === "loading") return;
@@ -50,10 +56,11 @@ function ProductCard({ p }: { p: Product }) {
 
   return (
     <motion.article
+      id={`course-${p.id}`}
       initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.5 }}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl transition-colors",
+        "group relative flex scroll-mt-28 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl transition-colors",
         a.ring
       )}
     >
@@ -68,11 +75,14 @@ function ProductCard({ p }: { p: Product }) {
             {p.badge}
           </span>
         )}
-        {p.type === "bundle" && (
-          <span className="absolute right-3 top-3 rounded-full border border-white/15 bg-black/40 px-2.5 py-0.5 text-[10px] text-soft/80">
-            Bundle
-          </span>
-        )}
+        <button
+          onClick={() => toggle(p.id)}
+          aria-label={saved ? `Remove ${p.title} from wishlist` : `Save ${p.title} to wishlist`}
+          aria-pressed={saved}
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-black/40 text-soft/70 transition-colors hover:text-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+        >
+          <Heart className={cn("h-4 w-4", saved && "fill-gold-light text-gold-light")} />
+        </button>
       </div>
 
       <div className="flex flex-1 flex-col p-5">
@@ -110,11 +120,35 @@ function ProductCard({ p }: { p: Product }) {
           variant={p.accent === "emerald" ? "emerald" : "gold"}
           size="md" onClick={buy} disabled={state === "loading"}
           className="mt-3 w-full"
+          aria-label={`Get ${p.title}`}
         >
           {state === "loading"
             ? <><Loader2 className="h-4 w-4 animate-spin" /> Opening…</>
             : <><ShoppingCart className="h-4 w-4" /> Get this course</>}
         </Button>
+
+        {/* recommendations */}
+        {(() => {
+          const recs = recommendationsFor(p.id, 2);
+          if (!recs.length) return null;
+          return (
+            <p className="mt-3 text-[11px] text-soft/45">
+              Pairs well with{" "}
+              {recs.map((r, i) => (
+                <React.Fragment key={r.id}>
+                  {i > 0 && " · "}
+                  <button
+                    onClick={() => onOpen(r.id)}
+                    className="text-gold-light underline-offset-2 hover:underline"
+                  >
+                    {r.title}
+                  </button>
+                </React.Fragment>
+              ))}
+            </p>
+          );
+        })()}
+
         <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-[11px] text-soft/45">
           <Lock className="h-3 w-3" />
           {state === "unavailable" ? "Checkout opens soon" : "Secure crypto checkout · instant download"}
@@ -126,7 +160,25 @@ function ProductCard({ p }: { p: Product }) {
 
 export function Marketplace() {
   const [cat, setCat] = React.useState<string>("all");
-  const shown = cat === "all" ? products : products.filter((p) => p.category === cat);
+  const [query, setQuery] = React.useState("");
+  const [onlySaved, setOnlySaved] = React.useState(false);
+  const { ids: savedIds, count } = useWishlist();
+
+  const shown = React.useMemo(() => {
+    let list = query.trim() ? searchProducts(query) : products;
+    if (cat !== "all") list = list.filter((p) => p.category === cat);
+    if (onlySaved) list = list.filter((p) => savedIds.includes(p.id));
+    return list;
+  }, [query, cat, onlySaved, savedIds]);
+
+  const openProduct = React.useCallback((id: string) => {
+    setQuery("");
+    setCat("all");
+    setOnlySaved(false);
+    requestAnimationFrame(() => {
+      document.getElementById(`course-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, []);
 
   return (
     <section id="courses" className="relative scroll-mt-24 py-24 sm:py-28">
@@ -137,17 +189,68 @@ export function Marketplace() {
           description="Premium, practical courses in programming, AI, web, design and productivity — each trilingual (English · العربية · Türkçe), delivered instantly."
         />
 
-        {/* category filter */}
-        <div className="mt-10 flex flex-wrap justify-center gap-2">
-          <FilterChip active={cat === "all"} onClick={() => setCat("all")} label="All" icon={Star} />
-          {categories.map((c) => (
-            <FilterChip key={c.id} active={cat === c.id} onClick={() => setCat(c.id)} label={c.label} icon={CAT_ICON[c.icon] || Code} />
-          ))}
+        {/* search */}
+        <div className="mx-auto mt-10 max-w-xl">
+          <label htmlFor="course-search" className="sr-only">Search courses</label>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-soft/40" />
+            <input
+              id="course-search"
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search courses — python, ai, design, sql…"
+              className="h-12 w-full rounded-full border border-white/12 bg-white/[0.05] pl-11 pr-11 text-sm text-soft placeholder:text-soft/35 outline-none transition-colors focus:border-gold/50 focus:ring-2 focus:ring-gold/25"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-soft/40 hover:text-soft"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {shown.map((p) => <ProductCard key={p.id} p={p} />)}
+        {/* category filter + wishlist toggle */}
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <FilterChip active={cat === "all" && !onlySaved} onClick={() => { setCat("all"); setOnlySaved(false); }} label="All" icon={Star} />
+          {categories.map((c) => (
+            <FilterChip
+              key={c.id}
+              active={cat === c.id && !onlySaved}
+              onClick={() => { setCat(c.id); setOnlySaved(false); }}
+              label={c.label}
+              icon={CAT_ICON[c.icon] || Code}
+            />
+          ))}
+          <FilterChip
+            active={onlySaved}
+            onClick={() => setOnlySaved((v) => !v)}
+            label={count ? `Saved (${count})` : "Saved"}
+            icon={Heart}
+          />
         </div>
+
+        <p aria-live="polite" className="mt-5 text-center text-xs text-soft/45">
+          {shown.length} {shown.length === 1 ? "course" : "courses"}
+          {query ? ` matching “${query}”` : ""}
+        </p>
+
+        {shown.length === 0 ? (
+          <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
+            <p className="text-soft/70">No courses match that search.</p>
+            <Button variant="glass" size="sm" className="mt-4" onClick={() => { setQuery(""); setCat("all"); setOnlySaved(false); }}>
+              Clear filters
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {shown.map((p) => <ProductCard key={p.id} p={p} onOpen={openProduct} />)}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -157,8 +260,9 @@ function FilterChip({ active, onClick, label, icon: Icon }: { active: boolean; o
   return (
     <button
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        "flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition-colors",
+        "flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60",
         active ? "border-gold/40 bg-gold/10 text-gold-light" : "border-white/10 bg-white/[0.03] text-soft/60 hover:text-soft"
       )}
     >

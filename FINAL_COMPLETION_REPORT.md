@@ -13,9 +13,9 @@ Legend: ✅ done · 🔑 done, needs your secret to activate.
 | Rebuild content as premium books (not repackaged) | ✅ | `bookgen/` engine; see CONTENT_REPORT.md |
 | Remove original author names / publisher branding | ✅ | all content rewritten under E-tqan identity |
 | Trilingual EN/AR/TR with RTL | ✅ | every course (SQL EN·AR); `dir="rtl"` Arabic editions |
-| Covers, clickable ToC, diagrams, tables, illustrations, examples, exercises, projects, quizzes, case studies | ✅ | `bookgen/engine/{theme.css,dsl.mjs,render.mjs}` |
+| Covers, clickable ToC, diagrams, flowcharts, tables, examples, exercises, mini+pro projects, quizzes, case studies, summary, cheat sheets, glossary, references, roadmap | ✅ | `bookgen/engine/{theme.css,dsl.mjs,appendix.mjs,render.mjs}` |
 | Modern code + best practices | ✅ | Py 3.12, ES2020+, Flexbox/Grid, XLOOKUP, etc. |
-| Project-ideas → business blueprints + feasibility | ✅ | AI Arsenal ch. 4–6 (9-part framework, worked blueprints, 200-idea bank) |
+| Project-ideas → full 17-point feasibility studies | ✅ | AI Arsenal ch. 4–6 (17-point study, worked blueprints, 200-idea bank) |
 
 ## Store / catalog
 
@@ -23,7 +23,8 @@ Legend: ✅ done · 🔑 done, needs your secret to activate.
 |---|---|---|
 | Multi-category marketplace (Programming, AI, Web, Design, Productivity, Trading) | ✅ | `src/catalog.ts`, `src/components/sections/Marketplace.tsx` |
 | Bundles / learning paths | ✅ | 3 bundles in `catalog.ts`; category filter |
-| Pricing $5–20 individual + discounted bundles | ✅ | `catalog.ts` ($4–$20; bundles $29–$79) |
+| Search, wishlist, recommendations | ✅ | `searchProducts`/`recommendationsFor` in `catalog.ts`, `useWishlist`, `Marketplace.tsx` |
+| Pricing $5/7/10/15/20 tiers + discounted bundles | ✅ | `catalog.ts` (offer $5–$15, list $7–$20; bundles $29/$39/$79) |
 | Complete E-tqan branding (rebrand from trading) | ✅ | config, layout, OG, manifest, dictionaries (EN/AR/TR), hero, nav, footer |
 | Keep NOWPayments; prepare Lemon Squeezy | 🔑 | `src/lib/payment.ts`, `src/lib/lemonsqueezy.ts` + webhooks |
 | Replace all Telegram with @Ahm_t_AHZ01 (support only) | ✅ | `config.ts`, dictionaries, Support section |
@@ -34,6 +35,7 @@ Legend: ✅ done · 🔑 done, needs your secret to activate.
 | Requirement | Status | Where |
 |---|---|---|
 | Premium design + animations | ✅ | Framer Motion hero, marketplace, sections; Lenis smooth scroll |
+| Search / wishlist / recommendations UI | ✅ | live search, saved filter, "pairs well with" |
 | Responsive | ✅ | mobile-first grids across sections; verified via screenshots |
 | Accessibility | ✅ | semantic sections, labelled inputs, `aria-label`s, focus rings, `lang`/`dir` |
 
@@ -88,7 +90,7 @@ Full detail: **ADMIN_GUIDE.md**.
 
 | Requirement | Status | Where |
 |---|---|---|
-| Promo package (storyboard, AR VO, subtitles, editing, animation prompts, social) | ✅ | `marketing/PROMO_PACKAGE.md` |
+| Promo package (storyboard, scene timing, motion/camera, AR VO, subtitles, editing, animation prompts, thumbnail, trailer, TikTok/IG/YouTube versions) | ✅ | `marketing/PROMO_PACKAGE.md`, `marketing/ASSET_SPECS.md`, `marketing/subtitles/*.srt` |
 | 2–3 min promo video assets | ✅ | full production brief + prompts (renderable via the documented pipeline) |
 
 ## Deployment / QA
@@ -102,7 +104,8 @@ Full detail: **ADMIN_GUIDE.md**.
 ## Documentation
 
 FINAL_COMPLETION_REPORT.md (this) · DEPLOYMENT_GUIDE.md · ADMIN_GUIDE.md ·
-PAYMENT_SETUP.md · SECURITY_REPORT.md · CONTENT_REPORT.md · `marketing/PROMO_PACKAGE.md` ·
+PAYMENT_SETUP.md · SECURITY_REPORT.md · CONTENT_REPORT.md · PROJECT_STRUCTURE.md ·
+`marketing/PROMO_PACKAGE.md` · `marketing/ASSET_SPECS.md` · `marketing/subtitles/*.srt` ·
 `bookgen/README.md`.
 
 ## What requires your input (only secrets)
