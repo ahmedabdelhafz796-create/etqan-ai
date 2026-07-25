@@ -12,6 +12,8 @@ import {
 } from "@/lib/repositories";
 import { siteConfig } from "@/config";
 import { getPurchasable } from "@/lib/purchasable";
+import { issueReceiptToken, receiptUrl } from "@/lib/receipt";
+import { sendDeliveryEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -86,9 +88,27 @@ export async function POST(request: Request) {
       expiresAt: issued.expiresAt,
     });
     const downloadUrl = `${siteConfig.url}/api/download/${book.id}?token=${issued.token}`;
-    // TODO(delivery): email `downloadUrl` to the buyer via your ESP.
     await log("info", "download_issued", { orderId, bookId: book.id });
-    return NextResponse.json({ ok: true, delivered: false, downloadUrl });
+
+    // Email the buyer a durable receipt link (inert until an ESP is configured).
+    let delivered = false;
+    if (email) {
+      const receipt = issueReceiptToken(orderId, book.id);
+      const sent = await sendDeliveryEmail({
+        to: email,
+        productTitle: book.title,
+        orderId,
+        receiptUrl: receiptUrl(siteConfig.url, receipt),
+        amount,
+        currency: currency ?? undefined,
+      });
+      delivered = sent.sent;
+      await log(sent.sent ? "info" : "warn", sent.sent ? "delivery_email_sent" : "delivery_email_skipped", {
+        orderId,
+        reason: sent.reason,
+      });
+    }
+    return NextResponse.json({ ok: true, delivered, downloadUrl });
   }
 
   if (isPaidStatus(status) && !book) {

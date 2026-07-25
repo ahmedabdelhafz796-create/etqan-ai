@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Code, Sparkles, LayoutGrid, Table, Palette, Layers,
@@ -126,6 +127,13 @@ function ProductCard({ p, onOpen }: { p: Product; onOpen: (id: string) => void }
             ? <><Loader2 className="h-4 w-4 animate-spin" /> Opening…</>
             : <><ShoppingCart className="h-4 w-4" /> Get this course</>}
         </Button>
+
+        <Link
+          href={`/course/${p.id}`}
+          className="mt-2 block text-center text-[12px] text-soft/55 underline-offset-2 transition-colors hover:text-gold-light hover:underline"
+        >
+          View full details
+        </Link>
 
         {/* recommendations */}
         {(() => {

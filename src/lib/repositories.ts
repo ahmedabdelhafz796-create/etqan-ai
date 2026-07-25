@@ -161,6 +161,18 @@ export async function createGrant(g: {
   });
 }
 
+/** How many download links have been minted for an order (0 without a DB). */
+export async function countGrantsForOrder(orderId: string): Promise<number> {
+  const db = getDb();
+  if (!db) return 0;
+  await ensureSchema();
+  const res = await db.execute({
+    sql: "SELECT COUNT(*) AS n FROM download_grants WHERE order_id = ?",
+    args: [orderId],
+  });
+  return Number(res.rows[0]?.n ?? 0);
+}
+
 /**
  * Atomically consume one download from a grant.
  * Returns:

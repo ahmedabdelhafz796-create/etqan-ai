@@ -12,8 +12,9 @@ import { links } from "@/config";
 import { getPurchasable } from "@/lib/purchasable";
 import { getPaymentStatus } from "@/lib/payment";
 import { issueDownloadToken, DOWNLOAD_MAX } from "@/lib/download-token";
-import { createGrant } from "@/lib/repositories";
+import { countGrantsForOrder, createGrant, log } from "@/lib/repositories";
 import { isPaidStatus } from "@/lib/nowpayments-webhook";
+import { RECEIPT_MAX_ISSUES, verifyReceiptToken } from "@/lib/receipt";
 
 export const metadata: Metadata = {
   title: "Thank You",
@@ -24,9 +25,14 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 /**
- * After NOWPayments redirects here (with ?NP_id=…), we verify the payment
- * status server-side and, if paid, mint a secure download link automatically —
- * no email or database required.
+ * Two ways in:
+ *
+ *  - `?NP_id=…` — NOWPayments redirects here right after checkout; the payment
+ *    status is verified server-side and, if paid, a secure download link is
+ *    minted automatically. No email or database required.
+ *  - `?receipt=…` — the durable link from the buyer's delivery email. The
+ *    signed receipt is exchanged for a fresh download link, so a buyer can
+ *    come back days later without contacting support.
  */
 export default async function ThankYouPage({
   searchParams,
@@ -43,7 +49,32 @@ export default async function ThankYouPage({
   let downloadUrl: string | null = null;
   let bookTitle = "";
 
-  if (paymentId) {
+  // ── Returning buyer: exchange a signed receipt for a fresh download link ──
+  const receipt = typeof sp.receipt === "string" ? sp.receipt : "";
+  if (receipt) {
+    const verified = verifyReceiptToken(receipt);
+    const item = verified.valid ? getPurchasable(verified.productId!) : undefined;
+    if (item && verified.orderId) {
+      const issuedCount = await countGrantsForOrder(verified.orderId).catch(() => 0);
+      if (issuedCount < RECEIPT_MAX_ISSUES) {
+        const issued = issueDownloadToken(item.id);
+        await createGrant({
+          jti: issued.jti,
+          orderId: verified.orderId,
+          bookId: item.id,
+          maxDownloads: DOWNLOAD_MAX,
+          expiresAt: issued.expiresAt,
+        }).catch(() => {});
+        downloadUrl = `/api/download/${item.id}?token=${issued.token}`;
+        bookTitle = item.title;
+        state = "paid";
+      } else {
+        await log("warn", "receipt_exhausted", { orderId: verified.orderId }).catch(() => {});
+      }
+    }
+  }
+
+  if (state === "unknown" && paymentId) {
     const status = await getPaymentStatus(paymentId).catch(() => null);
     if (status) {
       const bookId =

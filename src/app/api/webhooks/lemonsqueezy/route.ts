@@ -4,6 +4,8 @@ import { issueDownloadToken, DOWNLOAD_MAX } from "@/lib/download-token";
 import { recordOrder, upsertCustomer, createGrant, log } from "@/lib/repositories";
 import { siteConfig } from "@/config";
 import { getPurchasable } from "@/lib/purchasable";
+import { issueReceiptToken, receiptUrl } from "@/lib/receipt";
+import { sendDeliveryEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -68,7 +70,25 @@ export async function POST(request: Request) {
     });
     const downloadUrl = `${siteConfig.url}/api/download/${item.id}?token=${issued.token}`;
     await log("info", "download_issued", { orderId, bookId: item.id, via: "lemonsqueezy" });
-    return NextResponse.json({ ok: true, delivered: false, downloadUrl });
+
+    let delivered = false;
+    if (email) {
+      const receipt = issueReceiptToken(orderId, item.id);
+      const sent = await sendDeliveryEmail({
+        to: email,
+        productTitle: item.title,
+        orderId,
+        receiptUrl: receiptUrl(siteConfig.url, receipt),
+        amount: total,
+        currency: "USD",
+      });
+      delivered = sent.sent;
+      await log(sent.sent ? "info" : "warn", sent.sent ? "delivery_email_sent" : "delivery_email_skipped", {
+        orderId,
+        reason: sent.reason,
+      });
+    }
+    return NextResponse.json({ ok: true, delivered, downloadUrl });
   }
 
   return NextResponse.json({ ok: true });
