@@ -2,14 +2,13 @@
 
 import { motion } from "framer-motion";
 import {
-  BarChart2,
-  Bell,
-  CalendarClock,
-  Crown,
+  LifeBuoy,
+  Compass,
+  Zap,
+  Package,
+  MessageSquare,
+  Heart,
   Send,
-  Shield,
-  Target,
-  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,14 +16,13 @@ import { Magnetic } from "@/components/ui/magnetic";
 import { Reveal } from "@/components/ui/reveal";
 import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
 import { useT, fill } from "@/components/providers/I18nProvider";
-import { offerConfig } from "@/config";
 
-const featureIcons = [BarChart2, Target, Shield, TrendingUp, Bell, Crown];
+const featureIcons = [LifeBuoy, Compass, Zap, Package, MessageSquare, Heart];
 
 export function TelegramSection() {
   const { telegramUrl } = useSiteConfig();
   const t = useT();
-  const date = offerConfig.telegramLaunchLabel;
+  const date = "";
   return (
     <section
       id="telegram"
@@ -40,8 +38,8 @@ export function TelegramSection() {
             <div>
               <Reveal>
                 <Badge variant="royal" className="mb-5">
-                  <CalendarClock className="h-3.5 w-3.5" />
-                  {t.telegram.goingLive} · {date}
+                  <LifeBuoy className="h-3.5 w-3.5" />
+                  {t.telegram.goingLive}
                 </Badge>
               </Reveal>
 
@@ -86,7 +84,7 @@ export function TelegramSection() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               {t.telegram.features.map((f, i) => {
-                const Icon = featureIcons[i] ?? BarChart2;
+                const Icon = featureIcons[i] ?? LifeBuoy;
                 return (
                 <motion.div
                   key={f.title}

@@ -1,11 +1,10 @@
 "use client";
 
 import { motion, useTransform } from "framer-motion";
-import { ArrowRight, ShieldCheck, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Magnetic } from "@/components/ui/magnetic";
-import { CandlestickField } from "@/components/visuals/CandlestickField";
 import { Particles } from "@/components/visuals/Particles";
 import { BookCover } from "@/components/visuals/BookCover";
 import { useMouseParallax } from "@/hooks/useMouseParallax";
@@ -17,10 +16,10 @@ export function Hero() {
   const { x, y, bind } = useMouseParallax(90, 16);
 
   const stats = [
-    { value: "26", label: t.hero.stats.modules },
-    { value: "100+", label: t.hero.stats.chapters },
-    { value: "240+", label: t.hero.stats.examples },
-    { value: "2", label: t.hero.stats.books },
+    { value: "13", label: t.hero.stats.modules },
+    { value: "6", label: t.hero.stats.chapters },
+    { value: "3", label: t.hero.stats.examples },
+    { value: "3", label: t.hero.stats.books },
   ];
 
   const headlineParts = [
@@ -51,9 +50,6 @@ export function Hero() {
         style={{ x: bgX, y: bgY }}
         className="pointer-events-none absolute inset-0 -z-10 scale-110"
       >
-        <div className="absolute inset-0 opacity-[0.4]">
-          <CandlestickField />
-        </div>
         <div className="absolute inset-0 grid-bg opacity-30" />
       </motion.div>
 
@@ -130,7 +126,7 @@ export function Hero() {
             >
               <Magnetic>
                 <Button asChild variant="gold" size="xl" className="w-full sm:w-auto">
-                  <a href="#store">
+                  <a href="#courses">
                     {t.hero.ctaPrimary}
                     <ArrowRight className="h-5 w-5 rtl:rotate-180" />
                   </a>
@@ -138,7 +134,7 @@ export function Hero() {
               </Magnetic>
               <Magnetic strength={10}>
                 <Button asChild variant="glass" size="xl" className="w-full sm:w-auto">
-                  <a href="#telegram">{t.hero.ctaSecondary}</a>
+                  <a href="#courses">{t.hero.ctaSecondary}</a>
                 </Button>
               </Magnetic>
             </motion.div>
@@ -224,9 +220,9 @@ export function Hero() {
                 style={{ transform: "translateZ(100px)" }}
                 className="absolute -left-4 top-2 flex items-center gap-2 rounded-full border border-emerald/25 bg-night-800/70 px-3 py-2 backdrop-blur-xl"
               >
-                <TrendingUp className="h-4 w-4 text-emerald-light" />
+                <Star className="h-4 w-4 text-emerald-light" />
                 <span className="font-mono text-xs text-emerald-light">
-                  +2.14%
+                  EN · AR · TR
                 </span>
               </motion.div>
             </motion.div>

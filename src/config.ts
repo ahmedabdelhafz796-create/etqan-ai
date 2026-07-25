@@ -14,26 +14,26 @@
  */
 
 export const siteConfig = {
-  name: "ETQAN AI",
-  brand: "Etqan • Trading Library",
-  tagline: "Institutional-grade trading education, engineered for serious traders.",
+  name: "E-tqan",
+  brand: "E-tqan • Premium Digital Library",
+  tagline: "Learn the skills that actually pay — programming, AI, web, design and more.",
   description:
-    "A premium digital library of professional trading books — market structure, liquidity, order flow, SMC/ICT, Wyckoff and AI-driven institutional analysis. Learn the way funds actually trade.",
+    "A premium digital library of practical, trilingual courses (English · العربية · Türkçe) in programming, AI, web development, design, productivity and trading. Beautifully written, instantly delivered.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://etqan-ai.example.com",
   locale: "en_US",
   keywords: [
-    "trading books",
-    "smart money concepts",
-    "ICT",
-    "order flow",
-    "market structure",
-    "liquidity",
-    "Wyckoff",
-    "supply and demand",
-    "AI trading",
-    "institutional trading",
-    "price action",
-    "risk management",
+    "online courses",
+    "learn programming",
+    "Python course",
+    "JavaScript course",
+    "learn AI",
+    "web development",
+    "learn to code",
+    "SQL course",
+    "design course",
+    "Arabic programming course",
+    "Turkish programming course",
+    "premium ebooks",
   ],
   social: {
     telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/Ahm_t_AHZ01",
@@ -85,10 +85,10 @@ export const offerConfig = {
   offerEndsAt: "2026-07-30T23:59:00",
   /** Human label used in banners. */
   offerDeadlineLabel: "July 30, 2026 · 23:59",
-  celebrationTitle: "First Edition Celebration",
+  celebrationTitle: "Launch Celebration",
   celebrationSubtitle: "Founding-price offer — locked until July 30",
-  /** Date the Telegram signals channel goes live. */
-  telegramLaunchLabel: "August 1st, 2026",
+  /** Support handle launch label (kept for compatibility). */
+  telegramLaunchLabel: "now",
 } as const;
 
 export type Currency = "USD";

@@ -1,4 +1,5 @@
 import { books, siteConfig } from "@/config";
+import { products } from "@/catalog";
 
 /** JSON-LD structured data for SEO (Organization + Products). */
 export function StructuredData() {
@@ -25,6 +26,23 @@ export function StructuredData() {
         name: siteConfig.name,
         url: siteConfig.url,
       },
+      ...products
+        .filter((p) => p.type === "course")
+        .map((p) => ({
+          "@type": "Course",
+          name: p.title,
+          description: p.description,
+          inLanguage: ["en", "ar", "tr"],
+          provider: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
+          offers: {
+            "@type": "Offer",
+            price: p.offerPrice,
+            priceCurrency: "USD",
+            availability: "https://schema.org/InStock",
+            category: "EducationalOccupationalProgram",
+            url: `${siteConfig.url}/#courses`,
+          },
+        })),
       ...books.map((book) => ({
         "@type": "Book",
         name: book.title,

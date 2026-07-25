@@ -1,7 +1,6 @@
 import { Navbar } from "@/components/sections/Navbar";
 import { ScrollProgress } from "@/components/sections/ScrollProgress";
 import { Hero } from "@/components/sections/Hero";
-import { TickerTape } from "@/components/visuals/TickerTape";
 import { CelebrationBanner } from "@/components/sections/CelebrationBanner";
 import { BookStore } from "@/components/sections/BookStore";
 import { Marketplace } from "@/components/sections/Marketplace";
@@ -49,7 +48,6 @@ export default async function HomePage() {
 
         <main>
           <Hero />
-          <TickerTape />
           <CelebrationBanner />
           <Marketplace />
           <BookStore books={localizedBooks} activeIds={activeIds} />

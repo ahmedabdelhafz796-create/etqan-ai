@@ -1,15 +1,15 @@
 "use client";
 
 import {
-  Brain,
-  CandlestickChart,
-  Dumbbell,
-  GraduationCap,
-  Infinity as InfinityIcon,
-  LineChart,
-  ScrollText,
-  ShieldCheck,
+  Languages,
+  Hammer,
   Sparkles,
+  Palette,
+  Zap,
+  GraduationCap,
+  ListChecks,
+  Infinity as InfinityIcon,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -18,15 +18,15 @@ import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { useT } from "@/components/providers/I18nProvider";
 
 const icons: LucideIcon[] = [
-  GraduationCap,
-  CandlestickChart,
-  ScrollText,
-  Dumbbell,
-  LineChart,
-  ShieldCheck,
-  Brain,
+  Languages,
+  Hammer,
   Sparkles,
+  Palette,
+  Zap,
+  GraduationCap,
+  ListChecks,
   InfinityIcon,
+  ShieldCheck,
 ];
 
 export function WhyBuy() {

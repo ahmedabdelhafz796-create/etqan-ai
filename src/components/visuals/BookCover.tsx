@@ -84,7 +84,7 @@ export function BookCover({ book }: { book: Book }) {
                 a.glyph
               )}
             >
-              Etqan · Trading Library
+              E-tqan · Trading Track
             </span>
 
             <div className="mt-auto">

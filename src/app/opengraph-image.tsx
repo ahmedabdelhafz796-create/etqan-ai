@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { siteConfig } from "@/config";
 
-export const alt = `${siteConfig.name} — Premium Trading Library`;
+export const alt = `${siteConfig.name} — Premium Digital Library`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -23,19 +23,23 @@ export default function OgImage() {
           fontFamily: "sans-serif",
         }}
       >
-        {/* top row: brand + candles */}
+        {/* top row: brand + monogram */}
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <div
             style={{
               display: "flex",
-              gap: 5,
-              alignItems: "flex-end",
-              height: 42,
+              alignItems: "center",
+              justifyContent: "center",
+              width: 46,
+              height: 46,
+              borderRadius: 12,
+              fontSize: 26,
+              fontWeight: 800,
+              color: "#05070c",
+              background: "linear-gradient(135deg,#F4D98B,#C9A227)",
             }}
           >
-            <div style={{ width: 8, height: 26, background: "#34D399", borderRadius: 2 }} />
-            <div style={{ width: 8, height: 40, background: "#E9C46A", borderRadius: 2 }} />
-            <div style={{ width: 8, height: 20, background: "#EF4444", borderRadius: 2 }} />
+            E
           </div>
           <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: -1 }}>
             {siteConfig.name}
@@ -50,35 +54,35 @@ export default function OgImage() {
               padding: "6px 16px",
             }}
           >
-            Premium Trading Library
+            Premium Digital Library
           </div>
         </div>
 
         {/* headline */}
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2 }}>
-            Trade the way
+          <div style={{ fontSize: 78, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2 }}>
+            Learn the skills
           </div>
           <div
             style={{
-              fontSize: 76,
+              fontSize: 78,
               fontWeight: 800,
               lineHeight: 1.05,
               letterSpacing: -2,
               color: "#E9C46A",
             }}
           >
-            institutions actually do.
+            that actually pay.
           </div>
-          <div style={{ marginTop: 26, fontSize: 26, color: "#98A2B3", maxWidth: 900 }}>
-            Market structure · Liquidity · Order Flow · SMC · ICT · Wyckoff ·
-            AI-driven institutional analysis.
+          <div style={{ marginTop: 26, fontSize: 26, color: "#98A2B3", maxWidth: 940 }}>
+            Programming · AI · Web · Design · Productivity · Trading — premium,
+            trilingual courses (EN · AR · TR), delivered instantly.
           </div>
         </div>
 
         {/* bottom row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontSize: 24, color: "#98A2B3" }}>Two flagship books · Lifetime access</div>
+          <div style={{ fontSize: 24, color: "#98A2B3" }}>14 courses & bundles · Lifetime access</div>
           <div
             style={{
               fontSize: 26,
@@ -89,7 +93,7 @@ export default function OgImage() {
               padding: "14px 30px",
             }}
           >
-            From $65
+            From $4
           </div>
         </div>
       </div>

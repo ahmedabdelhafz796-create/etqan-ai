@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CandlestickChart, Menu, X } from "lucide-react";
+import { GraduationCap, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Magnetic } from "@/components/ui/magnetic";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -16,8 +16,8 @@ export function Navbar() {
   const t = useT();
 
   const NAV_LINKS = [
-    { label: t.nav.links.library, href: "#store" },
-    { label: t.nav.links.curriculum, href: "#store" },
+    { label: t.nav.links.library, href: "#courses" },
+    { label: t.nav.links.curriculum, href: "#courses" },
     { label: t.nav.links.signals, href: "#telegram" },
     { label: t.nav.links.why, href: "#why" },
     { label: t.nav.links.faq, href: "#faq" },
@@ -45,7 +45,7 @@ export function Navbar() {
       <nav className="container-tight flex h-16 items-center justify-between md:h-18">
         <a href="#top" className="group flex items-center gap-2.5">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-gold/30 bg-gold/10 text-gold-light shadow-glow">
-            <CandlestickChart className="h-5 w-5" />
+            <GraduationCap className="h-5 w-5" />
           </span>
           <span className="font-display text-lg font-semibold tracking-tight text-soft">
             {siteConfig.name}
@@ -68,7 +68,7 @@ export function Navbar() {
           <LanguageSwitcher />
           <Magnetic strength={8}>
             <Button asChild variant="gold" size="sm">
-              <a href="#store">{t.nav.cta}</a>
+              <a href="#courses">{t.nav.cta}</a>
             </Button>
           </Magnetic>
         </div>
@@ -112,7 +112,7 @@ export function Navbar() {
                 size="md"
                 className="mt-2 w-full"
               >
-                <a href="#store" onClick={() => setOpen(false)}>
+                <a href="#courses" onClick={() => setOpen(false)}>
                   {t.nav.cta}
                 </a>
               </Button>

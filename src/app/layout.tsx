@@ -29,7 +29,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — Premium Trading Library`,
+    default: `${siteConfig.name} — Premium Digital Library`,
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -43,12 +43,12 @@ export const metadata: Metadata = {
     locale: siteConfig.locale,
     url: siteConfig.url,
     siteName: siteConfig.name,
-    title: `${siteConfig.name} — Premium Trading Library`,
+    title: `${siteConfig.name} — Premium Digital Library`,
     description: siteConfig.description,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} — Premium Trading Library`,
+    title: `${siteConfig.name} — Premium Digital Library`,
     description: siteConfig.description,
   },
   robots: {

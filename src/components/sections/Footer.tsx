@@ -1,6 +1,6 @@
 "use client";
 
-import { CandlestickChart, Instagram, Send, Youtube } from "lucide-react";
+import { GraduationCap, Instagram, Send, Youtube } from "lucide-react";
 import { siteConfig } from "@/config";
 import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
 import { useT, fill } from "@/components/providers/I18nProvider";
@@ -53,7 +53,7 @@ export function Footer() {
           <div>
             <a href="#top" className="flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-gold/30 bg-gold/10 text-gold-light">
-                <CandlestickChart className="h-5 w-5" />
+                <GraduationCap className="h-5 w-5" />
               </span>
               <span className="font-display text-lg font-semibold text-soft">
                 {siteConfig.name}
