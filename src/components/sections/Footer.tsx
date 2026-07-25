@@ -30,8 +30,8 @@ export function Footer() {
     {
       title: t.footer.groups.library,
       items: [
-        { label: "Triple Analysis", href: "#store" },
-        { label: "Advanced AI Trading", href: "#store" },
+        { label: t.nav.links.library, href: "#courses" },
+        { label: t.nav.links.curriculum, href: "#courses" },
         { label: t.footer.links.whyBuy, href: "#why" },
         { label: t.footer.links.faq, href: "#faq" },
       ],

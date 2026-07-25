@@ -62,16 +62,17 @@ export const analytics = {
  * manual wallet anywhere. Left empty by default.
  */
 export const payment = {
-  walletAddress: process.env.NEXT_PUBLIC_WALLET_ADDRESS || "", // WALLET_ADDRESS_PLACEHOLDER
+  /** Optional manual wallet display (NOWPayments manages payouts itself). */
+  walletAddress: process.env.NEXT_PUBLIC_WALLET_ADDRESS || "",
 } as const;
 
 /**
- * Master placeholders. Replace ONE variable each and you're live.
- *   - PAYMENT_URL_PLACEHOLDER  → your NOWPayments / checkout link
- *   - Telegram support handle defaults to @Ahm_t_AHZ01
+ * Store links. Checkout is handled server-side by the /api/payment route
+ * (NOWPayments crypto + optional Lemon Squeezy card); `paymentUrl` is only an
+ * optional direct-link fallback. Telegram support defaults to @Ahm_t_AHZ01.
  */
 export const links = {
-  paymentUrl: process.env.NEXT_PUBLIC_PAYMENT_URL || "PAYMENT_URL_PLACEHOLDER",
+  paymentUrl: process.env.NEXT_PUBLIC_PAYMENT_URL || "",
   telegramUrl: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/Ahm_t_AHZ01",
 } as const;
 

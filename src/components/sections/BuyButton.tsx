@@ -8,8 +8,6 @@ import { useT } from "@/components/providers/I18nProvider";
 import { type Book } from "@/config";
 import { cn } from "@/lib/utils";
 
-const PLACEHOLDER = "PAYMENT_URL_PLACEHOLDER";
-
 interface Props extends Pick<ButtonProps, "variant" | "size" | "className"> {
   book: Book;
   label?: string;
@@ -19,16 +17,10 @@ interface Props extends Pick<ButtonProps, "variant" | "size" | "className"> {
  * Buy Now button.
  *
  * Flow (all real, no fake success):
- *  1. Attempts to create a NOWPayments invoice via /api/payment.
- *     If the server has NOWPAYMENTS_API_KEY set, the buyer is
- *     redirected to the hosted crypto checkout.
- *  2. Falls back to NEXT_PUBLIC_PAYMENT_URL (links.paymentUrl) when set
- *     to a real value.
- *  3. If neither is configured yet, shows a graceful "coming soon"
- *     state — nothing is faked.
- *
- * To go live you only replace ONE variable: PAYMENT_URL_PLACEHOLDER
- * (or add the NOWPayments API key in .env.local).
+ *  1. Creates a server-side checkout via /api/payment (NOWPayments crypto by
+ *     default). On success the buyer is redirected to the hosted checkout.
+ *  2. Falls back to NEXT_PUBLIC_PAYMENT_URL (links.paymentUrl) when set.
+ *  3. If nothing is configured yet, shows a graceful "coming soon" state.
  */
 export function BuyButton({
   book,
@@ -70,7 +62,7 @@ export function BuyButton({
     }
 
     // 2) Fall back to a configured direct payment link.
-    if (paymentUrl && paymentUrl !== PLACEHOLDER) {
+    if (paymentUrl) {
       window.location.href = paymentUrl;
       return;
     }

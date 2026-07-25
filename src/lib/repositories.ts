@@ -228,3 +228,118 @@ export async function setSetting(key: string, value: string): Promise<void> {
     args: [key, value, Date.now()],
   });
 }
+
+// ── Newsletter ────────────────────────────────────────────────────────
+export async function recordNewsletterSignup(email: string): Promise<void> {
+  const db = getDb();
+  if (!db || !email) return;
+  await ensureSchema();
+  await db.execute({
+    sql: `INSERT INTO newsletter (email, created_at) VALUES (?, ?)
+          ON CONFLICT(email) DO NOTHING`,
+    args: [email.toLowerCase(), Date.now()],
+  });
+}
+
+export async function listNewsletter(limit = 500) {
+  const db = getDb();
+  if (!db) return [];
+  await ensureSchema();
+  const r = await db.execute({
+    sql: "SELECT email, created_at FROM newsletter ORDER BY created_at DESC LIMIT ?",
+    args: [limit],
+  });
+  return r.rows;
+}
+
+// ── Coupons ───────────────────────────────────────────────────────────
+export interface CouponRecord {
+  code: string;
+  percentOff: number;
+  active: boolean;
+  maxRedemptions: number | null;
+  redeemed: number;
+  expiresAt: number | null;
+}
+
+export async function listCoupons(limit = 200) {
+  const db = getDb();
+  if (!db) return [];
+  await ensureSchema();
+  const r = await db.execute({
+    sql: `SELECT code, percent_off, active, max_redemptions, redeemed, expires_at, created_at
+          FROM coupons ORDER BY created_at DESC LIMIT ?`,
+    args: [limit],
+  });
+  return r.rows;
+}
+
+export async function upsertCoupon(c: {
+  code: string;
+  percentOff: number;
+  active?: boolean;
+  maxRedemptions?: number | null;
+  expiresAt?: number | null;
+}): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  await ensureSchema();
+  await db.execute({
+    sql: `INSERT INTO coupons (code, percent_off, active, max_redemptions, redeemed, expires_at, created_at)
+          VALUES (?, ?, ?, ?, 0, ?, ?)
+          ON CONFLICT(code) DO UPDATE SET
+            percent_off = excluded.percent_off,
+            active = excluded.active,
+            max_redemptions = excluded.max_redemptions,
+            expires_at = excluded.expires_at`,
+    args: [
+      c.code.trim().toUpperCase(),
+      Math.max(0, Math.min(100, Math.round(c.percentOff))),
+      c.active === false ? 0 : 1,
+      c.maxRedemptions ?? null,
+      c.expiresAt ?? null,
+      Date.now(),
+    ],
+  });
+}
+
+export async function deleteCoupon(code: string): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  await ensureSchema();
+  await db.execute({ sql: "DELETE FROM coupons WHERE code = ?", args: [code.trim().toUpperCase()] });
+}
+
+/**
+ * Validate a coupon and return its percent-off, or null if invalid/expired/used
+ * up. Server-authoritative — the checkout route calls this; the client never
+ * decides discounts.
+ */
+export async function validateCoupon(code: string): Promise<number | null> {
+  const db = getDb();
+  if (!db || !code) return null;
+  await ensureSchema();
+  const r = await db.execute({
+    sql: `SELECT percent_off, active, max_redemptions, redeemed, expires_at
+          FROM coupons WHERE code = ?`,
+    args: [code.trim().toUpperCase()],
+  });
+  if (r.rows.length === 0) return null;
+  const row = r.rows[0];
+  if (Number(row.active) !== 1) return null;
+  const expires = row.expires_at == null ? null : Number(row.expires_at);
+  if (expires !== null && Date.now() > expires) return null;
+  const max = row.max_redemptions == null ? null : Number(row.max_redemptions);
+  if (max !== null && Number(row.redeemed) >= max) return null;
+  return Number(row.percent_off);
+}
+
+export async function redeemCoupon(code: string): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  await ensureSchema();
+  await db.execute({
+    sql: "UPDATE coupons SET redeemed = redeemed + 1 WHERE code = ?",
+    args: [code.trim().toUpperCase()],
+  });
+}

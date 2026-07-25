@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { getBook } from "@/config";
 import { getProduct } from "@/catalog";
 import { getEffectiveConfig } from "@/lib/site-settings";
+import { validateCoupon } from "@/lib/repositories";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 import {
   createInvoice,
   isPaymentConfigured,
   PaymentConfigError,
 } from "@/lib/payment";
+import { createLemonCheckout, isLemonConfigured } from "@/lib/lemonsqueezy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,10 +26,18 @@ export const dynamic = "force-dynamic";
  * Nothing is faked.
  */
 export async function POST(request: Request) {
+  // Rate limit checkout creation: 10 requests / minute / IP.
+  const rl = rateLimit(`pay:${clientIp(request)}`, 10, 60_000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
   let bookId: string | undefined;
+  let couponCode: string | undefined;
+  let provider: "crypto" | "card" = "crypto";
   try {
-    const body = (await request.json()) as { bookId?: string };
+    const body = (await request.json()) as { bookId?: string; coupon?: string; provider?: string };
     bookId = body.bookId;
+    couponCode = typeof body.coupon === "string" ? body.coupon.slice(0, 40) : undefined;
+    if (body.provider === "card") provider = "card";
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
@@ -67,6 +78,48 @@ export async function POST(request: Request) {
   }
   const productId = book ? book.id : product!.id;
 
+  // Server-authoritative coupon: the client can only *suggest* a code; the
+  // discount is validated and applied here, never trusted from the browser.
+  let appliedCoupon: string | null = null;
+  if (couponCode) {
+    const percentOff = await validateCoupon(couponCode).catch(() => null);
+    if (percentOff && percentOff > 0) {
+      priceAmount = Math.max(1, Math.round(priceAmount * (1 - percentOff / 100) * 100) / 100);
+      appliedCoupon = couponCode.trim().toUpperCase();
+    }
+  }
+
+  // Send buyers back to our thank-you page (which auto-issues the download).
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+
+  // ── Card / PayPal via Lemon Squeezy ──
+  if (provider === "card") {
+    if (!isLemonConfigured()) {
+      return NextResponse.json(
+        {
+          error: "checkout_unconfigured",
+          message: "Card checkout isn't configured yet. Set LEMONSQUEEZY_API_KEY and LEMONSQUEEZY_STORE_ID.",
+        },
+        { status: 503 }
+      );
+    }
+    try {
+      const checkout = await createLemonCheckout({
+        productId,
+        title,
+        priceAmount,
+        redirectUrl: `${origin}/thank-you`,
+      });
+      if (!checkout) throw new Error("No checkout URL returned.");
+      return NextResponse.json({ checkoutUrl: checkout.url, amount: priceAmount, coupon: appliedCoupon, provider: "card" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create checkout.";
+      return NextResponse.json({ error: "checkout_failed", message }, { status: 502 });
+    }
+  }
+
+  // ── Crypto via NOWPayments (default) ──
   if (!isPaymentConfigured()) {
     return NextResponse.json(
       {
@@ -77,10 +130,6 @@ export async function POST(request: Request) {
       { status: 503 }
     );
   }
-
-  // Send buyers back to our thank-you page (which auto-issues the download).
-  const origin =
-    process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
 
   try {
     const invoice = await createInvoice({
@@ -94,6 +143,8 @@ export async function POST(request: Request) {
       checkoutUrl: invoice.invoice_url,
       orderId: invoice.order_id,
       amount: priceAmount,
+      coupon: appliedCoupon,
+      provider: "crypto",
     });
   } catch (err) {
     if (err instanceof PaymentConfigError) {

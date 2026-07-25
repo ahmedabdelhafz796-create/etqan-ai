@@ -1,15 +1,16 @@
 {
-  "name": "etqan-ai-trading-bookstore",
+  "name": "etqan-ai",
   "version": "1.0.0",
   "private": true,
-  "description": "Premium digital bookstore for professional trading books",
+  "description": "E-tqan — premium trilingual digital course library",
   "scripts": {
     "dev": "next dev",
     "prebuild": "node scripts/prepare-downloads.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",

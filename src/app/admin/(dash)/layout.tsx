@@ -4,9 +4,11 @@ import { redirect } from "next/navigation";
 import {
   BarChart3,
   BookOpen,
+  GraduationCap,
   ScrollText,
   Settings,
   ShoppingBag,
+  Ticket,
   Users,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/admin-auth";
@@ -21,7 +23,9 @@ const NAV = [
   { href: "/admin", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/courses", label: "Courses", icon: GraduationCap },
   { href: "/admin/books", label: "Books & Pricing", icon: BookOpen },
+  { href: "/admin/coupons", label: "Coupons", icon: Ticket },
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/admin/logs", label: "Logs", icon: ScrollText },
 ];
@@ -39,7 +43,7 @@ export default async function AdminLayout({
       <aside className="border-b border-white/10 bg-night-800/50 backdrop-blur lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between px-5 py-5">
           <Link href="/admin" className="font-display text-lg font-semibold text-soft">
-            Etqan <span className="text-gold-light">Admin</span>
+            E-tqan <span className="text-gold-light">Admin</span>
           </Link>
         </div>
         <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible">

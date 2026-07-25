@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { recordNewsletterSignup } from "@/lib/repositories";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -14,6 +16,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * ESP (Mailchimp / ConvertKit / Resend audiences / etc.).
  */
 export async function POST(request: Request) {
+  // Rate limit: 5 signups / minute / IP.
+  const rl = rateLimit(`news:${clientIp(request)}`, 5, 60_000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
   let email = "";
   try {
     const body = (await request.json()) as { email?: string };
@@ -32,12 +38,9 @@ export async function POST(request: Request) {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Integration point: forward `email` to your email provider here.
-  // Example (pseudo):
-  //   await fetch("https://api.your-esp.com/subscribe", { ... })
-  // Kept provider-agnostic so you can wire in whatever you use.
-  // ─────────────────────────────────────────────────────────────
+  // Persist the signup (idempotent; degrades gracefully without a DB).
+  // Integration point: also forward `email` to your ESP here if desired.
+  await recordNewsletterSignup(email).catch(() => {});
 
   return NextResponse.json(
     { message: "You're on the list. Welcome aboard." },

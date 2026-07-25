@@ -86,6 +86,19 @@ const SCHEMA = [
      detail TEXT,
      created_at INTEGER NOT NULL
    )`,
+  `CREATE TABLE IF NOT EXISTS newsletter (
+     email TEXT PRIMARY KEY,
+     created_at INTEGER NOT NULL
+   )`,
+  `CREATE TABLE IF NOT EXISTS coupons (
+     code TEXT PRIMARY KEY,
+     percent_off INTEGER NOT NULL,
+     active INTEGER NOT NULL DEFAULT 1,
+     max_redemptions INTEGER,
+     redeemed INTEGER NOT NULL DEFAULT 0,
+     expires_at INTEGER,
+     created_at INTEGER NOT NULL
+   )`,
 ];
 
 /** Create tables if they don't exist. Idempotent; runs at most once per process. */
