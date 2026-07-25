@@ -207,6 +207,7 @@ class Game {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.composer?.setSize(window.innerWidth, window.innerHeight);
     this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.fov = this.camera.aspect < 1 ? 70 : 78;
     this.camera.updateProjectionMatrix();
   }
 
@@ -216,7 +217,8 @@ class Game {
     this.scene.background = new THREE.Color(0x070b12);
     this.scene.fog = new THREE.FogExp2(0x080d15, 0.017);
 
-    this.camera = new THREE.PerspectiveCamera(78, window.innerWidth / window.innerHeight, 0.1, 260);
+    const asp = window.innerWidth / window.innerHeight;
+    this.camera = new THREE.PerspectiveCamera(asp < 1 ? 70 : 78, asp, 0.1, 260);
 
     this.scene.add(new THREE.HemisphereLight(0x6f9bd8, 0x161d29, 1.9));
     const key = new THREE.DirectionalLight(0xbcd6ff, 1.15);
@@ -935,7 +937,9 @@ class Game {
     const p = this.player;
 
     /* time scale: holding SPEED slows the world and drains memory */
-    const wantSlow = p.held === "speed" && (this.keys.ShiftLeft || this.keys.ShiftRight || this.isTouch());
+    const wantSlow = p.held === "speed" && (this.isTouch()
+      ? this.enemies.some((e) => e.alive && e.group.position.distanceTo(p.pos) < 9)
+      : (this.keys.ShiftLeft || this.keys.ShiftRight));
     this.timeScale = lerp(this.timeScale, wantSlow ? CFG.slowScale : 1, 1 - Math.pow(0.0015, dt));
     if (wantSlow) {
       p.memory -= CFG.slowDrain * dt;
