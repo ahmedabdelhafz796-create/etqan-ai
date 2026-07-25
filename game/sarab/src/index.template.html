@@ -1,0 +1,65 @@
+<title>سَراب — SARAB</title>
+<style>
+  /*FONTS*/
+  :root{
+    --ink:#05070b; --ivory:#DCE3EA; --muted:#6d7a8c;
+    --prop:#7fe3e0; --mem:#e3a85c; --blood:#c4574f;
+    --glitch:0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);
+    font-family:Cairo,system-ui,sans-serif;color:var(--ivory);
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:2}
+  #crosshair{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;
+    border:1px solid rgba(220,227,234,.55);border-radius:50%}
+  #crosshair::after{content:"";position:absolute;inset:5px;background:var(--prop);border-radius:50%;opacity:.85}
+  #vignette{position:absolute;inset:0;opacity:.3;
+    background:radial-gradient(70% 60% at 50% 50%,transparent 40%,rgba(0,0,0,.85) 100%)}
+
+  #bars{position:absolute;left:1.2rem;bottom:1.2rem;display:flex;flex-direction:column;gap:.5rem;width:min(38vw,15rem)}
+  .bar{display:flex;align-items:center;gap:.55rem}
+  .bar .lbl{font-size:.62rem;letter-spacing:.12em;color:var(--muted);min-width:3.2rem}
+  .track{flex:1;height:.42rem;background:rgba(220,227,234,.1);border-radius:2rem;overflow:hidden}
+  .track i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#f0c98a,var(--mem));
+    transition:width .12s linear}
+  .track i.hp{background:linear-gradient(90deg,#e08b84,var(--blood))}
+
+  #stats{position:absolute;right:1.2rem;top:1.1rem;display:flex;flex-direction:column;gap:.25rem;
+    text-align:right;font-size:.78rem;color:var(--muted);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+  #hand{position:absolute;left:50%;bottom:1.3rem;transform:translateX(-50%);text-align:center}
+  #hand .lbl{display:block;font-size:.56rem;letter-spacing:.2em;color:var(--muted)}
+  #hand b{font-size:1rem;letter-spacing:.05em}
+
+  #stealbtn{position:absolute;right:1.2rem;bottom:5.5rem;width:4.2rem;height:4.2rem;border-radius:50%;
+    border:1px solid rgba(127,227,224,.5);background:rgba(127,227,224,.12);color:var(--prop);
+    font-size:1.5rem;pointer-events:auto;backdrop-filter:blur(6px)}
+  #stealbtn:active{background:rgba(127,227,224,.3)}
+
+  #wavemsg{position:absolute;left:50%;top:22%;transform:translateX(-50%);font-size:1.6rem;font-weight:700;
+    letter-spacing:.2em;opacity:0;color:var(--prop)}
+  #wavemsg.show{animation:wm 2.1s ease-out}
+  @keyframes wm{0%{opacity:0;transform:translateX(-50%) scale(.9)}15%{opacity:1}70%{opacity:1}100%{opacity:0}}
+
+  #screen{position:absolute;inset:0;display:grid;place-items:center;pointer-events:auto;
+    background:radial-gradient(60% 60% at 50% 45%,rgba(5,7,11,.6),rgba(5,7,11,.93))}
+  .card{max-width:34rem;padding:2rem;text-align:center}
+  .card h1{font-size:clamp(3rem,12vw,5.5rem);font-weight:700;letter-spacing:.06em;line-height:1}
+  .card h1.dead{color:var(--blood);font-size:clamp(2.2rem,9vw,4rem)}
+  .card .sub{margin-top:1rem;color:var(--muted);font-size:1rem;line-height:1.8}
+  .card .help{list-style:none;margin:1.6rem 0 0;display:flex;flex-direction:column;gap:.4rem;
+    font-size:.84rem;color:#9aa7b6}
+  .card .final{margin-top:.9rem;font-size:1.1rem;color:#9aa7b6}
+  .card .final b{color:var(--mem);font-size:1.5rem}
+  .card .cta{margin-top:1.8rem;font-size:.9rem;letter-spacing:.22em;color:var(--prop);
+    animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+
+<canvas id="c"></canvas>
+<div id="hud"></div>
+<script>/*GAME*/</script>
