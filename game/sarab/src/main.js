@@ -17,6 +17,10 @@
  * ============================================================
  */
 import * as THREE from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 
 /* ── tuning ─────────────────────────────────────────── */
 const CFG = {
@@ -152,6 +156,7 @@ class Game {
 
     this.initRenderer();
     this.initScene();
+    this.initPost();
     this.initPlayer();
     this.initInput();
     this.hud = new HUD(this);
@@ -168,9 +173,23 @@ class Game {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = false;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.3;
+  }
+
+  /** bloom is what turns flat boxes into a lit place */
+  initPost() {
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.bloom = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight), 0.55, 0.6, 0.5
+    );
+    this.composer.addPass(this.bloom);
+    this.composer.addPass(new OutputPass());
   }
   onResize() {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.composer?.setSize(window.innerWidth, window.innerHeight);
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
   }
@@ -178,12 +197,12 @@ class Game {
   /* ── scene ── */
   initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x05070b);
-    this.scene.fog = new THREE.FogExp2(0x070a10, 0.016);
+    this.scene.background = new THREE.Color(0x070b12);
+    this.scene.fog = new THREE.FogExp2(0x080d15, 0.017);
 
     this.camera = new THREE.PerspectiveCamera(78, window.innerWidth / window.innerHeight, 0.1, 260);
 
-    this.scene.add(new THREE.HemisphereLight(0x5f86c4, 0x0b1018, 1.35));
+    this.scene.add(new THREE.HemisphereLight(0x6f9bd8, 0x161d29, 1.9));
     const key = new THREE.DirectionalLight(0xbcd6ff, 1.15);
     key.position.set(-8, 18, 6);
     this.scene.add(key);
@@ -196,56 +215,94 @@ class Game {
     this.motes = [];
     this.buildArena();
     this.buildMotes();
+    this.ring = new THREE.Mesh(
+      new THREE.TorusGeometry(0.9, 0.06, 8, 28),
+      new THREE.MeshBasicMaterial({ color: 0x7fe3e0, transparent: true, opacity: 0.95 })
+    );
+    this.ring.rotation.x = Math.PI / 2;
+    this.ring.visible = false;
+    this.scene.add(this.ring);
   }
 
-  /** The arena: floor, outer walls, and props that still hold properties. */
+  /** A hall, not a box: pillars, ceiling strips, and props that still hold properties. */
   buildArena() {
     BOXES.length = 0;
-    const S = 46;
+    const S = 52, H = 11;
 
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x1d2735, roughness: 0.92, metalness: 0.06 });
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(S, 1, S), floorMat);
+    const floor = new THREE.Mesh(
+      new THREE.BoxGeometry(S, 1, S),
+      new THREE.MeshStandardMaterial({ color: 0x232d3c, roughness: 0.6, metalness: 0.22 })
+    );
     floor.position.y = -0.5;
     this.scene.add(floor);
 
-    const grid = new THREE.GridHelper(S, 23, 0x3f6fa8, 0x22344a);
+    const grid = new THREE.GridHelper(S, 26, 0x2f4a6b, 0x1a2432);
     grid.position.y = 0.02;
     this.scene.add(grid);
 
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0x18212e, roughness: 1 });
-    const h = 14;
-    const walls = [
-      [0, h / 2, -S / 2, S, h, 1],
-      [0, h / 2, S / 2, S, h, 1],
-      [-S / 2, h / 2, 0, 1, h, S],
-      [S / 2, h / 2, 0, 1, h, S],
-    ];
-    const ceil = new THREE.Mesh(new THREE.BoxGeometry(S, 1, S), new THREE.MeshStandardMaterial({ color: 0x0c111a, roughness: 1 }));
-    ceil.position.y = h + 0.5;
+    const ceil = new THREE.Mesh(
+      new THREE.BoxGeometry(S, 1, S),
+      new THREE.MeshStandardMaterial({ color: 0x0b0f16, roughness: 1 })
+    );
+    ceil.position.y = H + 0.5;
     this.scene.add(ceil);
 
-    for (const [x, y, z, w, hh, d] of walls) {
+    /* the only real light source in the fiction: failing ceiling strips */
+    const stripMat = new THREE.MeshBasicMaterial({ color: 0x9dc0f2 });
+    this.strips = [];
+    for (let i = -2; i <= 2; i++) {
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.16, S * 0.8), stripMat);
+      strip.position.set(i * 10, H - 0.3, 0);
+      this.scene.add(strip);
+      const l = new THREE.PointLight(0x9dc2ff, 2.1, 34, 1.7);
+      l.position.set(i * 10, H - 1.4, 0);
+      this.scene.add(l);
+      this.strips.push({ strip, light: l, phase: rand(0, 6.28), flick: Math.random() < 0.4 });
+    }
+
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x1b2431, roughness: 0.9, metalness: 0.15 });
+    for (const [x, y, z, w, hh, d] of [
+      [0, H / 2, -S / 2, S, H, 1], [0, H / 2, S / 2, S, H, 1],
+      [-S / 2, H / 2, 0, 1, H, S], [S / 2, H / 2, 0, 1, H, S],
+    ]) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, hh, d), wallMat);
       m.position.set(x, y, z);
       this.scene.add(m);
       this.addCollider(m);
     }
 
-    /* props — each one still owns a property you can take */
+    /* structural pillars — cover, sightlines, and something to hide behind */
+    const pillarMat = new THREE.MeshStandardMaterial({ color: 0x202b3a, roughness: 0.85, metalness: 0.2 });
+    for (const [px, pz] of [[-16, -16], [16, -16], [-16, 16], [16, 16], [0, -20], [0, 20], [-20, 0], [20, 0]]) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(2.2, H, 2.2), pillarMat);
+      m.position.set(px, H / 2, pz);
+      this.scene.add(m);
+      this.addCollider(m);
+      const band = new THREE.Mesh(
+        new THREE.BoxGeometry(2.34, 0.1, 2.34),
+        new THREE.MeshBasicMaterial({ color: 0x2f6f8f })
+      );
+      band.position.set(px, 2.4, pz);
+      this.scene.add(band);
+    }
+
+    /* props: the first one sits directly ahead of the spawn so the game can teach itself */
     this.props = [];
     const layout = [
-      { x: -11, z: -9, w: 3, h: 4.4, d: 3, prop: "hardness" },
-      { x: 10, z: -12, w: 3, h: 4.4, d: 3, prop: "hardness" },
-      { x: 14, z: 8, w: 3.4, h: 3.2, d: 3.4, prop: "weight" },
-      { x: -14, z: 10, w: 3.4, h: 3.2, d: 3.4, prop: "weight" },
-      { x: 0, z: -16, w: 5, h: 2.2, d: 2.2, prop: "weight" },
-      { x: -6, z: 14, w: 2.4, h: 5.4, d: 2.4, prop: "speed" },
-      { x: 7, z: 15, w: 2.4, h: 5.4, d: 2.4, prop: "speed" },
-      { x: 17, z: -3, w: 2.2, h: 6.2, d: 2.2, prop: "speed" },
-      { x: -17, z: 2, w: 2.2, h: 6.2, d: 2.2, prop: "hardness" },
-      { x: 4, z: 4, w: 6, h: 1.4, d: 6, prop: "weight" },
+      { x: 0, z: 4, w: 2, h: 4.6, d: 2, prop: "hardness" },       // tutorial target
+      { x: -8, z: -2, w: 3, h: 4.2, d: 3, prop: "hardness" },
+      { x: 9, z: -4, w: 3, h: 4.2, d: 3, prop: "hardness" },
+      { x: 13, z: 9, w: 3.2, h: 3, d: 3.2, prop: "weight" },
+      { x: -13, z: 10, w: 3.2, h: 3, d: 3.2, prop: "weight" },
+      { x: 0, z: -14, w: 5, h: 2.2, d: 2.2, prop: "weight" },
+      { x: -6, z: 16, w: 2.2, h: 5, d: 2.2, prop: "speed" },
+      { x: 7, z: 17, w: 2.2, h: 5, d: 2.2, prop: "speed" },
+      { x: 19, z: -8, w: 2.2, h: 5.6, d: 2.2, prop: "speed" },
+      { x: -19, z: -6, w: 2.2, h: 5.6, d: 2.2, prop: "hardness" },
+      { x: 5, z: -22, w: 6, h: 1.4, d: 3, prop: "weight" },
     ];
     for (const p of layout) this.addProp(p);
+    this.tutorialTarget = this.props[0];
   }
 
   addProp({ x, z, w, h, d, prop }) {
@@ -317,6 +374,7 @@ class Game {
     this.wave = 0;
     this.timeScale = 1;
     this.hitStop = 0;
+    this.tut = { step: 0, yaw0: 0, moved: 0, lastPos: new THREE.Vector3() };
   }
 
   /* ── input ── */
@@ -404,6 +462,8 @@ class Game {
     this.player.held = null;
     this.player.yaw = 0; this.player.pitch = 0;
     this.score = 0; this.wave = 0; this.waveTimer = 1.2;
+    this.tut = { step: 0, yaw0: this.player.yaw, moved: 0, lastPos: this.player.pos.clone() };
+    if (this.ring) this.ring.visible = true;
     this.timeScale = 1;
     /* restore every prop the previous run drained */
     for (const p of this.props) {
@@ -591,7 +651,7 @@ class Game {
     this.hud.flashWave(this.wave);
     const count = Math.min(3 + this.wave * 2, 16);
     for (let i = 0; i < count; i++) {
-      const a = rand(0, Math.PI * 2), r = rand(16, 21);
+      const a = rand(0, Math.PI * 2), r = rand(11, 17);
       this.spawnEnemy(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r));
     }
   }
@@ -612,6 +672,23 @@ class Game {
     armL.position.set(-0.48, 1.32, 0); armR.position.set(0.48, 1.32, 0);
     g.add(torso, head, legL, legR, armL, armR);
 
+    const visor = new THREE.Mesh(
+      new THREE.BoxGeometry(0.34, 0.07, 0.06),
+      new THREE.MeshBasicMaterial({ color: 0xff6a5a })
+    );
+    visor.position.set(0, 1.97, 0.22);
+    g.add(visor);
+    const eye = new THREE.PointLight(0xff5a45, 0.9, 3.2, 2);
+    eye.position.set(0, 1.97, 0.3);
+    g.add(eye);
+    for (const part of [torso, head]) {
+      const e2 = new THREE.LineSegments(
+        new THREE.EdgesGeometry(part.geometry, 40),
+        new THREE.LineBasicMaterial({ color: 0x4d7fd6, transparent: true, opacity: 0.55 })
+      );
+      part.add(e2);
+    }
+
     /* rim light so a black silhouette still reads against a black room */
     const rim = new THREE.PointLight(0x6fa0ff, 1.1, 6, 1.7);
     rim.position.y = 1.4;
@@ -624,6 +701,7 @@ class Game {
     hitbox.position.y = 1.05;
     g.add(hitbox);
 
+    g.scale.setScalar(1.15);
     g.position.copy(pos);
     this.scene.add(g);
 
@@ -754,8 +832,10 @@ class Game {
     }
     this.enemies = this.enemies.filter((e) => e.alive);
 
-    /* waves */
-    if (this.enemies.length === 0) {
+    this.updateTutorial(dt);
+
+    /* waves — held back until the player has been taught */
+    if (this.tut.step >= 5 && this.enemies.length === 0) {
       this.waveTimer -= dt;
       if (this.waveTimer <= 0) { this.spawnWave(); this.waveTimer = CFG.waveGap + 1.5; }
     }
@@ -790,9 +870,75 @@ class Game {
     this.torch.color.setHex(p.held ? PROPS[p.held].color : 0xbfd8ff);
     this.torch.intensity = p.held ? 4.4 : 3.2;
 
+    for (const s2 of this.strips) {
+      const f = s2.flick ? (Math.sin(performance.now() * 0.017 + s2.phase) > 0.82 ? 0.15 : 1) : 1;
+      s2.light.intensity = 2.1 * f;
+      
+      s2.strip.visible = f > 0.5;
+    }
     this.dust.rotation.y += 0.012 * dt;
+    const aim = this.targetUnderCrosshair();
+    this.hud.aim(aim ? (aim.userData.enemy ? "enemy" : (aim.userData.drained ? "spent" : "prop")) : null);
     this.audio.tension(p.memory / CFG.memoryMax);
     this.hud.update();
+  }
+
+  /**
+   * Onboarding: one instruction on screen at a time, and the game will not
+   * move on until that exact thing has been done. No text walls, no menus.
+   */
+  updateTutorial(dt) {
+    const t = this.tut, p = this.player, T = TXT[this.lang].tut;
+    if (t.step >= 6) { this.ring.visible = false; this.hud.objective(""); return; }
+
+    const touch = this.isTouch();
+    const target = this.tutorialTarget;
+
+    if (t.step === 0) {                       /* look around */
+      this.hud.objective(touch ? T.look_t : T.look);
+      this.ring.visible = false;
+      if (Math.abs(p.yaw - t.yaw0) > 0.9) this.step(1);
+    } else if (t.step === 1) {                /* move */
+      this.hud.objective(touch ? T.move_t : T.move);
+      t.moved += p.pos.distanceTo(t.lastPos);
+      t.lastPos.copy(p.pos);
+      if (t.moved > 4) this.step(2);
+    } else if (t.step === 2) {                /* aim at the glowing pillar */
+      this.hud.objective(T.aim);
+      this.markRing(target);
+      if (this.targetUnderCrosshair() === target) this.step(3);
+    } else if (t.step === 3) {                /* steal it */
+      this.hud.objective(touch ? T.steal_t : T.steal);
+      this.markRing(target);
+      if (p.held) {                            /* the steal itself advances us */
+        this.step(4);
+        this.spawnEnemy(new THREE.Vector3(0, 0, -13));
+        this.enemies[this.enemies.length - 1].speed = 1.5;
+      }
+    } else if (t.step === 4) {                /* throw it at the shadow */
+      this.hud.objective(touch ? T.throw_t : T.throw);
+      const e = this.enemies.find((x) => x.alive);
+      if (e) this.markRing(e.group, 1.2);
+      else { this.step(5); this.waveTimer = 2.2; }
+    } else if (t.step === 5) {                /* memory */
+      this.hud.objective(T.ready);
+      this.ring.visible = false;
+      t.readyT = (t.readyT || 0) + dt;
+      if (t.readyT > 2.4) this.step(6);
+    }
+  }
+  step(n) {
+    this.tut.step = n;
+    this.audio.blip({ freq: 620, type: "sine", dur: 0.16, gain: 0.16, slide: 260 });
+    this.hud.pulse();
+  }
+  markRing(obj, yOff = 0) {
+    this.ring.visible = true;
+    const y = yOff || (obj.geometry?.parameters?.height || 3) + 0.8;
+    this.ring.position.set(obj.position.x, y + Math.sin(performance.now() * 0.004) * 0.18, obj.position.z);
+    this.ring.rotation.z += 0.02;
+    const s2 = 1 + Math.sin(performance.now() * 0.006) * 0.09;
+    this.ring.scale.setScalar(s2);
   }
 
   /** axis-separated box sweep — cheap, predictable, no physics engine */
@@ -832,7 +978,7 @@ class Game {
       this.camera.position.set(Math.sin(performance.now() * 0.00012) * 20, 6, Math.cos(performance.now() * 0.00012) * 20);
       this.camera.lookAt(0, 2, 0);
     }
-    this.renderer.render(this.scene, this.camera);
+    (this.composer || this.renderer).render(this.scene, this.camera);
   }
 }
 
@@ -845,12 +991,23 @@ const TXT = {
     start: "اضغط للبدء", wave: "الموجة", score: "النقاط", memory: "الذاكرة", hp: "الجسد",
     hold: "في يدك", empty: "لا شيء",
     help: [
-      "الحركة: W A S D · القفز: مسافة",
-      "زر الفأرة الأيمن: اسرق صفة · الأيسر: ارمِها",
-      "الوزن = تطير · الصلابة = تتحمّل · السرعة = العالم يبطؤ (Shift)",
-      "أعِد الصفة لصاحبها لتستعيد ذاكرتك",
+      "اللعبة هتعلّمك خطوة بخطوة — ابدأ فقط",
+      "لا سلاح: تسرق صفة من الغرفة وترميها على عدوّك",
+      "كل سرقة تُنقص ذاكرتك — وإعادتها تستعيدها",
     ],
     dead: "انطفأت", again: "اضغط للإعادة", final: "نتيجتك",
+    tut: {
+      look: "حرّك الفأرة لتنظر حولك",
+      look_t: "اسحب يمين الشاشة لتنظر حولك",
+      move: "امشِ بالأزرار W A S D",
+      move_t: "اسحب يسار الشاشة لتمشي",
+      aim: "صوّب على العمود المُحاط بالدائرة",
+      steal: "زر الفأرة الأيمن — اسرق صفته",
+      steal_t: "اضغط زر ⟡ — اسرق صفته",
+      throw: "الصفة في يدك. صوّب على الظل واضغط الزر الأيسر",
+      throw_t: "الصفة في يدك. صوّب على الظل وانقر الشاشة",
+      ready: "كلما سرقت، نقصت ذاكرتك. استعدّ.",
+    },
     touch: ["اسحب يسار الشاشة للحركة", "اسحب يمينها للنظر · انقر للضرب", "زر السرقة تحت"],
   },
   en: {
@@ -858,12 +1015,23 @@ const TXT = {
     start: "Click to begin", wave: "WAVE", score: "SCORE", memory: "MEMORY", hp: "BODY",
     hold: "IN HAND", empty: "EMPTY",
     help: [
-      "Move: W A S D · Jump: Space",
-      "Right mouse: steal a property · Left: throw it",
-      "Weight = you fly · Hardness = you endure · Speed = world slows (Shift)",
-      "Give a property back to restore memory",
+      "The game teaches you step by step — just start",
+      "No weapon: steal a property from the room, throw it at your enemy",
+      "Every theft costs memory — giving it back restores it",
     ],
     dead: "YOU WENT OUT", again: "Click to retry", final: "SCORE",
+    tut: {
+      look: "Move the mouse to look around",
+      look_t: "Drag the right side to look around",
+      move: "Walk with W A S D",
+      move_t: "Drag the left side to walk",
+      aim: "Aim at the marked pillar",
+      steal: "Right mouse button — steal its property",
+      steal_t: "Press ⟡ — steal its property",
+      throw: "It is in your hand. Aim at the shadow and press left mouse",
+      throw_t: "It is in your hand. Aim at the shadow and tap the screen",
+      ready: "Every theft costs memory. Get ready.",
+    },
     touch: ["Drag left side to move", "Drag right side to look · tap to strike", "Steal button below"],
   },
 };
@@ -875,6 +1043,7 @@ class HUD {
     this.root = document.getElementById("hud");
     this.root.innerHTML = `
       <div id="crosshair"></div>
+      <div id="objective"><span></span></div>
       <div id="vignette"></div>
       <div id="bars">
         <div class="bar"><span class="lbl">${this.t.memory}</span><div class="track"><i id="mem"></i></div></div>
@@ -893,6 +1062,9 @@ class HUD {
     this.screen = this.root.querySelector("#screen");
     this.wavemsg = this.root.querySelector("#wavemsg");
     this.vig = this.root.querySelector("#vignette");
+    this.obj = this.root.querySelector("#objective");
+    this.objText = this.obj.firstElementChild;
+    this.cross = this.root.querySelector("#crosshair");
     const sb = this.root.querySelector("#stealbtn");
     sb.addEventListener("touchstart", (e) => { e.preventDefault(); e.stopPropagation(); this.g.steal(); });
     sb.addEventListener("click", (e) => { e.stopPropagation(); this.g.steal(); });
@@ -916,6 +1088,21 @@ class HUD {
            <p class="final">${t.final} <b>${g.score}</b> · ${t.wave} ${g.wave}</p>
            <div class="cta">${t.again}</div>
          </div>`;
+  }
+  objective(text) {
+    if (this.objText.textContent === text) return;
+    this.objText.textContent = text;
+    this.obj.style.opacity = text ? "1" : "0";
+  }
+  pulse() {
+    this.obj.classList.remove("pulse");
+    void this.obj.offsetWidth;
+    this.obj.classList.add("pulse");
+  }
+  aim(kind) {
+    if (this._aim === kind) return;
+    this._aim = kind;
+    this.cross.dataset.aim = kind || "";
   }
   flashWave(n) {
     this.wavemsg.textContent = `${this.t.wave} ${n}`;
