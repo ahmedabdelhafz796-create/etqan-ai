@@ -1091,6 +1091,253 @@ check('low-volume stores are told there is nothing to detect', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-A3-03 · Leak Detection & Watermarking');
+
+const leak = load('a3-fraud-security/leak-detection-watermarking/workflow.json');
+
+check('stamping issues both a visible and an invisible marker', () => {
+  const r = execute(leak, { trigger: { body: { action: 'stamp', orderId: 'o-1', email: 'b@x.test', productId: 'p1', name: 'Buyer' } }, staticData: {} });
+  const out = r.outputs['🔖 Create the buyer marker'][0].json;
+  assert(out.marker && out.marker.length >= 8, `marker looks too short: ${out.marker}`);
+  assert(/Licensed to Buyer/.test(out.visibleMark), 'visible mark does not name the buyer');
+  assert(/^DCA-/.test(out.invisibleMark), 'invisible mark is not namespaced');
+});
+
+check('the same order always produces the same marker', () => {
+  const a = execute(leak, { trigger: { body: { action: 'stamp', orderId: 'o-2', email: 'b@x.test', productId: 'p1' } }, staticData: {} });
+  const b = execute(leak, { trigger: { body: { action: 'stamp', orderId: 'o-2', email: 'b@x.test', productId: 'p1' } }, staticData: {} });
+  assert(a.outputs['🔖 Create the buyer marker'][0].json.marker ===
+         b.outputs['🔖 Create the buyer marker'][0].json.marker,
+    'markers are not deterministic — a re-stamped file would not trace');
+});
+
+check('different buyers get different markers', () => {
+  const a = execute(leak, { trigger: { body: { action: 'stamp', orderId: 'o-3', email: 'a@x.test', productId: 'p1' } }, staticData: {} });
+  const b = execute(leak, { trigger: { body: { action: 'stamp', orderId: 'o-4', email: 'b@x.test', productId: 'p1' } }, staticData: {} });
+  assert(a.outputs['🔖 Create the buyer marker'][0].json.marker !==
+         b.outputs['🔖 Create the buyer marker'][0].json.marker,
+    'two buyers share a marker — leaks would be unattributable');
+});
+
+check('a found marker traces back to the buyer', () => {
+  const shared = {};
+  const s = execute(leak, { trigger: { body: { action: 'stamp', orderId: 'o-5', email: 'leaker@x.test', productId: 'p1' } }, staticData: shared });
+  const marker = s.outputs['🔖 Create the buyer marker'][0].json.marker;
+  shared.seen = {};
+  const t = execute(leak, { trigger: { body: { action: 'trace', marker: `DCA-${marker}` } }, staticData: shared });
+  const out = t.outputs['🔎 Trace a found marker'][0].json;
+  assert(out.action === 'traced', `trace returned "${out.action}"`);
+  assert(out.email === 'leaker@x.test', `traced to the wrong buyer: ${out.email}`);
+});
+
+check('an unknown marker explains why rather than failing silently', () => {
+  const r = execute(leak, { trigger: { body: { action: 'trace', marker: 'NOTREAL12345' } }, staticData: {} });
+  const out = r.outputs['🔎 Trace a found marker'][0].json;
+  assert(out.action === 'trace_failed', 'an unknown marker was reported as traced');
+  assert(/markerSalt|misread/i.test(out.message), 'no explanation of why the trace failed');
+});
+
+check('a takedown notice is produced and disclaims legal advice', () => {
+  const r = execute(leak, { trigger: { body: { action: 'takedown', url: 'https://pirate.test/file', productName: 'Course' } }, staticData: {} });
+  const out = r.outputs['⚖️ Draft the takedown notice'][0].json;
+  assert(/DMCA TAKEDOWN NOTICE/.test(out.notice), 'no notice was drafted');
+  assert(/https:\/\/pirate\.test\/file/.test(out.notice), 'the infringing URL is missing from the notice');
+  assert(/NOT LEGAL ADVICE/.test(out.notice), 'the notice does not disclaim legal advice');
+});
+
+check('a takedown without a URL is refused', () => {
+  const r = execute(leak, { trigger: { body: { action: 'takedown', marker: 'X' } }, staticData: {} });
+  assert(r.effects.errors.length > 0, 'a takedown with no URL was accepted');
+});
+
+check('heavy multi-IP sharing is detected from download data', () => {
+  const shared = {
+    downloads: { 'o-9|p1': { count: 60, ips: Array.from({ length: 25 }, (_, i) => `9.9.9.${i}`), firstAt: Date.now() } },
+    markers: { M1: { marker: 'M1', orderId: 'o-9', email: 'sharer@x.test', issuedAt: Date.now() } },
+  };
+  const r = execute(leak, { trigger: {}, staticData: shared, from: 'Scan download patterns' });
+  const out = r.outputs['📊 Find sharing patterns'][0].json;
+  assert(out.found === 1, `expected 1 suspect, got ${out.found}`);
+  assert(out.suspects[0].severity === 'critical', `25 IPs ranked "${out.suspects[0].severity}"`);
+  assert(out.suspects[0].email === 'sharer@x.test', 'the suspect was not linked back to a buyer');
+});
+
+check('normal download behaviour raises nothing', () => {
+  const shared = { downloads: { 'o-10|p1': { count: 3, ips: ['1.1.1.1', '1.1.1.2'], firstAt: Date.now() } } };
+  const r = execute(leak, { trigger: {}, staticData: shared, from: 'Scan download patterns' });
+  assert(r.effects.emails.length === 0, 'a normal buyer on two devices triggered a leak alert');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A1-04 · Product Update Broadcast');
+
+const broadcast = load('a1-delivery/product-update-broadcast/workflow.json');
+const bcSecrets = { '✍️ Sign fresh links': LINK_SECRET };
+
+const BC_CFG = {
+  storeName: 'T', fromEmail: 'u@x.test', supportEmail: 's@x.test',
+  downloadBaseUrl: 'https://x.test/download', linkTtlHours: 168, maxDownloads: 5,
+  batchSize: 50, historyTtlDays: 730,
+  buyers: { 'book-01': [
+    { email: 'a@x.test', orderId: 'o-a', name: 'A' },
+    { email: 'b@x.test', orderId: 'o-b', name: 'B' },
+  ]},
+};
+
+const update = (o = {}) => ({
+  body: { productId: 'book-01', version: '2.0', significance: 'major', changes: ['New chapter'], ...o },
+  headers: {},
+});
+
+check('a major update emails every buyer of that product', () => {
+  const r = execute(broadcast, { trigger: update(), secrets: bcSecrets, staticData: {}, configOverride: BC_CFG });
+  assert(r.effects.emails.length === 2, `expected 2 emails, got ${r.effects.emails.length}`);
+  assert(/sig=[a-f0-9]{64}/.test(r.effects.emails[0].html), 'the announcement carries no fresh signed link');
+});
+
+check('a patch-level change emails nobody', () => {
+  const r = execute(broadcast, { trigger: update({ significance: 'patch', version: '2.0.1' }), secrets: bcSecrets, staticData: {}, configOverride: BC_CFG });
+  assert(r.effects.emails.length === 0,
+    'a typo fix mailed the whole buyer list — that is how an update becomes an unsubscribe');
+});
+
+check('re-running the same update mails nobody twice', () => {
+  const shared = {};
+  const first = execute(broadcast, { trigger: update(), secrets: bcSecrets, staticData: shared, configOverride: BC_CFG });
+  shared.seen = {};
+  const second = execute(broadcast, { trigger: update(), secrets: bcSecrets, staticData: shared, configOverride: BC_CFG });
+  assert(first.effects.emails.length === 2, 'first run should mail both buyers');
+  assert(second.effects.emails.length === 0, 'a re-run mailed everyone a second time');
+});
+
+check('buyers of other products are not mailed', () => {
+  const r = execute(broadcast, { trigger: update({ productId: 'other-product' }), secrets: bcSecrets, staticData: {}, configOverride: BC_CFG });
+  assert(r.effects.emails.length === 0, 'an update mailed buyers who never bought that product');
+});
+
+check('a link from the broadcast verifies in A1-02 (four templates, one contract)', () => {
+  const r = execute(broadcast, { trigger: update(), secrets: bcSecrets, staticData: {}, configOverride: BC_CFG });
+  const url = r.effects.emails[0].html.match(/href="([^"]+download[^"]*)"/)?.[1];
+  assert(url, 'no download URL in the announcement');
+  const params = Object.fromEntries(new URL(url).searchParams);
+  const v = execute(download, { trigger: { query: params, headers: {} }, secrets: dlSecrets, staticData: {} });
+  assert(v.effects.responses.some((x) => x.with === 'redirect'),
+    'a link from A1-04 was rejected by A1-02 — the URL contract has drifted');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A8-01 · Commission & Affiliate Payouts');
+
+const commission = load('a8-marketplace-ops/commission-affiliate-payouts/workflow.json');
+
+const COM_CFG = {
+  storeName: 'T', fromEmail: 'p@x.test', ownerEmail: 'me@x.test', currency: 'USD',
+  defaultRate: 20, minimumPayout: 25, holdDays: 30, historyTtlDays: 400,
+  partners: { PARTNER_A: { name: 'Partner A', email: 'pa@x.test', rate: 20 } },
+};
+
+const sale = (o = {}) => ({ body: { orderId: 'ord-1', partnerId: 'PARTNER_A', amount: 100, currency: 'USD', ...o }, headers: {} });
+
+check('a sale records commission at the configured rate', () => {
+  const shared = {};
+  const r = execute(commission, { trigger: sale(), staticData: shared, configOverride: COM_CFG });
+  const out = r.outputs['📒 Record the earning or reversal'][0].json;
+  assert(out.action === 'recorded', `action was "${out.action}"`);
+  assert(out.commission === 20, `expected 20 commission on a 100 sale at 20%, got ${out.commission}`);
+});
+
+check('a duplicate sale does not double-count commission', () => {
+  const shared = {};
+  execute(commission, { trigger: sale(), staticData: shared, configOverride: COM_CFG });
+  shared.seen = {};
+  const r = execute(commission, { trigger: sale(), staticData: shared, configOverride: COM_CFG });
+  assert(r.outputs['📒 Record the earning or reversal'][0].json.action === 'duplicate_ignored',
+    'the same order was counted twice');
+});
+
+check('a refund reverses the commission', () => {
+  const shared = {};
+  execute(commission, { trigger: sale(), staticData: shared, configOverride: COM_CFG });
+  shared.seen = {};
+  const r = execute(commission, { trigger: { body: { event: 'refund', orderId: 'ord-1' }, headers: {} }, staticData: shared, configOverride: COM_CFG });
+  const out = r.outputs['📒 Record the earning or reversal'][0].json;
+  assert(out.action === 'reversed', `refund produced "${out.action}"`);
+  assert(shared.earnings['ord-1|reversal'].commission === -20,
+    'no negative record was created — the partner would be paid on refunded revenue');
+});
+
+check('the rate is frozen at sale time, not recalculated later', () => {
+  const shared = {};
+  execute(commission, { trigger: sale({ orderId: 'ord-rate' }), staticData: shared, configOverride: COM_CFG });
+  // Partner renegotiates to 40% afterwards.
+  const raised = { ...COM_CFG, partners: { PARTNER_A: { name: 'Partner A', email: 'pa@x.test', rate: 40 } } };
+  shared.seen = {};
+  execute(commission, { trigger: sale({ orderId: 'ord-new' }), staticData: shared, configOverride: raised });
+  assert(shared.earnings['ord-rate'].commission === 20, 'a historical sale was repriced at the new rate');
+  assert(shared.earnings['ord-new'].commission === 40, 'the new rate was not applied to the new sale');
+});
+
+check('an unknown partner is flagged rather than silently defaulted', () => {
+  const r = execute(commission, { trigger: sale({ partnerId: 'GHOST' }), staticData: {}, configOverride: COM_CFG });
+  const out = r.outputs['📒 Record the earning or reversal'][0].json;
+  assert(out.warning && /not in your Config/.test(out.warning), 'an unknown partner produced no warning');
+});
+
+check('a sale with no partner is recorded as direct, not an error', () => {
+  const r = execute(commission, { trigger: sale({ partnerId: '' }), staticData: {}, configOverride: COM_CFG });
+  assert(r.outputs['📒 Record the earning or reversal'][0].json.action === 'no_attribution',
+    'a direct sale was mishandled');
+});
+
+check('payout pays matured earnings above the minimum', () => {
+  const old = Date.now() - 40 * 86400000;
+  const shared = { earnings: {
+    e1: { orderId: 'e1', partnerId: 'PARTNER_A', partnerName: 'Partner A', partnerEmail: 'pa@x.test',
+          saleAmount: 200, rate: 20, commission: 40, currency: 'USD', at: old, paid: false, reversed: false },
+  }};
+  const r = execute(commission, { trigger: {}, staticData: shared, configOverride: COM_CFG, from: 'Payout run' });
+  const out = r.outputs['🧮 Calculate what is owed'][0].json;
+  assert(out.totalDue === 40, `expected 40 due, got ${out.totalDue}`);
+  assert(shared.earnings.e1.paid === true, 'the earning was not marked paid');
+});
+
+check('re-running the payout pays nobody twice', () => {
+  const old = Date.now() - 40 * 86400000;
+  const shared = { earnings: {
+    e1: { orderId: 'e1', partnerId: 'PARTNER_A', partnerName: 'P', partnerEmail: 'p@x.test',
+          saleAmount: 200, rate: 20, commission: 40, currency: 'USD', at: old, paid: false, reversed: false },
+  }};
+  const first = execute(commission, { trigger: {}, staticData: shared, configOverride: COM_CFG, from: 'Payout run' });
+  const second = execute(commission, { trigger: {}, staticData: shared, configOverride: COM_CFG, from: 'Payout run' });
+  assert(first.outputs['🧮 Calculate what is owed'][0].json.totalDue === 40, 'first run should owe 40');
+  assert(second.outputs['🧮 Calculate what is owed'][0].json.totalDue === 0,
+    'a second payout run paid the same earnings again');
+});
+
+check('balances below the minimum carry forward instead of being paid', () => {
+  const old = Date.now() - 40 * 86400000;
+  const shared = { earnings: {
+    e1: { orderId: 'e1', partnerId: 'PARTNER_A', partnerName: 'P', partnerEmail: 'p@x.test',
+          saleAmount: 50, rate: 20, commission: 10, currency: 'USD', at: old, paid: false, reversed: false },
+  }};
+  const r = execute(commission, { trigger: {}, staticData: shared, configOverride: COM_CFG, from: 'Payout run' });
+  const out = r.outputs['🧮 Calculate what is owed'][0].json;
+  assert(out.totalDue === 0, 'a sub-threshold balance was paid out');
+  assert(out.heldCount === 1, 'the balance was not carried forward');
+  assert(shared.earnings.e1.paid !== true, 'a carried-forward earning was wrongly marked paid');
+});
+
+check('recent earnings are held until the refund window passes', () => {
+  const shared = { earnings: {
+    e1: { orderId: 'e1', partnerId: 'PARTNER_A', partnerName: 'P', partnerEmail: 'p@x.test',
+          saleAmount: 500, rate: 20, commission: 100, currency: 'USD', at: Date.now(), paid: false, reversed: false },
+  }};
+  const r = execute(commission, { trigger: {}, staticData: shared, configOverride: COM_CFG, from: 'Payout run' });
+  assert(r.outputs['🧮 Calculate what is owed'][0].json.totalDue === 0,
+    'a sale from today was paid out before its refund window closed');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {

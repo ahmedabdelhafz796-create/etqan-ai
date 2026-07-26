@@ -1,0 +1,473 @@
+{
+  "name": "DCA-A8-01 · Commission & Affiliate Payouts",
+  "nodes": [
+    {
+      "id": "4bd8965c-4a12-5447-9686-3eba21689a6c",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -560
+      ],
+      "parameters": {
+        "content": "## 💸 Commission & Affiliate Payouts\n**Sale → attributed and rated → refunds reversed → payout instruction.**\n\n### Setup (about 16 minutes)\n1. **⚙️ Config** → `partners` (id → name, email, rate), `minimumPayout`.\n2. POST each sale:\n   ```json\n   { \"orderId\": \"...\", \"partnerId\": \"...\",\n     \"amount\": 49, \"currency\": \"USD\" }\n   ```\n3. POST refunds the same way with `{\"event\":\"refund\", \"orderId\":\"...\"}`.\n4. The schedule produces the payout run. Attach SMTP to the report.\n\n### It does not move money — on purpose\nIt tells you exactly what to pay and to whom. **You** execute it through\nyour own provider. An automation with authority to send funds is a very\ndifferent risk class, and not one a template should assume.",
+        "height": 560,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "c5873920-5e1d-5a59-acdf-3bef2b36d95e",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -560
+      ],
+      "parameters": {
+        "content": "### 🔄 Refunds must reverse commission\nA commission earned on an order that is later refunded has to be clawed\nback, or you are paying out on revenue **you no longer have**.\n\nMost hand-rolled systems never do this, and the gap only becomes visible\nwhen the numbers stop matching your bank.\n\nReversal here is automatic, and it works whether or not the original\nearning has already been paid — an already-paid reversal becomes a\nnegative balance carried into the next run.",
+        "height": 400,
+        "width": 500,
+        "color": 5
+      }
+    },
+    {
+      "id": "9409498d-1d47-57ee-9fc1-b722de9b8ae9",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -560
+      ],
+      "parameters": {
+        "content": "### 📌 The rate is frozen at sale time\nIf a partner's rate changes from 20% to 30%, **past sales keep 20%**.\n\nRecalculating history is how commission disputes start — and the partner\nalways remembers the higher number.\n\nEvery earning stores the rate that applied when it was created.",
+        "height": 320,
+        "width": 460,
+        "color": 7
+      }
+    },
+    {
+      "id": "3d0f6b1e-18d8-509e-a103-d99822151ae5",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        400
+      ],
+      "parameters": {
+        "content": "### 🚫 Two safeguards on payout\n**No double payment.** Every earning is stamped with a batch id when\npaid. A re-run only ever considers unpaid records, so running the job\ntwice pays nobody twice.\n\n**Minimum threshold.** Sending $0.40 costs more in fees than it\ntransfers. Balances below `minimumPayout` carry forward until they are\nworth sending.",
+        "height": 320,
+        "width": 460,
+        "color": 4
+      }
+    },
+    {
+      "id": "e6df25c5-1eaf-51ed-b215-99dceabd24c9",
+      "name": "🛒 Sale or refund",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -700,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/commission",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST {orderId, partnerId, amount} for sales, or {event:'refund', orderId} for reversals.",
+      "notesInFlow": false
+    },
+    {
+      "id": "c374f3d2-0b73-509c-90fb-5cca7d1d7e4f",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"payouts@yourdomain.com\",\n  \"ownerEmail\": \"you@yourdomain.com\",\n  \"currency\": \"USD\",\n  \"defaultRate\": 20,\n  \"minimumPayout\": 25,\n  \"holdDays\": 30,\n  \"partners\": {\"EXAMPLE_PARTNER\": {\"name\": \"Example Partner\", \"email\": \"partner@example.com\", \"rate\": 20}},\n  \"historyTtlDays\": 400\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "holdDays delays payout until the refund window has passed — pay too early and you claw back later.",
+      "notesInFlow": false
+    },
+    {
+      "id": "1884a896-6ba9-5d31-a723-7c7e88efb5f4",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 720 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.event ?? 'sale') + '|' + (j.body?.orderId ?? j.body?.order_id ?? Date.now()) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "090bdc12-7aff-54b9-9fbc-35adcdfe13d4",
+      "name": "📒 Record the earning or reversal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Append-only ledger. Nothing is ever edited in place — a reversal is a new\n// negative record referencing the original. That is what makes the numbers\n// defensible when a partner disputes them.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.earnings = store.earnings || {};\n\nconst now = Date.now();\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nfor (const [k, e] of Object.entries(store.earnings)) {\n  if (now - (e.at || 0) > ttlMs) delete store.earnings[k];\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n\n  const orderId = String(b.orderId ?? b.order_id ?? '').trim();\n  const event = String(b.event ?? b.type ?? 'sale').toLowerCase();\n  const isRefund = event.includes('refund') || event.includes('chargeback') || event.includes('dispute');\n\n  if (!orderId) {\n    throw new Error('Commission events need an orderId. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  // ── Refund: reverse the original earning ────────────────────\n  if (isRefund) {\n    const original = store.earnings[orderId];\n\n    if (!original) {\n      out.push({ json: {\n        action: 'reversal_skipped', orderId,\n        reason: 'no commission was recorded for this order',\n        __config: cfg,\n      }});\n      continue;\n    }\n\n    if (original.reversed) {\n      out.push({ json: {\n        action: 'already_reversed', orderId,\n        reason: 'this order was already reversed',\n        __config: cfg,\n      }});\n      continue;\n    }\n\n    original.reversed = true;\n    original.reversedAt = now;\n    store.earnings[orderId] = original;\n\n    // A negative record so the arithmetic works whether or not the original was\n    // already paid. If it was, this becomes a negative balance carried forward.\n    const reversalKey = `${orderId}|reversal`;\n    store.earnings[reversalKey] = {\n      orderId: reversalKey,\n      sourceOrderId: orderId,\n      partnerId: original.partnerId,\n      saleAmount: -Math.abs(original.saleAmount),\n      rate: original.rate,\n      commission: -Math.abs(original.commission),\n      currency: original.currency,\n      at: now,\n      paid: false,\n      isReversal: true,\n    };\n\n    out.push({ json: {\n      action: 'reversed', orderId,\n      partnerId: original.partnerId,\n      reversedCommission: original.commission,\n      note: original.paid\n        ? 'The original commission was already paid — this becomes a negative balance on the next payout.'\n        : 'The original commission had not been paid yet, so it is simply cancelled.',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  // ── Sale: record the earning ────────────────────────────────\n  if (store.earnings[orderId]) {\n    out.push({ json: {\n      action: 'duplicate_ignored', orderId,\n      reason: 'commission already recorded for this order',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  const partnerId = String(b.partnerId ?? b.partner_id ?? b.affiliate ?? b.ref ?? '').trim();\n  if (!partnerId) {\n    out.push({ json: {\n      action: 'no_attribution', orderId,\n      reason: 'no partnerId on this sale — direct sale, no commission owed',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  const partner = (cfg.partners || {})[partnerId];\n  // Freeze the rate NOW. Recalculating history is how disputes start.\n  const rate = Number(partner?.rate ?? cfg.defaultRate);\n  const saleAmount = Number(b.amount ?? b.total ?? 0);\n  const commission = Math.round(saleAmount * (rate / 100) * 100) / 100;\n\n  store.earnings[orderId] = {\n    orderId, partnerId,\n    partnerName: partner?.name ?? partnerId,\n    partnerEmail: partner?.email ?? null,\n    saleAmount,\n    rate,\n    commission,\n    currency: String(b.currency ?? cfg.currency).toUpperCase(),\n    at: now,\n    paid: false,\n    reversed: false,\n    knownPartner: !!partner,\n  };\n\n  out.push({ json: {\n    action: 'recorded', orderId, partnerId,\n    commission, rate,\n    warning: partner ? null : `Partner \"${partnerId}\" is not in your Config — default rate ${cfg.defaultRate}% applied. Add them.`,\n    __config: cfg,\n  }});\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Append-only. Reversals are new negative records, never edits — that is what makes disputes answerable.",
+      "notesInFlow": false
+    },
+    {
+      "id": "67c8e7b9-e991-533a-81dd-161540b73aa2",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, action: $json.action }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    },
+    {
+      "id": "1c40d4fb-94c9-5ccb-a97a-fc5099abf890",
+      "name": "🕐 Payout run",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -700,
+        620
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 1 * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "5e57321e-228c-53a3-8a01-eeab50686036",
+      "name": "⚙️ Config (payout side)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Mirror of the main Config — n8n cannot share a node across trigger branches.\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"payouts@yourdomain.com\",\n  \"ownerEmail\": \"you@yourdomain.com\",\n  \"currency\": \"USD\",\n  \"minimumPayout\": 25,\n  \"holdDays\": 30\n};\nreturn [{ json: { __config: CONFIG } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "⚠️ Mirror of the main Config. Change one, change both.",
+      "notesInFlow": false
+    },
+    {
+      "id": "927141eb-8290-5a29-bbc2-67db3d90ce5a",
+      "name": "🧮 Calculate what is owed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Sum unpaid, matured earnings per partner. Only records not already stamped\n// with a batch id are considered, which is what makes a re-run safe.\nconst cfg = $input.first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.earnings = store.earnings || {};\nstore.payouts = store.payouts || {};\n\nconst now = Date.now();\nconst DAY = 24 * 60 * 60 * 1000;\nconst holdMs = Number(cfg.holdDays) * DAY;\n\nconst byPartner = {};\n\nfor (const e of Object.values(store.earnings)) {\n  if (e.paid) continue;\n\n  // A reversal always counts immediately — holding it back would let a refunded\n  // sale be paid out before its reversal matures.\n  if (!e.isReversal && now - e.at < holdMs) continue;\n\n  const p = byPartner[e.partnerId] = byPartner[e.partnerId] || {\n    partnerId: e.partnerId,\n    partnerName: e.partnerName ?? e.partnerId,\n    partnerEmail: e.partnerEmail ?? null,\n    currency: e.currency ?? cfg.currency,\n    gross: 0, reversals: 0, net: 0,\n    saleCount: 0, reversalCount: 0,\n    keys: [],\n  };\n\n  if (e.isReversal) { p.reversals += Math.abs(e.commission); p.reversalCount += 1; }\n  else { p.gross += e.commission; p.saleCount += 1; }\n\n  p.net = Math.round((p.gross - p.reversals) * 100) / 100;\n  p.keys.push(e.orderId);\n}\n\nconst batchId = `PAYOUT-${new Date().toISOString().slice(0, 10)}-${String(now).slice(-5)}`;\nconst due = [];\nconst held = [];\n\nfor (const p of Object.values(byPartner)) {\n  p.gross = Math.round(p.gross * 100) / 100;\n  p.reversals = Math.round(p.reversals * 100) / 100;\n\n  if (p.net < Number(cfg.minimumPayout)) {\n    // Carried forward. Not marked paid, so it accumulates into the next run.\n    held.push({ ...p, reason: p.net < 0\n      ? `negative balance of ${p.net} carried forward — refunds exceeded earnings this period`\n      : `below the ${cfg.minimumPayout} ${p.currency} minimum — carried forward` });\n    continue;\n  }\n\n  // Stamp every contributing record so a re-run cannot pay this twice.\n  for (const key of p.keys) {\n    if (store.earnings[key]) {\n      store.earnings[key].paid = true;\n      store.earnings[key].paidAt = now;\n      store.earnings[key].batchId = batchId;\n    }\n  }\n\n  due.push(p);\n}\n\nif (due.length) {\n  store.payouts[batchId] = {\n    batchId, at: now,\n    total: Math.round(due.reduce((s, p) => s + p.net, 0) * 100) / 100,\n    partners: due.length,\n  };\n}\n\nreturn [{ json: {\n  batchId,\n  due, held,\n  totalDue: Math.round(due.reduce((s, p) => s + p.net, 0) * 100) / 100,\n  partnerCount: due.length,\n  heldCount: held.length,\n  hasPayouts: due.length > 0,\n  generatedAt: new Date().toISOString(),\n  __config: cfg,\n}}];"
+      },
+      "alwaysOutputData": true,
+      "notes": "Only unpaid, matured records count. Everything paid is stamped with the batch id, so re-runs are safe.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7a46af12-f577-5ea3-8c04-dcecfecb99d0",
+      "name": "💰 Anything to pay?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -20,
+        620
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3c699b21-1a63-57ba-a424-d6fd7ee0e8b3",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.hasPayouts }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "05869983-446b-54fe-bb75-32f307fe9f5c",
+      "name": "📄 Build the payout instruction",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        540
+      ],
+      "parameters": {
+        "jsCode": "// The document the seller works from. It has to be unambiguous enough to act on\n// without opening anything else, because that is when mistakes happen.\nconst o = $input.first().json;\nconst cfg = o.__config;\n\nconst rows = o.due.map(p =>\n`  ${p.partnerName} <${p.partnerEmail || 'NO EMAIL ON FILE'}>\n     ${p.saleCount} sale(s): ${p.gross} ${p.currency}` +\n  (p.reversalCount ? `\\n     ${p.reversalCount} reversal(s): -${p.reversals} ${p.currency}` : '') +\n`\\n     → PAY: ${p.net} ${p.currency}`\n).join('\\n\\n');\n\nconst heldRows = o.held.length\n  ? '\\n\\n── CARRIED FORWARD ─────────────────\\n' +\n    o.held.map(p => `  ${p.partnerName}: ${p.net} ${p.currency} — ${p.reason}`).join('\\n')\n  : '';\n\nconst text =\n`💸 PAYOUT INSTRUCTION — ${cfg.storeName}\nBatch: ${o.batchId}\nGenerated: ${o.generatedAt.slice(0, 16).replace('T', ' ')}\n\nTOTAL TO PAY: ${o.totalDue} ${cfg.currency} across ${o.partnerCount} partner(s)\n\n── PAY THESE ───────────────────────\n${rows}${heldRows}\n\n── HOW TO USE THIS ─────────────────\n1. Send each amount through your usual payment method.\n2. These earnings are now marked paid under batch ${o.batchId} —\n   re-running this job will NOT produce them again.\n3. If a payment fails, the record is still marked paid. Reverse it manually\n   or keep a note; nothing here will re-issue it automatically.\n\n⚠️ This workflow does not move money. It tells you what to send.`;\n\nreturn [{ json: { ...o, instructionText: text,\n  subject: `💸 Payout ${o.batchId} — ${o.totalDue} ${cfg.currency} across ${o.partnerCount} partner(s)` }}];"
+      },
+      "notes": "Unambiguous enough to act on without opening anything else.",
+      "notesInFlow": false
+    },
+    {
+      "id": "adbd8ae1-58a4-595e-97c7-a8284ede9808",
+      "name": "📨 Send the instruction",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        540
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.ownerEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.instructionText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "notes": "Goes to you, not to partners. You execute the payments.",
+      "notesInFlow": false
+    },
+    {
+      "id": "28a081b9-104b-58b5-85c7-bd38f58e08e4",
+      "name": "🤫 Nothing due",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        720
+      ],
+      "parameters": {
+        "jsCode": "// Everyone is below threshold, or there were no earnings this period. Recorded\n// so an empty run is visibly an empty run rather than a silent failure.\nconst o = $input.first().json;\nreturn [{ json: {\n  batchId: o.batchId,\n  totalDue: 0,\n  heldCount: o.heldCount,\n  note: o.heldCount\n    ? `${o.heldCount} partner(s) below the minimum — balances carried forward.`\n    : 'No unpaid, matured earnings this period.',\n  checkedAt: new Date().toISOString(),\n}}];"
+      },
+      "notes": "An empty run is logged, so you can tell 'nothing owed' from 'not running'.",
+      "notesInFlow": false
+    },
+    {
+      "id": "6b4b917f-f43f-5963-acfd-49a198b995f1",
+      "name": "📒 Payout log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Your permanent record of what was paid and when. Keep it somewhere durable —\n// this is the document that settles a commission dispute.\nreturn $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  batchId: i.json.batchId ?? null,\n  totalDue: i.json.totalDue ?? 0,\n  partnerCount: i.json.partnerCount ?? 0,\n  heldCount: i.json.heldCount ?? 0,\n  breakdown: (i.json.due ?? []).map(p =>\n    `${p.partnerId}:${p.net}${p.currency}`).join(' | ') || null,\n}}));"
+      },
+      "notes": "⚠️ Wire to a Sheet. This is the document that settles disputes.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🛒 Sale or refund": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📒 Record the earning or reversal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Record the earning or reversal": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🕐 Payout run": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config (payout side)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config (payout side)": {
+      "main": [
+        [
+          {
+            "node": "🧮 Calculate what is owed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧮 Calculate what is owed": {
+      "main": [
+        [
+          {
+            "node": "💰 Anything to pay?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💰 Anything to pay?": {
+      "main": [
+        [
+          {
+            "node": "📄 Build the payout instruction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🤫 Nothing due",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 Build the payout instruction": {
+      "main": [
+        [
+          {
+            "node": "📨 Send the instruction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Send the instruction": {
+      "main": [
+        [
+          {
+            "node": "📒 Payout log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤫 Nothing due": {
+      "main": [
+        [
+          {
+            "node": "📒 Payout log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "marketplace"
+    },
+    {
+      "name": "affiliates"
+    },
+    {
+      "name": "payouts"
+    },
+    {
+      "name": "finance"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "commission-affiliate-payouts",
+    "category": "a8-marketplace-ops",
+    "version": "1.0.0"
+  }
+}
