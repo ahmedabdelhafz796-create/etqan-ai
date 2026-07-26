@@ -724,6 +724,89 @@ check('a reissued link verifies in A1-02 (three templates share one URL contract
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-A2-02 · Automatic Invoice & VAT');
+
+const invoice = load('a2-payments-finance/automatic-invoice-vat/workflow.json');
+
+const paidOrder = (o = {}, headers = {}) => ({
+  body: {
+    id: o.id ?? 'evt_inv_1',
+    data: { object: {
+      id: o.orderId ?? 'ord-1',
+      amount_total: o.amount ?? 11900,
+      currency: 'eur',
+      customer_details: { email: 'buyer@example.com', name: 'Buyer',
+                          address: { country: o.country ?? 'DE' } },
+      metadata: { product_name: 'Course' },
+      ...(o.vat ? { tax_ids: [{ value: o.vat }] } : {}),
+    }},
+  },
+  headers,
+});
+
+check('invoice numbers are sequential with no gaps', () => {
+  const shared = {};
+  const nums = ['a', 'b', 'c'].map((id) => {
+    const r = execute(invoice, { trigger: paidOrder({ id: `evt_${id}`, orderId: `ord-${id}` }), staticData: shared });
+    return r.outputs['🔢 Assign invoice number'][0].json.invoiceSeq;
+  });
+  assert(JSON.stringify(nums) === JSON.stringify([1000, 1001, 1002]),
+    `numbering was not sequential: ${nums.join(', ')}`);
+});
+
+check('a replayed order reuses its original number, never consuming a new one', () => {
+  const shared = {};
+  const first = execute(invoice, { trigger: paidOrder({ id: 'evt_x', orderId: 'ord-x' }), staticData: shared });
+  // Simulate a replay arriving after the dedupe guard's TTL has expired.
+  shared.seen = {};
+  const second = execute(invoice, { trigger: paidOrder({ id: 'evt_x', orderId: 'ord-x' }), staticData: shared });
+
+  const n1 = first.outputs['🔢 Assign invoice number'][0].json.invoiceNumber;
+  const n2 = second.outputs['🔢 Assign invoice number'][0].json.invoiceNumber;
+  assert(n1 === n2, `replay issued a second number (${n1} then ${n2}) — an auditor notices that`);
+  assert(shared.invoiceCounter === 1000, `counter advanced on a replay: ${shared.invoiceCounter}`);
+});
+
+check('tax is extracted correctly from a tax-inclusive price', () => {
+  const r = execute(invoice, { trigger: paidOrder({ country: 'DE', amount: 11900 }), staticData: {} });
+  const out = r.outputs['🧮 Apply tax and build the invoice'][0].json;
+  // 119.00 gross at 19% inclusive → 100.00 net, 19.00 tax
+  assert(out.net === 100 && out.taxAmount === 19,
+    `expected net 100 / tax 19, got net ${out.net} / tax ${out.taxAmount}`);
+  assert(out.net + out.taxAmount === out.total, 'net + tax does not equal the total charged');
+});
+
+check('an unconfigured country falls back and says so', () => {
+  const r = execute(invoice, { trigger: paidOrder({ country: 'JP' }), staticData: {} });
+  const out = r.outputs['🧮 Apply tax and build the invoice'][0].json;
+  assert(out.needsReview, 'an unconfigured jurisdiction was invoiced without any flag');
+  assert(out.reviewFlags.some((f) => /No rate configured for JP/.test(f)),
+    'the flag does not name the unconfigured country');
+});
+
+check('conflicting location signals are flagged, not silently resolved', () => {
+  const r = execute(invoice, { trigger: paidOrder({ country: 'DE' }, { 'cf-ipcountry': 'BR' }), staticData: {} });
+  const out = r.outputs['🧮 Apply tax and build the invoice'][0].json;
+  assert(out.reviewFlags.some((f) => /disagree/i.test(f)),
+    'billing and IP country disagreed and nothing was flagged');
+});
+
+check('a buyer VAT number is flagged for reverse-charge review', () => {
+  const r = execute(invoice, { trigger: paidOrder({ country: 'DE', vat: 'DE123456789' }), staticData: {} });
+  const out = r.outputs['🧮 Apply tax and build the invoice'][0].json;
+  assert(out.reviewFlags.some((f) => /reverse charge/i.test(f)),
+    'a business VAT number was not flagged for review');
+});
+
+check('the invoice email states number, net, tax and total', () => {
+  const r = execute(invoice, { trigger: paidOrder({ country: 'DE' }), staticData: {} });
+  const html = r.effects.emails[0].html;
+  assert(/INV-1000/.test(html), 'invoice number missing from the email');
+  assert(/19%/.test(html), 'tax rate missing from the email');
+  assert(/119/.test(html), 'total missing from the email');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {

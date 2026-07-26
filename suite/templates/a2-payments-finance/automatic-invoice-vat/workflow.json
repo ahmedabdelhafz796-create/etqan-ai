@@ -1,0 +1,383 @@
+{
+  "name": "DCA-A2-02 · Automatic Invoice & VAT Record",
+  "nodes": [
+    {
+      "id": "bf8ab054-106e-5c89-8bf5-fb5df58188dc",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -520
+      ],
+      "parameters": {
+        "content": "## 🧾 Automatic Invoice & VAT Record\n**Paid order → numbered invoice → emailed → logged for your accountant.**\n\n### Setup (about 15 minutes)\n1. **⚙️ Config** → your legal `businessName`, `businessAddress`, `taxId`,\n   `invoicePrefix`, and `startNumber`.\n2. Set `taxRates` for the jurisdictions **you are registered in**.\n3. Point your payment provider's *successful payment* webhook here\n   (the same event A1-01 uses — both can run from one gateway).\n4. Attach SMTP. Activate.\n\n### Sequential numbering is the hard part\nMost jurisdictions require invoice numbers with **no gaps and no\nduplicates**. Hand-rolled invoicing breaks this first — under webhook\nreplays and concurrent orders. This template guarantees it.",
+        "height": 540,
+        "width": 580,
+        "color": 6
+      }
+    },
+    {
+      "id": "1e7894e0-f00f-5910-a53c-8011c5f5d656",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        -520
+      ],
+      "parameters": {
+        "content": "### ⚠️ READ THIS — what this does NOT do\n**It does not determine your tax liability.**\n\nTax rules are jurisdictional, change on their own schedule, and depend on\nfacts a workflow cannot see: your registration status, your thresholds,\nwhether the buyer is a business with a valid VAT number.\n\nThis applies **rates you configure** and produces a clean auditable\nrecord. It is a bookkeeping tool, not a tax advisor.\n\n**Talk to an accountant once.** Then configure `taxRates` from what they\ntell you. A template that guessed at tax rates would be confidently wrong\nin the one domain where that is genuinely expensive.",
+        "height": 440,
+        "width": 500,
+        "color": 5
+      }
+    },
+    {
+      "id": "4e950eb9-be10-5860-ae0f-b76510c7b8b7",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        460,
+        -520
+      ],
+      "parameters": {
+        "content": "### 🌍 Why cross-border catches sellers out\nDigital services are generally taxed **where the buyer is**, not where you\nare.\n\nA template sold from Turkey to a buyer in Germany may carry German VAT —\nand sellers usually discover this long after fixing it is cheap.\n\nPlatforms acting as *merchant of record* (Lemon Squeezy, Gumroad) absorb\nthis for you. **Selling through Stripe or PayPal direct, you do not** —\nwhich is exactly who this template is for.",
+        "height": 400,
+        "width": 480,
+        "color": 7
+      }
+    },
+    {
+      "id": "a009b51b-810c-5d76-8d6e-574779d3dc06",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        380
+      ],
+      "parameters": {
+        "content": "### 📎 Location evidence\nTax authorities generally want **two independent pieces** of evidence for\nwhere the buyer was.\n\nThis captures billing country, IP country and currency on every invoice,\nand flags when they disagree — so you find out at invoice time rather\nthan during an audit.",
+        "height": 300,
+        "width": 440,
+        "color": 4
+      }
+    },
+    {
+      "id": "b9dbc1b7-1f10-5c23-a672-2713bfcf4f1b",
+      "name": "💰 Payment succeeded",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -680,
+        180
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/invoice",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Same event as A1-01. Both can run from one gateway webhook.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7ead8770-f7f9-5b78-8cc6-d82a3c53a5f2",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"businessName\": \"YOUR LEGAL BUSINESS NAME\",\n  \"businessAddress\": \"YOUR REGISTERED ADDRESS\",\n  \"taxId\": \"YOUR TAX / VAT NUMBER\",\n  \"fromEmail\": \"invoices@yourdomain.com\",\n  \"invoicePrefix\": \"INV\",\n  \"startNumber\": 1000,\n  \"defaultTaxRate\": 0,\n  \"taxRates\": {\"DE\": 19, \"FR\": 20, \"GB\": 20, \"TR\": 20, \"AE\": 5},\n  \"pricesIncludeTax\": true,\n  \"currency\": \"USD\",\n  \"notes\": \"Digital product \\u2014 delivered electronically.\"\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "taxRates: only the jurisdictions you are actually registered in. Ask an accountant once, then fill this.",
+      "notesInFlow": false
+    },
+    {
+      "id": "06212b7c-86c4-5266-acc9-da29f6636145",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 720 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String(j.body?.id ?? j.body?.data?.object?.id ?? j.body?.order_id ?? j.body?.payment_id ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "466d3d36-8f92-51ed-b496-952925237e00",
+      "name": "📥 Read the order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Reuses A1-01's normalisation shape so the two templates agree on what an order\n// is. Kept independent so this can run without A1-01 installed.\nconst cfg = $('⚙️ Config').first().json.__config;\n\nreturn $input.all().map(item => {\n  const j = item.json;\n  const b = j.body ?? j;\n  const d = b.data?.object ?? b.data?.attributes ?? b.resource ?? b;\n\n  const amountRaw = Number(d.amount_total ?? d.amount ?? d.total ?? d.price_amount ?? 0);\n  // Stripe/Lemon Squeezy use minor units; crypto gateways generally do not.\n  const gross = amountRaw > 1000 ? amountRaw / 100 : amountRaw;\n\n  const billingCountry = String(\n    d.customer_details?.address?.country ?? d.billing_details?.address?.country ??\n    d.country ?? b.country ?? ''\n  ).toUpperCase();\n\n  const ipCountry = String(j.headers?.['cf-ipcountry'] ?? b.ipCountry ?? '').toUpperCase();\n\n  return { json: {\n    orderId: d.id ?? b.order_id ?? j.__eventId,\n    eventId: j.__eventId,\n    email: d.customer_details?.email ?? d.customer_email ?? d.user_email ?? b.email ?? null,\n    name: d.customer_details?.name ?? d.customer_name ?? b.name ?? '',\n    company: d.customer_details?.company ?? b.company ?? '',\n    vatNumber: String(d.tax_ids?.[0]?.value ?? b.vat_number ?? '').trim(),\n    gross,\n    currency: String(d.currency ?? b.currency ?? cfg.currency).toUpperCase(),\n    productName: d.metadata?.product_name ?? b.product_name ?? 'Digital product',\n    billingCountry,\n    ipCountry,\n    paidAt: new Date().toISOString(),\n    __config: cfg,\n  }};\n});"
+      },
+      "notes": "Same order shape as A1-01, but independent so this works standalone.",
+      "notesInFlow": false
+    },
+    {
+      "id": "b4e3b7b4-444b-509f-961f-a112659ffdb2",
+      "name": "🔢 Assign invoice number",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// Sequential numbering, no gaps, no duplicates.\n//\n// This is a legal requirement in most jurisdictions and the thing\n// hand-rolled invoicing breaks first. Two failure modes matter:\n//\n//   * Webhook replay → the same order must reuse its original number,\n//     never consume a new one. The dedupe guard upstream stops most\n//     replays, but its TTL is finite and invoices outlive it, so the\n//     order→number mapping is kept permanently here as the real defence.\n//   * Concurrency → n8n executes a workflow's nodes serially, so the\n//     read-increment-write below is not interleaved within one instance.\n//     On a queue-mode deployment with multiple workers this is NOT\n//     guaranteed; the canvas note says so and points at the fix.\n// ═══════════════════════════════════════════════════════════════════\nconst store = $getWorkflowStaticData('global');\nstore.invoices = store.invoices || {};\nstore.invoiceCounter = store.invoiceCounter ?? null;\n\nreturn $input.all().map(item => {\n  const o = item.json;\n  const cfg = o.__config;\n\n  // Already invoiced? Reuse the number. Issuing two numbers for one order is\n  // the error an auditor notices.\n  const existing = store.invoices[o.orderId];\n  if (existing) {\n    return { json: { ...o, ...existing, reissued: true } };\n  }\n\n  if (store.invoiceCounter === null) {\n    store.invoiceCounter = Number(cfg.startNumber) - 1;\n  }\n  store.invoiceCounter += 1;\n\n  const number = `${cfg.invoicePrefix}-${store.invoiceCounter}`;\n  const record = {\n    invoiceNumber: number,\n    invoiceSeq: store.invoiceCounter,\n    issuedAt: new Date().toISOString(),\n  };\n  store.invoices[o.orderId] = record;\n\n  return { json: { ...o, ...record, reissued: false } };\n});"
+      },
+      "alwaysOutputData": true,
+      "notes": "Gap-free and replay-safe. On queue mode with multiple workers, move the counter to a database.",
+      "notesInFlow": false
+    },
+    {
+      "id": "41ed503e-eff3-5eca-b993-b9ff62792d51",
+      "name": "🧮 Apply tax and build the invoice",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Applies the rates the seller configured. Makes no judgement about liability —\n// see the red canvas note. What it does do is capture the evidence and surface\n// disagreement, so problems appear at invoice time rather than during an audit.\nreturn $input.all().map(item => {\n  const o = item.json;\n  const cfg = o.__config;\n\n  const country = o.billingCountry || o.ipCountry || '';\n  const rates = cfg.taxRates || {};\n  const configuredRate = Object.prototype.hasOwnProperty.call(rates, country)\n    ? Number(rates[country])\n    : Number(cfg.defaultTaxRate || 0);\n\n  // A verified business VAT number usually means reverse charge applies within\n  // the EU. Flagged for the seller rather than decided automatically, because\n  // whether it applies depends on registration facts we cannot see.\n  const looksLikeBusiness = o.vatNumber.length >= 8;\n\n  const rate = configuredRate;\n  let net, taxAmount;\n\n  if (cfg.pricesIncludeTax) {\n    net = rate > 0 ? o.gross / (1 + rate / 100) : o.gross;\n    taxAmount = o.gross - net;\n  } else {\n    net = o.gross;\n    taxAmount = net * (rate / 100);\n  }\n\n  const round = (n) => Math.round(n * 100) / 100;\n\n  // Two independent location signals is the usual evidentiary standard.\n  const evidence = [];\n  if (o.billingCountry) evidence.push(`billing country: ${o.billingCountry}`);\n  if (o.ipCountry) evidence.push(`IP country: ${o.ipCountry}`);\n  if (o.currency) evidence.push(`currency: ${o.currency}`);\n\n  const countryConflict = !!(o.billingCountry && o.ipCountry && o.billingCountry !== o.ipCountry);\n\n  const flags = [];\n  if (evidence.length < 2) flags.push('Fewer than two independent location signals captured.');\n  if (countryConflict) flags.push(`Billing country (${o.billingCountry}) and IP country (${o.ipCountry}) disagree.`);\n  if (!country) flags.push('No buyer country determined — default rate applied.');\n  if (looksLikeBusiness) flags.push(`Buyer supplied a VAT number (${o.vatNumber}) — reverse charge may apply. Review.`);\n  if (!Object.prototype.hasOwnProperty.call(rates, country) && country) {\n    flags.push(`No rate configured for ${country} — default ${cfg.defaultTaxRate}% applied.`);\n  }\n\n  return { json: { ...o,\n    net: round(net),\n    taxRate: rate,\n    taxAmount: round(taxAmount),\n    total: round(o.gross),\n    taxCountry: country || null,\n    locationEvidence: evidence,\n    reviewFlags: flags,\n    needsReview: flags.length > 0,\n  }};\n});"
+      },
+      "notes": "Applies YOUR configured rates and flags anything a human should look at. Does not determine liability.",
+      "notesInFlow": false
+    },
+    {
+      "id": "03e210d1-8fb2-5dda-8e2b-7713feecf158",
+      "name": "📧 Email the invoice",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        180
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ 'Invoice ' + $json.invoiceNumber + ' — ' + $json.__config.businessName }}",
+        "emailFormat": "html",
+        "html": "={{ '<div style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;color:#111\">' + '<div style=\"display:flex;justify-content:space-between;border-bottom:2px solid #111;padding-bottom:14px;margin-bottom:22px\">' + '<div><div style=\"font-size:21px;font-weight:700\">INVOICE</div>' + '<div style=\"color:#666;font-size:13px;margin-top:3px\">' + $json.invoiceNumber + '</div></div>' + '<div style=\"text-align:right;font-size:13px;color:#666\">' + $json.issuedAt.slice(0,10) + '</div></div>' + '<table style=\"width:100%;font-size:13px;margin-bottom:22px\"><tr>' + '<td style=\"vertical-align:top;color:#666\"><strong style=\"color:#111\">From</strong><br>' + $json.__config.businessName + '<br>' + $json.__config.businessAddress + '<br>Tax ID: ' + $json.__config.taxId + '</td>' + '<td style=\"vertical-align:top;color:#666\"><strong style=\"color:#111\">To</strong><br>' + ($json.name || $json.email) + ($json.company ? '<br>' + $json.company : '') + ($json.vatNumber ? '<br>VAT: ' + $json.vatNumber : '') + ($json.taxCountry ? '<br>' + $json.taxCountry : '') + '</td></tr></table>' + '<table style=\"width:100%;border-collapse:collapse;font-size:14px\">' + '<tr style=\"border-bottom:1px solid #eee\"><td style=\"padding:10px 0\">' + $json.productName + '</td>' + '<td style=\"padding:10px 0;text-align:right\">' + $json.net + ' ' + $json.currency + '</td></tr>' + '<tr style=\"border-bottom:1px solid #eee\"><td style=\"padding:10px 0;color:#666\">Tax (' + $json.taxRate + '%)</td>' + '<td style=\"padding:10px 0;text-align:right;color:#666\">' + $json.taxAmount + ' ' + $json.currency + '</td></tr>' + '<tr><td style=\"padding:14px 0;font-weight:700\">Total paid</td>' + '<td style=\"padding:14px 0;text-align:right;font-weight:700\">' + $json.total + ' ' + $json.currency + '</td></tr></table>' + '<p style=\"color:#777;font-size:12px;margin:22px 0 0\">' + $json.__config.notes + '</p>' + '<p style=\"color:#999;font-size:12px;margin:6px 0 0\">Order ' + $json.orderId + ' · paid ' + $json.paidAt.slice(0,10) + '</p>' + '</div>' }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Attach SMTP. The buyer receives a proper itemised invoice.",
+      "notesInFlow": false
+    },
+    {
+      "id": "18280f34-23c6-5fe4-9ae8-b3895298054d",
+      "name": "📒 Invoice ledger",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// The ledger your accountant will ask for. Send it somewhere durable — static\n// data is not a permanent record and must not be your only copy of this.\nreturn $input.all().map(i => {\n  const o = i.json;\n  return { json: {\n    invoiceNumber: o.invoiceNumber,\n    invoiceSeq: o.invoiceSeq,\n    issuedAt: o.issuedAt,\n    orderId: o.orderId,\n    buyerEmail: o.email,\n    buyerName: o.name,\n    buyerCompany: o.company,\n    buyerVat: o.vatNumber || null,\n    taxCountry: o.taxCountry,\n    net: o.net,\n    taxRate: o.taxRate,\n    taxAmount: o.taxAmount,\n    total: o.total,\n    currency: o.currency,\n    locationEvidence: (o.locationEvidence || []).join(' | '),\n    needsReview: o.needsReview,\n    reviewFlags: (o.reviewFlags || []).join(' | '),\n    reissued: o.reissued,\n  }};\n});"
+      },
+      "notes": "⚠️ Wire this to a Sheet or database. Static data is not a permanent financial record.",
+      "notesInFlow": false
+    },
+    {
+      "id": "dc837a3b-d539-5920-bf3e-501548e5505d",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        400
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"invoice-send\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"automatic-invoice-vat\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "0ecf63d9-da06-5223-8abc-c51e8ac9beea",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        180
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, invoice: $json.invoiceNumber ?? null }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "💰 Payment succeeded": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📥 Read the order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Read the order": {
+      "main": [
+        [
+          {
+            "node": "🔢 Assign invoice number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔢 Assign invoice number": {
+      "main": [
+        [
+          {
+            "node": "🧮 Apply tax and build the invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧮 Apply tax and build the invoice": {
+      "main": [
+        [
+          {
+            "node": "📧 Email the invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Email the invoice": {
+      "main": [
+        [
+          {
+            "node": "📒 Invoice ledger",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Invoice ledger": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "payments"
+    },
+    {
+      "name": "finance"
+    },
+    {
+      "name": "invoicing"
+    },
+    {
+      "name": "vat"
+    },
+    {
+      "name": "compliance"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "automatic-invoice-vat",
+    "category": "a2-payments-finance",
+    "version": "1.0.0"
+  }
+}
