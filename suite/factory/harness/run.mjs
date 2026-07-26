@@ -1,0 +1,309 @@
+/**
+ * run.mjs — behavioural tests. Run the real templates and assert what they do.
+ *
+ *     node factory/harness/run.mjs
+ *
+ * Every scenario here is a failure a real buyer could experience. Structural
+ * validation cannot catch any of them, because a workflow can be perfectly
+ * well-formed and still deliver a product to someone who has not paid.
+ */
+
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import crypto from 'node:crypto';
+import { execute } from './engine.mjs';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const T = join(HERE, '..', '..', 'templates');
+
+const load = (p) => JSON.parse(readFileSync(join(T, p), 'utf8'));
+
+const WEBHOOK_SECRET = 'test_webhook_secret_value';
+const LINK_SECRET = 'test_link_signing_secret_value';
+
+let passed = 0, failed = 0;
+const failures = [];
+
+function check(name, fn) {
+  try {
+    fn();
+    passed++;
+    console.log(`  ✅ ${name}`);
+  } catch (e) {
+    failed++;
+    failures.push({ name, message: e.message });
+    console.log(`  ❌ ${name}\n       ${e.message}`);
+  }
+}
+
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg);
+}
+
+function section(title) {
+  console.log(`\n${title}\n${'─'.repeat(64)}`);
+}
+
+// ── helpers ─────────────────────────────────────────────────────────────
+function stripeEvent({ id = 'evt_1', status = 'paid', amount = 4900, email = 'buyer@example.com' } = {}) {
+  const body = {
+    id,
+    object: 'event',
+    data: {
+      object: {
+        id: 'cs_test_1',
+        payment_status: status,
+        amount_total: amount,
+        currency: 'usd',
+        customer_details: { email, name: 'Test Buyer' },
+        metadata: { product_id: 'book-01', product_name: 'Test Product' },
+      },
+    },
+  };
+  const sig = crypto.createHmac('sha256', WEBHOOK_SECRET).update(JSON.stringify(body)).digest('hex');
+  return { body, headers: { 'stripe-signature': `t=1,v1=${sig}` } };
+}
+
+const deliverySecrets = {
+  '🔏 Verify signature': WEBHOOK_SECRET,
+  '✍️ Sign download link': LINK_SECRET,
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A1-01 · Instant Digital Delivery');
+
+const delivery = load('a1-delivery/instant-digital-delivery/workflow.json');
+
+check('a paid order sends exactly one email containing a signed link', () => {
+  const r = execute(delivery, { trigger: stripeEvent(), secrets: deliverySecrets, staticData: {} });
+  assert(r.effects.errors.length === 0, `unexpected errors: ${JSON.stringify(r.effects.errors)}`);
+  assert(r.effects.emails.length === 1, `expected 1 email, got ${r.effects.emails.length}`);
+  const mail = r.effects.emails[0];
+  assert(mail.to === 'buyer@example.com', `wrong recipient: ${mail.to}`);
+  assert(/sig=[a-f0-9]{64}/.test(mail.html), 'email contains no signed download link');
+  assert(/expires=\d{10}/.test(mail.html), 'link carries no expiry');
+});
+
+check('a replayed webhook does NOT deliver a second time', () => {
+  const shared = {};
+  const evt = stripeEvent({ id: 'evt_replay' });
+  const first = execute(delivery, { trigger: evt, secrets: deliverySecrets, staticData: shared });
+  const second = execute(delivery, { trigger: evt, secrets: deliverySecrets, staticData: shared });
+  assert(first.effects.emails.length === 1, 'first delivery should send one email');
+  assert(second.effects.emails.length === 0,
+    `replay sent ${second.effects.emails.length} duplicate email(s) — idempotency is broken`);
+});
+
+check('a pending payment delivers nothing', () => {
+  const r = execute(delivery, {
+    trigger: stripeEvent({ id: 'evt_pending', status: 'unpaid' }),
+    secrets: deliverySecrets, staticData: {},
+  });
+  assert(r.effects.emails.length === 0, 'product was delivered on an unpaid order');
+  assert(r.executed.some((e) => e.node.includes('Hold')), 'unpaid order did not reach the hold branch');
+});
+
+check('a forged signature is rejected and delivers nothing', () => {
+  const evt = stripeEvent({ id: 'evt_forged' });
+  evt.headers['stripe-signature'] = 't=1,v1=' + 'f'.repeat(64);
+  const r = execute(delivery, { trigger: evt, secrets: deliverySecrets, staticData: {} });
+  assert(r.effects.emails.length === 0, 'a forged webhook was delivered — endpoint is forgeable');
+  assert(r.effects.errors.length > 0, 'forged signature produced no error');
+});
+
+check('an under-paid order is refused', () => {
+  const r = execute(delivery, {
+    trigger: stripeEvent({ id: 'evt_cheap', amount: 100 }),
+    secrets: deliverySecrets, staticData: {},
+    configOverride: {
+      storeName: 'T', fromEmail: 'a@b.c', supportEmail: 's@b.c', provider: 'stripe',
+      downloadBaseUrl: 'https://x.test/d', linkTtlHours: 48, maxDownloads: 5,
+      minAmount: 20, currencyAllowList: [], testMode: false,
+    },
+  });
+  assert(r.effects.emails.length === 0, 'an order below minAmount was still delivered');
+});
+
+check('two different orders both deliver (dedupe is not over-eager)', () => {
+  const shared = {};
+  const a = execute(delivery, { trigger: stripeEvent({ id: 'evt_a' }), secrets: deliverySecrets, staticData: shared });
+  const b = execute(delivery, { trigger: stripeEvent({ id: 'evt_b' }), secrets: deliverySecrets, staticData: shared });
+  assert(a.effects.emails.length === 1 && b.effects.emails.length === 1,
+    'distinct orders were incorrectly treated as duplicates');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A1-02 · Secure Download Endpoint');
+
+const download = load('a1-delivery/secure-download-endpoint/workflow.json');
+const dlSecrets = { '🔏 Recompute signature': LINK_SECRET };
+
+function signedQuery({ order = 'o1', email = 'buyer@example.com', product = 'book-01',
+                       expires = Math.floor(Date.now() / 1000) + 3600, max = 5 } = {}) {
+  const payload = [order, email, product, String(expires), String(max)].join('|');
+  const sig = crypto.createHmac('sha256', LINK_SECRET).update(payload).digest('hex');
+  return { query: { order, email, product, expires: String(expires), max: String(max), sig }, headers: {} };
+}
+
+check('a valid link redirects to the file', () => {
+  const r = execute(download, { trigger: signedQuery(), secrets: dlSecrets, staticData: {} });
+  const redirect = r.effects.responses.find((x) => x.with === 'redirect');
+  assert(redirect, 'no redirect was issued for a valid link');
+  assert(redirect.redirect.includes('http'), `redirect target looks wrong: ${redirect.redirect}`);
+});
+
+check('a tampered signature is refused', () => {
+  const q = signedQuery();
+  q.query.sig = 'a'.repeat(64);
+  const r = execute(download, { trigger: q, secrets: dlSecrets, staticData: {} });
+  assert(!r.effects.responses.some((x) => x.with === 'redirect'), 'a tampered link was served');
+});
+
+check('changing the product in the URL is refused (signature covers it)', () => {
+  const q = signedQuery({ product: 'book-01' });
+  q.query.product = 'expensive-course';   // escalate to a different product
+  const r = execute(download, { trigger: q, secrets: dlSecrets, staticData: {} });
+  assert(!r.effects.responses.some((x) => x.with === 'redirect'),
+    'a buyer could swap the product id and get a different file');
+});
+
+check('an expired link is refused with a dated explanation', () => {
+  const q = signedQuery({ expires: Math.floor(Date.now() / 1000) - 3600 });
+  const r = execute(download, { trigger: q, secrets: dlSecrets, staticData: {} });
+  assert(!r.effects.responses.some((x) => x.with === 'redirect'), 'an expired link was served');
+  const page = r.effects.responses.find((x) => x.with === 'text');
+  assert(page && /expired on/i.test(page.body), 'refusal page does not say when the link expired');
+});
+
+check('the download cap is enforced', () => {
+  const shared = {};
+  const q = signedQuery({ order: 'o-cap', max: 2 });
+  const runs = [1, 2, 3].map(() => execute(download, { trigger: q, secrets: dlSecrets, staticData: shared }));
+  const served = runs.filter((r) => r.effects.responses.some((x) => x.with === 'redirect')).length;
+  assert(served === 2, `cap of 2 allowed ${served} downloads`);
+});
+
+check('an unknown product tells the buyer what to do', () => {
+  const q = signedQuery({ product: 'does-not-exist' });
+  const r = execute(download, { trigger: q, secrets: dlSecrets, staticData: {},
+    configOverride: {
+      fileUrlMap: { 'book-01': 'https://x.test/f.pdf' },   // no default
+      graceHours: 0, supportEmail: 'help@x.test', storeName: 'T',
+      resendUrl: 'https://x.test/r', abuseIpThreshold: 8, historyTtlHours: 168,
+    } });
+  const page = r.effects.responses.find((x) => x.with === 'text');
+  assert(page && /help@x\.test/.test(page.body), 'refusal page gives the buyer no way forward');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A3-01 · Pre-Payment Fraud Scoring');
+
+const fraud = load('a3-fraud-security/pre-payment-fraud-scoring/workflow.json');
+
+function order(o) {
+  return { body: { orderId: 'f1', email: 'real.buyer@company.com', name: 'Real Buyer',
+                   amount: 49, currency: 'USD', country: 'US', ipCountry: 'US', ...o },
+           headers: { 'user-agent': 'Mozilla/5.0', 'x-forwarded-for': o?.ip ?? '1.2.3.4' } };
+}
+
+check('a clean order scores low and is allowed', () => {
+  const r = execute(fraud, { trigger: order(), staticData: {} });
+  const out = r.outputs['📒 Audit log'][0].json;
+  assert(out.action === 'deliver', `clean order was not allowed: ${out.action}`);
+  assert(out.riskScore < 45, `clean order scored too high: ${out.riskScore}`);
+});
+
+check('a disposable-email order accumulates risk with stated reasons', () => {
+  const r = execute(fraud, { trigger: order({ orderId: 'f2', email: 'x9k2m4p8q1@mailinator.com' }), staticData: {} });
+  const scored = r.outputs['🧮 Score the risk'][0].json;
+  assert(scored.riskScore >= 35, `disposable domain barely scored: ${scored.riskScore}`);
+  assert(scored.riskReasons.some((x) => /disposable/i.test(x.reason)), 'no reason mentions the disposable domain');
+});
+
+check('geo mismatch plus disposable mail reaches the review threshold', () => {
+  const r = execute(fraud, {
+    trigger: order({ orderId: 'f3', email: 'zz88qq11xx@guerrillamail.com', country: 'US', ipCountry: 'NG' }),
+    staticData: {},
+  });
+  const s = r.outputs['🧮 Score the risk'][0].json;
+  assert(s.wouldHaveBeen !== 'allow', `combined signals still resolved to allow (score ${s.riskScore})`);
+});
+
+check('shadow mode reports risk but never blocks', () => {
+  const r = execute(fraud, {
+    trigger: order({ orderId: 'f4', email: 'aa11bb22cc@mailinator.com', country: 'US', ipCountry: 'RU', amount: 5000 }),
+    staticData: {},
+  });
+  const s = r.outputs['🧮 Score the risk'][0].json;
+  assert(s.shadowMode === true, 'shadow mode should default on');
+  assert(s.decision === 'allow', 'shadow mode must not enforce');
+  assert(s.wouldHaveBeen === 'block', `high-risk order should have been marked block, got ${s.wouldHaveBeen}`);
+});
+
+check('enforcing mode actually blocks a high-risk order', () => {
+  const r = execute(fraud, {
+    trigger: order({ orderId: 'f5', email: 'aa11bb22cc@mailinator.com', country: 'US', ipCountry: 'RU', amount: 5000 }),
+    staticData: {},
+    configOverride: {
+      reviewAt: 45, blockAt: 80, shadowMode: false, velocityWindowMinutes: 60,
+      maxOrdersPerEmail: 3, maxOrdersPerIp: 5, typicalOrderAmount: 49,
+      amountAnomalyMultiplier: 4, highRiskCountries: ['RU'], trustedEmails: [],
+      trustedDomains: [], historyTtlHours: 24,
+    },
+  });
+  const out = r.outputs['📒 Audit log'][0].json;
+  assert(out.action === 'block', `high-risk order was not blocked: ${out.action}`);
+});
+
+check('velocity catches repeated orders from one email', () => {
+  const shared = {};
+  let last;
+  for (let i = 0; i < 5; i++) {
+    last = execute(fraud, {
+      trigger: order({ orderId: `v${i}`, email: 'burst@example.com' }),
+      staticData: shared,
+    });
+  }
+  const s = last.outputs['🧮 Score the risk'][0].json;
+  assert(s.riskReasons.some((x) => /orders from this email/i.test(x.reason)),
+    'rapid repeat orders raised no velocity signal');
+});
+
+check('an allow-listed buyer bypasses scoring entirely', () => {
+  const r = execute(fraud, {
+    trigger: order({ orderId: 'f6', email: 'vip@bigclient.com' }),
+    staticData: {},
+    configOverride: {
+      reviewAt: 45, blockAt: 80, shadowMode: false, velocityWindowMinutes: 60,
+      maxOrdersPerEmail: 3, maxOrdersPerIp: 5, typicalOrderAmount: 49,
+      amountAnomalyMultiplier: 4, highRiskCountries: [],
+      trustedEmails: ['vip@bigclient.com'], trustedDomains: [], historyTtlHours: 24,
+    },
+  });
+  const s = r.outputs['🧮 Score the risk'][0].json;
+  assert(s.riskScore === 0 && s.decision === 'allow', 'allow-list did not short-circuit scoring');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('Cross-template contract');
+
+check('a link minted by A1-01 verifies in A1-02 (shared secret + payload order)', () => {
+  const d = execute(delivery, { trigger: stripeEvent({ id: 'evt_x' }), secrets: deliverySecrets, staticData: {} });
+  const url = d.effects.emails[0].html.match(/href="([^"]+download[^"]*)"/)?.[1];
+  assert(url, 'no download URL found in the delivery email');
+
+  const params = Object.fromEntries(new URL(url).searchParams);
+  const r = execute(download, { trigger: { query: params, headers: {} }, secrets: dlSecrets, staticData: {} });
+  assert(r.effects.responses.some((x) => x.with === 'redirect'),
+    'a link produced by A1-01 was rejected by A1-02 — the two templates disagree');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+console.log('\n' + '═'.repeat(64));
+console.log(`${passed} passed · ${failed} failed`);
+if (failures.length) {
+  console.log('\nFailures:');
+  for (const f of failures) console.log(`  • ${f.name}\n    ${f.message}`);
+}
+process.exit(failed ? 1 : 0);
