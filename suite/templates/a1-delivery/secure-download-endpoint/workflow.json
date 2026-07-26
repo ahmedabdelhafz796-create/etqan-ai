@@ -1,0 +1,427 @@
+{
+  "name": "DCA-A1-02 · Secure Download Endpoint (signed, expiring, download-limited)",
+  "nodes": [
+    {
+      "id": "e6662de9-1f1a-5501-8a1f-358ffe0b0178",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -460
+      ],
+      "parameters": {
+        "content": "## 🔐 Secure Download Endpoint\n**Verify the signature → check expiry → check the download cap → serve the file.**\n\n### The pair\n`DCA-A1-01` mints the link. **This** verifies it.\n⚠️ Both must use the **same secret** in their Crypto node, and the payload is\njoined in this exact order:\n```\norder | email | product | expires | max\n```\nChange the order in one and you must change it in the other.\n\n### Setup (about 8 minutes)\n1. **⚙️ Config** → set `fileUrlMap` (product id → real file URL) and `supportEmail`.\n2. **🔏 Recompute signature** → paste the *same* secret used in A1-01.\n3. Copy this workflow's Production URL into A1-01's `downloadBaseUrl`.\n4. Activate. Test with a real link from A1-01 before going live.\n\n### Why stateless\nExpiry and the download cap travel **inside** the URL and are covered by the\nsignature. No database to provision, and nothing to keep in sync.",
+        "height": 600,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "df6c2733-b71b-5019-b6f5-5dee27f88402",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -460
+      ],
+      "parameters": {
+        "content": "### 🎯 The real trade-off\n**Permanent links** → forwarded, posted on Telegram, product leaks.\n**Very short links** → break for real buyers → support tickets.\n\nNeither extreme is right. Defaults here: **48h** and **5 downloads** — enough\nfor a buyer who reads email on Monday and re-downloads on a second device,\nshort enough that a leaked link dies quickly.\n\nRaise `graceHours` rather than the TTL if you sell to many time zones.",
+        "height": 360,
+        "width": 460,
+        "color": 7
+      }
+    },
+    {
+      "id": "80e33af4-487c-5fa2-b23a-efac8d39a949",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        460,
+        -460
+      ],
+      "parameters": {
+        "content": "### 💬 Every refusal explains itself\nThis is the part that removes support tickets.\n\n| Refusal | Buyer is told |\n| --- | --- |\n| Bad signature | link was altered — request a fresh one |\n| Expired | the exact date it expired + how to get a new one |\n| Cap reached | how many were used, and to contact support |\n| Unknown product | the product id, and to contact support |\n\nA generic `403 Forbidden` is what makes a buyer email you.",
+        "height": 360,
+        "width": 460,
+        "color": 4
+      }
+    },
+    {
+      "id": "e855496a-6082-54a7-a617-66e87e4ff19e",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        360
+      ],
+      "parameters": {
+        "content": "### 🕵️ Abuse signal\nWhen a link exceeds its cap the run records how many distinct IPs used it.\n**One buyer on 40 IPs = the link was published somewhere.**\n\nFeed `abuseSignal` into `DCA-A3-03 · Leak Detection` to catch a leak while\nit is still worth acting on.",
+        "height": 260,
+        "width": 440,
+        "color": 5
+      }
+    },
+    {
+      "id": "0cf42454-1d9e-5187-a554-918ff536f39d",
+      "name": "⬇️ Download request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -660,
+        180
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "dca/download",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "GET endpoint. This URL goes into A1-01's downloadBaseUrl.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a5663df9-725a-5929-ba3e-40dce34a3cdc",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"fileUrlMap\": {\"book-01\": \"https://your-storage.example.com/files/book-01.pdf\", \"default\": \"https://your-storage.example.com/files/default.pdf\"},\n  \"graceHours\": 0,\n  \"supportEmail\": \"support@yourdomain.com\",\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"resendUrl\": \"https://yourdomain.com/resend\",\n  \"abuseIpThreshold\": 8,\n  \"historyTtlHours\": 168\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "Map each product id to its real file URL. graceHours extends expiry for late buyers without lengthening the link's life for everyone.",
+      "notesInFlow": false
+    },
+    {
+      "id": "9befe1e9-f898-5162-9bd4-c0307d2f2d4a",
+      "name": "📥 Read the link parameters",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Rebuild the exact string that was signed. Field order is part of the\n// contract with A1-01 — reorder it here and every existing link breaks.\nconst cfg = $('⚙️ Config').first().json.__config;\n\nreturn $input.all().map(item => {\n  const q = item.json.query ?? {};\n  const h = item.json.headers ?? {};\n\n  const order   = String(q.order   ?? '');\n  const email   = String(q.email   ?? '');\n  const product = String(q.product ?? '');\n  const expires = String(q.expires ?? '');\n  const max     = String(q.max     ?? '');\n  const sig     = String(q.sig     ?? '');\n\n  const missing = [];\n  if (!order)   missing.push('order');\n  if (!expires) missing.push('expires');\n  if (!sig)     missing.push('sig');\n\n  const ip = String(\n    (h['x-forwarded-for'] || '').split(',')[0].trim() ||\n    h['cf-connecting-ip'] || h['x-real-ip'] || ''\n  );\n\n  return {\n    json: {\n      order, email, product, expires, max, sig, ip,\n      // Must match A1-01's __signaturePayload exactly.\n      signaturePayload: [order, email, product, expires, max].join('|'),\n      missingParams: missing,\n      userAgent: String(h['user-agent'] ?? ''),\n      __config: cfg,\n    }\n  };\n});"
+      },
+      "notes": "Reconstructs the signed payload. Field order must match A1-01.",
+      "notesInFlow": false
+    },
+    {
+      "id": "0c53a8f7-1b2f-5320-bafe-b5e5b0285a03",
+      "name": "🔏 Recompute signature",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ],
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.signaturePayload }}",
+        "dataPropertyName": "expectedSignature",
+        "secret": "YOUR_OWN_LONG_RANDOM_LINK_SECRET",
+        "encoding": "hex"
+      },
+      "notes": "⚠️ Must be the SAME secret as in A1-01's 'Sign download link' node.",
+      "notesInFlow": false
+    },
+    {
+      "id": "56c3a719-a096-50d1-95d3-3e36fe0740aa",
+      "name": "🛡️ Verify and decide",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// One place where the allow/deny decision is made, so there is exactly\n// one thing to audit. Each refusal carries a message written for the\n// buyer, not for a log file.\n// ═══════════════════════════════════════════════════════════════════\nconst store = $getWorkflowStaticData('global');\nstore.downloads = store.downloads || {};\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const d = item.json;\n  const cfg = d.__config;\n  const now = Math.floor(Date.now() / 1000);\n  const ttlMs = Number(cfg.historyTtlHours) * 60 * 60 * 1000;\n\n  // Prune old counters so static data stays bounded.\n  for (const [k, rec] of Object.entries(store.downloads)) {\n    if (Date.now() - (rec.firstAt || 0) > ttlMs) delete store.downloads[k];\n  }\n\n  const deny = (code, message, extra = {}) => ({\n    json: {\n      allowed: false, code, message,\n      order: d.order, product: d.product, ip: d.ip,\n      supportEmail: cfg.supportEmail, resendUrl: cfg.resendUrl,\n      checkedAt: new Date().toISOString(),\n      ...extra,\n    }\n  });\n\n  // ── 1. Completeness ─────────────────────────────────────────────\n  if (d.missingParams.length) {\n    out.push(deny('malformed_link',\n      `This download link is incomplete (missing: ${d.missingParams.join(', ')}). ` +\n      `Please use the full link from your purchase email, or request a fresh one.`));\n    continue;\n  }\n\n  // ── 2. Signature ────────────────────────────────────────────────\n  // Length-safe comparison without an early exit on first mismatch.\n  const a = String(d.sig).toLowerCase();\n  const b = String(d.expectedSignature).toLowerCase();\n  let equal = a.length === b.length;\n  let diff = 0;\n  if (equal) {\n    for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);\n    equal = diff === 0;\n  }\n\n  if (!equal) {\n    // Either tampering, or a mail client mangled the URL. Both are fixed the\n    // same way, so the message covers both without accusing the buyer.\n    out.push(deny('invalid_signature',\n      `This link could not be verified — it may have been altered or truncated by your email app. ` +\n      `Request a fresh link and it will work.`));\n    continue;\n  }\n\n  // ── 3. Expiry ───────────────────────────────────────────────────\n  const expires = Number(d.expires);\n  const graceSeconds = Number(cfg.graceHours) * 3600;\n\n  if (!Number.isFinite(expires)) {\n    out.push(deny('malformed_link', 'This link has an unreadable expiry. Please request a fresh one.'));\n    continue;\n  }\n\n  if (now > expires + graceSeconds) {\n    const when = new Date(expires * 1000).toUTCString();\n    out.push(deny('expired',\n      `This link expired on ${when}. Your purchase is still valid — request a fresh link and you will get immediate access.`,\n      { expiredAt: when }));\n    continue;\n  }\n\n  // ── 4. Download cap ─────────────────────────────────────────────\n  const key = `${d.order}|${d.product}`;\n  const rec = store.downloads[key] || { count: 0, ips: [], firstAt: Date.now() };\n  const max = Number(d.max) || 0;\n\n  if (max > 0 && rec.count >= max) {\n    // Distinct IPs on one order is the strongest cheap leak signal available.\n    const abuse = rec.ips.length >= Number(cfg.abuseIpThreshold);\n    out.push(deny('limit_reached',\n      `This link has already been used ${rec.count} of ${max} times. ` +\n      `If you still need access, contact ${cfg.supportEmail} and it will be restored.`,\n      {\n        downloadCount: rec.count,\n        distinctIps: rec.ips.length,\n        abuseSignal: abuse,\n        abuseNote: abuse\n          ? `⚠️ ${rec.ips.length} distinct IPs used this link — it was probably shared publicly.`\n          : null,\n      }));\n    continue;\n  }\n\n  // ── 5. Resolve the file ─────────────────────────────────────────\n  const map = cfg.fileUrlMap || {};\n  const fileUrl = map[d.product] || map.default;\n  if (!fileUrl) {\n    out.push(deny('unknown_product',\n      `We could not find the file for product \"${d.product}\". ` +\n      `Please contact ${cfg.supportEmail} with your order id (${d.order}) and it will be sent directly.`));\n    continue;\n  }\n\n  // ── Allow ───────────────────────────────────────────────────────\n  rec.count += 1;\n  if (d.ip && !rec.ips.includes(d.ip)) rec.ips.push(d.ip);\n  if (rec.ips.length > 50) rec.ips = rec.ips.slice(-50);\n  store.downloads[key] = rec;\n\n  out.push({\n    json: {\n      allowed: true,\n      code: 'ok',\n      order: d.order,\n      email: d.email,\n      product: d.product,\n      fileUrl,\n      downloadCount: rec.count,\n      remaining: max > 0 ? Math.max(0, max - rec.count) : null,\n      distinctIps: rec.ips.length,\n      abuseSignal: rec.ips.length >= Number(cfg.abuseIpThreshold),\n      ip: d.ip,\n      servedAt: new Date().toISOString(),\n    }\n  });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Signature, expiry and cap in one auditable place. Counters live in static data — no database needed.",
+      "notesInFlow": false
+    },
+    {
+      "id": "64a206b1-c473-5144-bee7-5f87695873d1",
+      "name": "✅ Allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        460,
+        180
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c81f1d5d-bd5c-536f-bafb-9f6c3550a30d",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "56d53534-52dd-56d8-9100-394ce2cdf7d1",
+      "name": "📤 Serve the file",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        60
+      ],
+      "parameters": {
+        "jsCode": "// Hand back a redirect to the real file rather than streaming it through n8n:\n// large files would otherwise sit in workflow memory and time the request out.\n// Sign this URL at your storage provider too (S3 presigned / Cloudflare signed)\n// so the final URL is short-lived even if someone captures the redirect.\nreturn $input.all().map(i => ({\n  json: {\n    __redirect: i.json.fileUrl,\n    order: i.json.order,\n    product: i.json.product,\n    downloadCount: i.json.downloadCount,\n    remaining: i.json.remaining,\n  }\n}));"
+      },
+      "notes": "Redirects to your storage. Use presigned storage URLs for a second layer.",
+      "notesInFlow": false
+    },
+    {
+      "id": "f2c5b408-05af-5c35-bacc-febb8a46b0e5",
+      "name": "🚫 Explain the refusal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        320
+      ],
+      "parameters": {
+        "jsCode": "// The page a blocked buyer actually sees. Being specific here is what prevents\n// the support ticket — a generic 403 guarantees one.\nreturn $input.all().map(i => {\n  const d = i.json;\n  const html =\n`<!doctype html><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<div style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:520px;margin:12vh auto;padding:0 24px;color:#111;text-align:center\">\n  <div style=\"font-size:44px;line-height:1\">🔒</div>\n  <h1 style=\"font-size:21px;margin:16px 0 10px\">This download link isn't working</h1>\n  <p style=\"color:#555;line-height:1.65;margin:0 0 26px\">${d.message}</p>\n  <a href=\"${d.resendUrl}\" style=\"display:inline-block;background:#111;color:#fff;text-decoration:none;padding:13px 26px;border-radius:8px;font-weight:600\">Send me a fresh link</a>\n  <p style=\"color:#888;font-size:13px;margin:26px 0 0\">Still stuck? Email <a href=\"mailto:${d.supportEmail}\">${d.supportEmail}</a>${d.order ? ` and quote order <strong>${d.order}</strong>` : ''}.</p>\n</div>`;\n\n  return { json: { ...d, html } };\n});"
+      },
+      "notes": "Returns a real explanation page, not a bare 403.",
+      "notesInFlow": false
+    },
+    {
+      "id": "bc298691-3e58-5f23-b1c8-8d394cfe92b0",
+      "name": "📒 Access log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// One row per attempt, allowed or not. Refusal patterns are the useful part:\n// a spike in 'expired' means your TTL is too short for your audience, and a\n// spike in 'limit_reached' with high distinctIps means a link is circulating.\nreturn $input.all().map(i => ({\n  json: {\n    ts: new Date().toISOString(),\n    order: i.json.order ?? null,\n    product: i.json.product ?? null,\n    allowed: i.json.allowed ?? false,\n    code: i.json.code ?? null,\n    ip: i.json.ip ?? null,\n    downloadCount: i.json.downloadCount ?? null,\n    abuseSignal: i.json.abuseSignal ?? false,\n  }\n}));"
+      },
+      "notes": "Append to your log. Watch the refusal-code mix — it tells you what to tune.",
+      "notesInFlow": false
+    },
+    {
+      "id": "50ff20c9-d5e4-57bb-8eee-ed585b4f3a0e",
+      "name": "↩️ Redirect to file",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1180,
+        60
+      ],
+      "parameters": {
+        "respondWith": "redirect",
+        "redirectURL": "={{ $('📤 Serve the file').first().json.__redirect }}",
+        "options": {}
+      },
+      "notes": "302 to the real file URL.",
+      "notesInFlow": false
+    },
+    {
+      "id": "f1b185c3-989d-5b9e-b156-bb1b76452618",
+      "name": "↩️ Show the reason",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1180,
+        320
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('🚫 Explain the refusal').first().json.html }}",
+        "options": {
+          "responseCode": 403,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "content-type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "notes": "403 with a human explanation and a one-click way to fix it.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "⬇️ Download request": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "📥 Read the link parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Read the link parameters": {
+      "main": [
+        [
+          {
+            "node": "🔏 Recompute signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔏 Recompute signature": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Verify and decide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Verify and decide": {
+      "main": [
+        [
+          {
+            "node": "✅ Allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Allowed?": {
+      "main": [
+        [
+          {
+            "node": "📤 Serve the file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚫 Explain the refusal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📤 Serve the file": {
+      "main": [
+        [
+          {
+            "node": "📒 Access log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚫 Explain the refusal": {
+      "main": [
+        [
+          {
+            "node": "📒 Access log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Access log": {
+      "main": [
+        [
+          {
+            "node": "↩️ Redirect to file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "↩️ Show the reason",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "digital-products"
+    },
+    {
+      "name": "delivery"
+    },
+    {
+      "name": "security"
+    },
+    {
+      "name": "anti-piracy"
+    },
+    {
+      "name": "free"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "secure-download-endpoint",
+    "category": "a1-delivery",
+    "version": "1.0.0"
+  }
+}

@@ -30,11 +30,46 @@ TRIGGER_HINTS = (
     "n8n-nodes-base.executeWorkflowTrigger",
 )
 
-# Calls that leave the box and can therefore fail for reasons outside our control.
-NETWORK_NODES = (
-    "n8n-nodes-base.httpRequest",
-    "n8n-nodes-base.webhook",  # excluded from retry rule below; listed for clarity
-)
+# Which nodes must carry a retry policy.
+#
+# Enumerating integrations (http, slack, gmail, stripe, …) was the first attempt
+# and it failed a negative test: `emailSend` — the most failure-prone node in the
+# delivery template — was not on the list, so stripping its retry passed clean.
+#
+# So the rule is default-deny instead. Anything NOT known to run locally is
+# assumed to cross the network and must retry. Adding a new integration to a
+# template therefore cannot silently escape the standard; the check fails until
+# the node is either given a retry policy or consciously added below.
+LOCAL_NODES = frozenset({
+    "n8n-nodes-base.code",
+    "n8n-nodes-base.set",
+    "n8n-nodes-base.if",
+    "n8n-nodes-base.switch",
+    "n8n-nodes-base.merge",
+    "n8n-nodes-base.filter",
+    "n8n-nodes-base.splitOut",
+    "n8n-nodes-base.splitInBatches",
+    "n8n-nodes-base.aggregate",
+    "n8n-nodes-base.itemLists",
+    "n8n-nodes-base.sort",
+    "n8n-nodes-base.limit",
+    "n8n-nodes-base.removeDuplicates",
+    "n8n-nodes-base.dateTime",
+    "n8n-nodes-base.crypto",          # pure computation, no egress
+    "n8n-nodes-base.noOp",
+    "n8n-nodes-base.stopAndError",
+    "n8n-nodes-base.wait",
+    "n8n-nodes-base.stickyNote",
+    "n8n-nodes-base.manualTrigger",
+    "n8n-nodes-base.scheduleTrigger",
+    "n8n-nodes-base.cron",
+    "n8n-nodes-base.interval",
+    "n8n-nodes-base.webhook",          # inbound; retry is the caller's job
+    "n8n-nodes-base.respondToWebhook",
+    "n8n-nodes-base.errorTrigger",
+    "n8n-nodes-base.executeWorkflowTrigger",
+    "n8n-nodes-base.formTrigger",
+})
 
 # Patterns that must never appear in a shipped template. Credentials belong in
 # n8n's credential store; a template carrying a live key is a security incident
@@ -142,11 +177,15 @@ def validate_workflow(wf: dict[str, Any]) -> list[Finding]:
         out.append(Finding("error", "connections", f"orphan node(s) not wired to anything: {orphans}"))
 
     # ---- the hardening standard -----------------------------------------
-    http_nodes = [n for n in real if n["type"] == "n8n-nodes-base.httpRequest"]
-    for n in http_nodes:
+    net_nodes = [n for n in real if n["type"] not in LOCAL_NODES]
+    for n in net_nodes:
         if not n.get("retryOnFail"):
             out.append(
-                Finding("error", "hardening/retry", f"{n['name']!r} calls the network without a retry policy")
+                Finding(
+                    "error",
+                    "hardening/retry",
+                    f"{n['name']!r} ({n['type'].split('.')[-1]}) crosses the network without a retry policy",
+                )
             )
         if not n.get("onError"):
             out.append(
@@ -161,7 +200,7 @@ def validate_workflow(wf: dict[str, Any]) -> list[Finding]:
         len(types.get("main", [])) > 1 and types["main"][1]
         for types in conns.values()
     )
-    if http_nodes and not has_error_route:
+    if net_nodes and not has_error_route:
         out.append(
             Finding("error", "hardening/error-path", "no failure branch is wired — errors would vanish silently")
         )
