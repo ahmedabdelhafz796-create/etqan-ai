@@ -641,6 +641,89 @@ check('an enquiry missing its message fails loudly', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-A4-01 · Download Problem Self-Service');
+
+const resend = load('a4-support/download-problem-self-service/workflow.json');
+const resendSecrets = { '🔑 Sign the new link': LINK_SECRET };
+
+const KNOWN = {
+  storeName: 'T', fromEmail: 'support@x.test', humanEmail: 'me@x.test',
+  downloadBaseUrl: 'https://x.test/download', linkTtlHours: 48, maxDownloads: 5,
+  maxRequestsPerDay: 3, historyTtlHours: 72,
+  knownOrders: { 'buyer@example.com': { orderId: 'o-1', productId: 'book-01', email: 'buyer@example.com' } },
+};
+
+const helpReq = (o = {}) => ({ body: { email: 'buyer@example.com', ...o }, headers: {} });
+
+check('an entitled buyer gets a fresh link automatically', () => {
+  const r = execute(resend, { trigger: helpReq(), secrets: resendSecrets, staticData: {}, configOverride: KNOWN });
+  assert(r.effects.emails.length === 1, `expected 1 email, got ${r.effects.emails.length}`);
+  assert(/sig=[a-f0-9]{64}/.test(r.effects.emails[0].html), 'reissued email has no signed link');
+});
+
+check('the link is sent to the order email, not one supplied in the request', () => {
+  // Someone requests a reissue but tries to redirect it elsewhere.
+  const r = execute(resend, {
+    trigger: { body: { email: 'buyer@example.com', replyTo: 'attacker@evil.test', sendTo: 'attacker@evil.test' }, headers: {} },
+    secrets: resendSecrets, staticData: {}, configOverride: KNOWN,
+  });
+  assert(r.effects.emails[0].to === 'buyer@example.com',
+    `link was sent to ${r.effects.emails[0].to} — a supplied address could hijack delivery`);
+});
+
+check('an unknown email escalates instead of leaking whether an order exists', () => {
+  const r = execute(resend, { trigger: helpReq({ email: 'nobody@example.com' }), secrets: resendSecrets, staticData: {}, configOverride: KNOWN });
+  const out = r.outputs['📒 Deflection log'][0].json;
+  assert(out.outcome === 'escalated', 'an unknown email was auto-resolved');
+  const reply = r.effects.responses[0];
+  assert(/If that email has an order/i.test(reply.body),
+    'the public response confirms whether an order exists — that is an enumeration leak');
+});
+
+check('repeat clicks within a minute are deduped, not emailed five times', () => {
+  const shared = {};
+  const runs = [1, 2, 3].map(() =>
+    execute(resend, { trigger: helpReq(), secrets: resendSecrets, staticData: shared, configOverride: KNOWN }));
+  const emails = runs.reduce((n, r) => n + r.effects.emails.length, 0);
+  assert(emails === 1,
+    `an impatient buyer clicking resend three times got ${emails} emails — the guard should collapse them to one`);
+});
+
+check('the rate limit escalates rather than silently refusing', () => {
+  const shared = {};
+  let last;
+  for (let i = 0; i < 5; i++) {
+    // The guard dedupes per minute, so clear its replay memory between
+    // iterations to simulate requests genuinely spread across the day. Without
+    // this the per-minute dedupe fires first and the daily limit is never
+    // reached — the two protections are layered and guard the wrong thing here.
+    shared.seen = {};
+    last = execute(resend, { trigger: helpReq(), secrets: resendSecrets, staticData: shared, configOverride: KNOWN });
+  }
+  const out = last.outputs['📒 Deflection log'][0].json;
+  assert(out.outcome === 'escalated', 'exceeding the rate limit did not escalate');
+  assert(last.effects.emails.some((e) => e.to === 'me@x.test'),
+    'over-limit request was refused silently — that just creates the ticket this template prevents');
+});
+
+check('a mismatched order id escalates', () => {
+  const r = execute(resend, { trigger: helpReq({ orderId: 'o-999' }), secrets: resendSecrets, staticData: {}, configOverride: KNOWN });
+  const out = r.outputs['📒 Deflection log'][0].json;
+  assert(out.outcome === 'escalated', 'a mismatched order id was auto-resolved');
+});
+
+check('a reissued link verifies in A1-02 (three templates share one URL contract)', () => {
+  const r = execute(resend, { trigger: helpReq(), secrets: resendSecrets, staticData: {}, configOverride: KNOWN });
+  const url = r.effects.emails[0].html.match(/href="([^"]+download[^"]*)"/)?.[1];
+  assert(url, 'no download URL in the reissued email');
+
+  const params = Object.fromEntries(new URL(url).searchParams);
+  const v = execute(download, { trigger: { query: params, headers: {} }, secrets: dlSecrets, staticData: {} });
+  assert(v.effects.responses.some((x) => x.with === 'redirect'),
+    'a link reissued by A4-01 was rejected by A1-02 — the templates disagree on the URL contract');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {

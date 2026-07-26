@@ -1,0 +1,497 @@
+{
+  "name": "DCA-A4-01 · Download Problem Self-Service (reissue access without a human)",
+  "nodes": [
+    {
+      "id": "80060f9f-f839-5dc5-8646-79b47cfa060a",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -520
+      ],
+      "parameters": {
+        "content": "## 🔁 Download Problem Self-Service\n**\"I can't get my file\" → verified → fresh link sent. No human.**\n\n### Setup (about 12 minutes)\n1. **⚙️ Config** → `storeName`, `fromEmail`, `downloadBaseUrl`.\n2. **🔑 Sign the new link** → use the **same secret** as A1-01 and A1-02.\n3. Seed `knownOrders` from your order log, **or** wire the lookup node to\n   your real order source (see the note in **🔎 Verify entitlement**).\n4. Attach SMTP. Activate.\n5. Put the form URL in your delivery emails: *\"Trouble downloading?\"*\n\n### Why this one is worth building first\nIt is not a wide variety of problems. It is **one problem** wearing\ndifferent clothes — and it dominates a digital seller's inbox.",
+        "height": 540,
+        "width": 580,
+        "color": 6
+      }
+    },
+    {
+      "id": "fe2a08a4-8acc-5326-ac6b-1019f363aef6",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        -520
+      ],
+      "parameters": {
+        "content": "### 🤖 Why no AI here\nB1-01 answers *questions* — that needs judgement, and sometimes a model.\n\nThis performs a **transaction**: verify entitlement, reissue access.\n\nNo model means no API cost, no latency, and **no possibility of inventing\na policy**. Routing this through an LLM would be slower, more expensive\nand less safe.\n\nUse the right tool. Not everything needs an agent.",
+        "height": 360,
+        "width": 460,
+        "color": 4
+      }
+    },
+    {
+      "id": "7220ad57-4606-5689-94f8-b67800ae3e8e",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -520
+      ],
+      "parameters": {
+        "content": "### 🔐 This is an access-granting endpoint\nAutomatic reissue can be abused — anyone who learns a customer's email\ncould request their file.\n\n**Three deliberate controls:**\n1. The link is sent **only** to the email on the original order — never\n   to a reply-to address supplied in the request.\n2. Requests are rate-limited per email per day.\n3. Anything over the limit **escalates to you**, it does not silently\n   refuse.\n\n⚠️ Point 3 matters: a control that fails closed and says nothing just\ncreates the support ticket this template exists to prevent.",
+        "height": 420,
+        "width": 500,
+        "color": 5
+      }
+    },
+    {
+      "id": "914b3b6e-b2e9-5252-9a03-0b666fc0afa4",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        340
+      ],
+      "parameters": {
+        "content": "### 📊 What it deflects\n| Case | Handled |\n| --- | --- |\n| Link expired | ✅ auto |\n| Download cap reached | ✅ auto |\n| Lost the email | ✅ auto |\n| Wrong email on order | 🙋 escalates |\n| No order found | 🙋 escalates |\n| Over rate limit | 🙋 escalates |\n\nThe first three are most of the volume.",
+        "height": 340,
+        "width": 420,
+        "color": 7
+      }
+    },
+    {
+      "id": "09681dec-db24-525c-96c7-a19a114e52b7",
+      "name": "🆘 Download help request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -680,
+        180
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/resend",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST {email, orderId?}. Link this form from your delivery emails.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ffcaa74b-ec42-5e3a-aac3-38ddaa7c30ab",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"support@yourdomain.com\",\n  \"humanEmail\": \"you@yourdomain.com\",\n  \"downloadBaseUrl\": \"https://yourdomain.com/download\",\n  \"linkTtlHours\": 48,\n  \"maxDownloads\": 5,\n  \"maxRequestsPerDay\": 3,\n  \"knownOrders\": {},\n  \"historyTtlHours\": 72\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "knownOrders maps email → {orderId, productId}. Seed it, or wire the verify node to your real order store.",
+      "notesInFlow": false
+    },
+    {
+      "id": "41ff8c6e-8578-5c7c-82d9-f970c1a5d0b8",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 1 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.email ?? '') + '|' + Math.floor(Date.now() / 60000) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "4ddc7d42-1ed9-5adf-80aa-e4ff74b7428d",
+      "name": "🔎 Verify entitlement",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Decide whether this person actually bought something.\n//\n// WIRING THIS TO YOUR REAL DATA:\n// The lookup below reads `knownOrders` from Config, which is fine for a small\n// catalogue and lets the template work with zero infrastructure. For a real\n// store, replace the lookup with a read from wherever A1-01 writes its order\n// log (Sheets, Airtable, Postgres) and return the same shape:\n//     { orderId, productId, email, purchasedAt }\n// Nothing downstream needs to change.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.resendRequests = store.resendRequests || {};\n\nconst now = Date.now();\nconst DAY = 24 * 60 * 60 * 1000;\nconst ttlMs = Number(cfg.historyTtlHours) * 60 * 60 * 1000;\n\nfor (const [k, r] of Object.entries(store.resendRequests)) {\n  if (now - (r.firstAt || 0) > ttlMs) delete store.resendRequests[k];\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n  const email = String(b.email ?? '').trim().toLowerCase();\n  const claimedOrder = String(b.orderId ?? b.order_id ?? '').trim();\n\n  if (!email || !email.includes('@')) {\n    throw new Error('A valid email is required to look up the order.');\n  }\n\n  // ── Rate limit ────────────────────────────────────────────────\n  // Escalates rather than refusing silently: an unexplained refusal produces\n  // the support ticket this template exists to prevent.\n  const rec = store.resendRequests[email] || { count: 0, firstAt: now };\n  if (now - rec.firstAt > DAY) { rec.count = 0; rec.firstAt = now; }\n  rec.count += 1;\n  store.resendRequests[email] = rec;\n\n  if (rec.count > Number(cfg.maxRequestsPerDay)) {\n    out.push({ json: {\n      outcome: 'escalate',\n      email,\n      reason: `${rec.count} resend requests from this address in 24h (limit ${cfg.maxRequestsPerDay})`,\n      humanNote: 'Could be a frustrated customer, could be someone probing. Check before reissuing manually.',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  // ── Entitlement lookup ────────────────────────────────────────\n  const orders = cfg.knownOrders || {};\n  const found = orders[email];\n\n  if (!found) {\n    out.push({ json: {\n      outcome: 'escalate',\n      email,\n      reason: 'no order found for this email address',\n      humanNote: 'Most often the buyer paid with a different address (work vs personal) — ask which one they used.',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  // A mismatched order id is worth a human's eyes, not an automatic refusal.\n  if (claimedOrder && String(found.orderId) !== claimedOrder) {\n    out.push({ json: {\n      outcome: 'escalate',\n      email,\n      reason: `order id mismatch — they quoted \"${claimedOrder}\", we have \"${found.orderId}\"`,\n      humanNote: 'Could be a typo, or they own more than one order. Verify before reissuing.',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  const expires = Math.floor(now / 1000) + Number(cfg.linkTtlHours) * 3600;\n\n  out.push({ json: {\n    outcome: 'reissue',\n    // Deliberately the email ON THE ORDER, never one supplied in the request.\n    email: found.email || email,\n    orderId: found.orderId,\n    productId: found.productId ?? '',\n    requestCount: rec.count,\n    __expires: expires,\n    // Must match A1-01's payload ordering exactly.\n    __signaturePayload: [found.orderId, found.email || email, found.productId ?? '', expires, cfg.maxDownloads].join('|'),\n    __config: cfg,\n  }});\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Entitlement + rate limit. Replace the lookup with your real order store; keep the return shape.",
+      "notesInFlow": false
+    },
+    {
+      "id": "5e97dbd1-d954-5be9-9c9e-53fa82ad772a",
+      "name": "✅ Entitled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        180
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "282e4214-0843-5adb-9984-d0c90b0fea4e",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.outcome }}",
+              "rightValue": "reissue"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "980a0f96-a7f2-5e87-b74f-43193ec4efe7",
+      "name": "🔑 Sign the new link",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        480,
+        60
+      ],
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.__signaturePayload }}",
+        "dataPropertyName": "linkSignature",
+        "secret": "YOUR_OWN_LONG_RANDOM_LINK_SECRET",
+        "encoding": "hex"
+      },
+      "notes": "⚠️ Must be the SAME secret used in A1-01 and A1-02, or the link will not verify.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ceb6838d-cef6-5cce-9d40-69308ac8c737",
+      "name": "🔗 Build the fresh link",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        60
+      ],
+      "parameters": {
+        "jsCode": "// Identical construction to A1-01 so the link verifies in A1-02 without any\n// special-casing. The three templates share one URL contract.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n  const qs = new URLSearchParams({\n    order: String(o.orderId),\n    email: String(o.email),\n    product: String(o.productId ?? ''),\n    expires: String(o.__expires),\n    max: String(cfg.maxDownloads),\n    sig: String(o.linkSignature),\n  });\n  return { json: { ...o,\n    downloadUrl: cfg.downloadBaseUrl.replace(/\\/+$/, '') + '?' + qs.toString(),\n    expiresHuman: new Date(o.__expires * 1000).toUTCString(),\n  }};\n});"
+      },
+      "notes": "Same URL contract as A1-01 — verified by a cross-template test.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7f89e7af-1637-50a9-8891-4881efc989b6",
+      "name": "📧 Send the fresh link",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        60
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ 'Your download link — ' + $json.__config.storeName }}",
+        "emailFormat": "html",
+        "html": "={{ '<div style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:540px;margin:0 auto;padding:32px 24px;color:#111\">' + '<h2 style=\"margin:0 0 12px;font-size:20px\">Here is your download</h2>' + '<p style=\"color:#555;line-height:1.65;margin:0 0 22px\">No problem — here is a fresh link for order <strong>' + $json.orderId + '</strong>.</p>' + '<a href=\"' + $json.downloadUrl + '\" style=\"display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600\">Download now</a>' + '<p style=\"color:#777;font-size:13px;margin:24px 0 0\">Valid until <strong>' + $json.expiresHuman + '</strong>, up to ' + $json.__config.maxDownloads + ' downloads.</p>' + '<p style=\"color:#777;font-size:13px;margin:8px 0 0\">Still stuck? Reply to this email and a person will help.</p>' + '</div>' }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Sent to the address on the ORDER, not one supplied in the request.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a3bc10e2-77bb-59d3-b738-9ff678c52e24",
+      "name": "🙋 Escalate to a human",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        320
+      ],
+      "parameters": {
+        "jsCode": "// Anything not automatically resolvable. Deliberately not a dead end: the\n// message tells the seller what happened, what it usually means, and what to do.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n  return { json: {\n    action: 'escalated',\n    to: cfg.humanEmail,\n    subject: `[download help] ${o.email} — needs you`,\n    alertText:\n`🙋 Download help request needs a human\n\nFrom:   ${o.email}\nReason: ${o.reason}\n\nWhat this usually means:\n${o.humanNote}\n\nTo resolve: find their order, then either send them a fresh link from\nA1-01, or add their email to knownOrders in this workflow's Config so it\nresolves automatically next time.`,\n  }};\n});"
+      },
+      "notes": "Explains what happened and what it usually means — not just a bare handoff.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ed299dfb-347b-59ec-a54b-e1b5eafce89e",
+      "name": "📨 Tell the human",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        320
+      ],
+      "parameters": {
+        "fromEmail": "={{ $('⚙️ Config').first().json.__config.fromEmail }}",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.alertText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput",
+      "notes": "Swap for Slack/Telegram if you prefer.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a8286a7a-6651-58fe-906f-428bed03b5ba",
+      "name": "📒 Deflection log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// The deflection rate is the number that proves this template's worth: what\n// fraction of \"I can't get my file\" was resolved without you. If escalations\n// dominate, your knownOrders source is incomplete — that is a wiring problem,\n// not a template failure.\nreturn $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  email: i.json.email ?? null,\n  outcome: i.json.action === 'escalated' ? 'escalated' : 'auto_resolved',\n  orderId: i.json.orderId ?? null,\n  requestCount: i.json.requestCount ?? null,\n}}));"
+      },
+      "notes": "Track the auto-resolved vs escalated ratio. That ratio is the template's value.",
+      "notesInFlow": false
+    },
+    {
+      "id": "fa55c48d-c7a8-5c54-91a1-49862d31104f",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        320
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"download-resend\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"download-problem-self-service\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "c48903bb-01ac-5a77-b843-d655dab8c777",
+      "name": "↩️ Confirm to the buyer",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        180
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, message: \"If that email has an order with us, a fresh download link is on its way.\" }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🆘 Download help request": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "🔎 Verify entitlement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Verify entitlement": {
+      "main": [
+        [
+          {
+            "node": "✅ Entitled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Entitled?": {
+      "main": [
+        [
+          {
+            "node": "🔑 Sign the new link",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🙋 Escalate to a human",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔑 Sign the new link": {
+      "main": [
+        [
+          {
+            "node": "🔗 Build the fresh link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔗 Build the fresh link": {
+      "main": [
+        [
+          {
+            "node": "📧 Send the fresh link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Send the fresh link": {
+      "main": [
+        [
+          {
+            "node": "📒 Deflection log",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🙋 Escalate to a human": {
+      "main": [
+        [
+          {
+            "node": "📨 Tell the human",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Tell the human": {
+      "main": [
+        [
+          {
+            "node": "📒 Deflection log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "📒 Deflection log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Deflection log": {
+      "main": [
+        [
+          {
+            "node": "↩️ Confirm to the buyer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "support"
+    },
+    {
+      "name": "delivery"
+    },
+    {
+      "name": "digital-products"
+    },
+    {
+      "name": "deflection"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "download-problem-self-service",
+    "category": "a4-support",
+    "version": "1.0.0"
+  }
+}
