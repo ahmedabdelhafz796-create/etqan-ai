@@ -474,6 +474,114 @@ check('the evidence pack never fabricates values', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-SYS-00 · Central Error Hub');
+
+const hub = load('sys-spine/central-error-hub/workflow.json');
+
+const failure = (o = {}) => ({
+  workflow: { name: 'DCA-A1-01 · Instant Digital Delivery', id: 'w1' },
+  execution: { id: 'e1', lastNodeExecuted: '📧 Send the product',
+               error: { message: 'Invalid login: 535 Authentication failed' } },
+  ...o,
+});
+
+check('a delivery failure is ranked critical', () => {
+  const r = execute(hub, { trigger: failure(), staticData: {} });
+  const out = r.outputs['🔎 Explain the failure'][0].json;
+  assert(out.severity === 'critical', `delivery failure ranked "${out.severity}" — a stuck paying customer is the top priority`);
+});
+
+check('an SMTP auth error is explained in plain language', () => {
+  const r = execute(hub, { trigger: failure(), staticData: {} });
+  const out = r.outputs['🔎 Explain the failure'][0].json;
+  assert(/SMTP key|password/i.test(out.fix), `fix text is not actionable: ${out.fix}`);
+  assert(!/ECONN|535/.test(out.cause), 'cause text just repeats the raw error');
+});
+
+check('the SSL/port mismatch we actually hit is explained', () => {
+  const r = execute(hub, {
+    trigger: failure({ execution: { id: 'e2', lastNodeExecuted: 'x',
+      error: { message: 'SSL routines:tls_validate_record_header:wrong version number' } } }),
+    staticData: {},
+  });
+  const out = r.outputs['🔎 Explain the failure'][0].json;
+  assert(/587|465/.test(out.fix), 'the port/SSL mismatch has no concrete fix');
+});
+
+check('a repeat failure is suppressed instead of paging again', () => {
+  const shared = {};
+  const a = execute(hub, { trigger: failure(), staticData: shared });
+  const b = execute(hub, { trigger: failure(), staticData: shared });
+  assert(a.effects.emails.length === 1, 'first failure should alert');
+  assert(b.effects.emails.length === 0,
+    'an identical repeat alerted again — a storm would bury every other signal');
+});
+
+check('a different failure still alerts during another one\'s storm', () => {
+  const shared = {};
+  execute(hub, { trigger: failure(), staticData: shared });
+  const other = execute(hub, {
+    trigger: failure({ execution: { id: 'e3', lastNodeExecuted: '🧠 Ask the model',
+      error: { message: '429 rate limit exceeded' } } }),
+    staticData: shared,
+  });
+  assert(other.effects.emails.length === 1,
+    'suppression is too broad — a distinct failure was silenced by an unrelated storm');
+});
+
+check('a logging failure is ranked low and does not alert', () => {
+  const r = execute(hub, {
+    trigger: failure({
+      workflow: { name: 'DCA-SYS-01 · Daily Business Pulse', id: 'w2' },
+      execution: { id: 'e4', lastNodeExecuted: '📒 Pulse archive',
+                   error: { message: 'sheet write failed' } },
+    }),
+    staticData: {},
+  });
+  const out = r.outputs['🔎 Explain the failure'][0].json;
+  assert(out.severity === 'low', `analytics failure ranked "${out.severity}"`);
+  assert(r.effects.emails.length === 0, 'a low-severity failure paged the seller');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-SYS-01 · Daily Business Pulse');
+
+const pulse = load('sys-spine/daily-business-pulse/workflow.json');
+
+check('missing templates report as "not installed", never as zero', () => {
+  const r = execute(pulse, { trigger: {}, staticData: {} });
+  const text = r.outputs['✍️ Write the pulse'][0].json.pulseText;
+  assert(/NOT INSTALLED/.test(text), 'a fresh install did not flag missing templates');
+  assert(/not zero activity/i.test(text), 'the zero-vs-no-data distinction is not explained');
+});
+
+check('recovered revenue is reported when dunning has data', () => {
+  const shared = { cases: { 'a@b.c': { recovered: true, recoveredAt: Date.now(), amount: 50 } } };
+  const r = execute(pulse, { trigger: {}, staticData: shared });
+  const text = r.outputs['✍️ Write the pulse'][0].json.pulseText;
+  assert(/MONEY RECOVERED/.test(text), 'recovered revenue was not surfaced');
+  assert(/50/.test(text), 'the recovered amount is missing');
+});
+
+check('action items come before good news', () => {
+  const shared = {
+    errors: { k1: { firstAt: Date.now(), lastAt: Date.now(), count: 3 } },
+    cases: { 'a@b.c': { recovered: true, recoveredAt: Date.now(), amount: 50 } },
+  };
+  const r = execute(pulse, { trigger: {}, staticData: shared });
+  const text = r.outputs['✍️ Write the pulse'][0].json.pulseText;
+  assert(text.indexOf('NEEDS YOU TODAY') < text.indexOf('MONEY RECOVERED'),
+    'good news was placed above the items needing action');
+});
+
+check('a leaked download link surfaces as an action item', () => {
+  const shared = { downloads: { 'o1|p1': { count: 20, ips: Array.from({ length: 12 }, (_, i) => `1.1.1.${i}`), firstAt: Date.now() } } };
+  const r = execute(pulse, { trigger: {}, staticData: shared });
+  const text = r.outputs['✍️ Write the pulse'][0].json.pulseText;
+  assert(/shared publicly/i.test(text), 'a link used from 12 IPs raised no leak warning');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {

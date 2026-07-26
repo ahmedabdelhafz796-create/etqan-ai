@@ -164,10 +164,18 @@ return $input.all().map(item => {
   const touchesCustomerMoney =
     /deliver|download|payment|order|invoice|refund/i.test(wfName + ' ' + nodeName);
 
+  // Nodes whose only job is to write a record for later reading. Their failure
+  // costs you a row in a spreadsheet today, not a customer.
+  //
+  // Note what is deliberately NOT here: "record the order". That log is your
+  // chargeback evidence, so losing it has a money consequence later even though
+  // nothing breaks today — it stays medium.
+  const isRecordKeeping = /\b(log|report|analytic|summary|audit|archive|pulse)\b/i.test(nodeName);
+
   let severity = 'medium';
   if (isCritical || (touchesCustomerMoney && /send|deliver|serve/i.test(nodeName))) severity = 'critical';
   else if (isHigh) severity = 'high';
-  else if (/log|report|analytic|summary|audit/i.test(nodeName)) severity = 'low';
+  else if (isRecordKeeping) severity = 'low';
 
   return { json: {
     severity,
