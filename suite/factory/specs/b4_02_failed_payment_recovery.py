@@ -393,6 +393,7 @@ for (const [email, c] of Object.entries(store.cases)) {
 
   const isFinal = dueStage === stages.length;
   out.push({ json: {
+    __summary: false,
     email, name: c.name, amount: c.amount, currency: c.currency,
     stage: dueStage, ageDays: Math.floor(ageDays), isFinal,
     daysUntilPause: Math.max(0, Math.ceil(Number(cfg.pauseAfterDays) - ageDays)),

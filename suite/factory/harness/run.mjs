@@ -807,6 +807,290 @@ check('the invoice email states number, net, tax and total', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('Scheduled branches (previously untested entry points)');
+
+// Both revenue-recovery templates pair a webhook that records events with a
+// schedule that acts on them. Every test above entered through the webhook, so
+// the follow-up logic these templates exist for had never actually run.
+
+check('dunning: a case past the follow-up day gets its second message', () => {
+  const DAY = 86400000;
+  const shared = { cases: { 'sub@example.com': {
+    email: 'sub@example.com', name: 'Sub', amount: 50, currency: 'USD',
+    openedAt: Date.now() - 4 * DAY, lastContactAt: Date.now() - 4 * DAY,
+    stage: 0, failures: 1, recovered: false,
+  }}};
+  const r = execute(dunning, { trigger: {}, staticData: shared, from: 'Daily follow-up run' });
+  assert(r.effects.emails.length === 1, `expected one follow-up, got ${r.effects.emails.length}`);
+  assert(shared.cases['sub@example.com'].stage === 1, 'the case stage did not advance');
+});
+
+check('dunning: the same case is not contacted twice for one stage', () => {
+  const DAY = 86400000;
+  const shared = { cases: { 'sub@example.com': {
+    email: 'sub@example.com', name: 'Sub', amount: 50, currency: 'USD',
+    openedAt: Date.now() - 4 * DAY, stage: 0, failures: 1, recovered: false,
+  }}};
+  const first = execute(dunning, { trigger: {}, staticData: shared, from: 'Daily follow-up run' });
+  const second = execute(dunning, { trigger: {}, staticData: shared, from: 'Daily follow-up run' });
+  assert(first.effects.emails.length === 1, 'first run should send');
+  assert(second.effects.emails.length === 0,
+    'the same stage sent twice — a daily schedule would email this customer every day');
+});
+
+check('dunning: chasing stops after pauseAfterDays', () => {
+  const DAY = 86400000;
+  const shared = { cases: { 'old@example.com': {
+    email: 'old@example.com', name: 'Old', amount: 50, currency: 'USD',
+    openedAt: Date.now() - 30 * DAY, stage: 1, failures: 1, recovered: false,
+  }}};
+  const r = execute(dunning, { trigger: {}, staticData: shared, from: 'Daily follow-up run' });
+  assert(r.effects.emails.length === 0,
+    'still chasing a month-old case — past the pause point this only produces complaints');
+  assert(shared.cases['old@example.com'].stage === 99, 'the case was not retired');
+});
+
+check('dunning: a recovered case is never contacted again', () => {
+  const DAY = 86400000;
+  const shared = { cases: { 'done@example.com': {
+    email: 'done@example.com', amount: 50, openedAt: Date.now() - 5 * DAY,
+    stage: 0, recovered: true, recoveredAt: Date.now(),
+  }}};
+  const r = execute(dunning, { trigger: {}, staticData: shared, from: 'Daily follow-up run' });
+  assert(r.effects.emails.length === 0, 'a customer who already paid was chased');
+});
+
+check('cart: a cart past the reminder hour gets its first reminder', () => {
+  const shared = { carts: { 'shopper@example.com': {
+    email: 'shopper@example.com', name: 'Shopper', total: 49, currency: 'USD',
+    items: [{ name: 'Course' }], abandonedAt: Date.now() - 2 * 3600000, stage: 0,
+  }}};
+  const r = execute(cart, { trigger: {}, staticData: shared, from: 'Check carts' });
+  assert(r.effects.emails.length === 1, `expected one reminder, got ${r.effects.emails.length}`);
+});
+
+check('cart: contact is hard-capped at two messages', () => {
+  const shared = { carts: { 'shopper@example.com': {
+    email: 'shopper@example.com', total: 49, currency: 'USD', items: [],
+    abandonedAt: Date.now() - 48 * 3600000, stage: 1,
+  }}};
+  const r = execute(cart, { trigger: {}, staticData: shared, from: 'Check carts' });
+  assert(r.effects.emails.length === 1, 'the final reminder did not send');
+  assert(!shared.carts['shopper@example.com'],
+    'the cart survived its final message — a third reminder would follow');
+});
+
+check('cart: no discount appears unless explicitly enabled', () => {
+  const shared = { carts: { 'shopper@example.com': {
+    email: 'shopper@example.com', total: 49, currency: 'USD', items: [],
+    abandonedAt: Date.now() - 48 * 3600000, stage: 1,
+  }}};
+  const r = execute(cart, { trigger: {}, staticData: shared, from: 'Check carts' });
+  const body = r.effects.emails[0].body;
+  assert(!/COMEBACK10/.test(body),
+    'a discount code appeared with enableDiscount off — that trains buyers to always abandon');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A6-01 · AI Product Translation');
+
+const translate = load('a6-content-localization/ai-product-translation/workflow.json');
+
+const product = (o = {}) => ({
+  body: { productId: 'book-01', title: 'Trading Masterclass',
+          description: 'Learn to trade. Costs $49. Visit https://etqan.example for more. **Bold** text here.', ...o },
+  headers: {},
+});
+
+const TR_CFG = {
+  targetLanguages: ['ar'], sourceLanguage: 'en', protectedTerms: ['Trading Masterclass'],
+  rtlLanguages: ['ar', 'he', 'fa', 'ur'], aiEndpoint: 'https://api.test/v1',
+  aiModel: 'm', maxTokens: 2000, tone: 't', minLengthRatio: 0.4,
+  skipUnchanged: true, historyTtlDays: 90,
+};
+
+check('prices, URLs and brand names are replaced with placeholders before translating', () => {
+  const r = execute(translate, { trigger: product(), staticData: {}, configOverride: TR_CFG });
+  const prepared = r.outputs['🔒 Protect literals and check what changed'][0].json;
+  assert(!/\$49/.test(prepared.protectedDescription), 'the price was sent to the model unprotected');
+  assert(!/https:\/\//.test(prepared.protectedDescription), 'a URL was sent unprotected');
+  assert(!/Trading Masterclass/.test(prepared.protectedTitle), 'the brand name was sent unprotected');
+  assert(prepared.protectedMap.length >= 3, `only ${prepared.protectedMap.length} literals protected`);
+});
+
+check('RTL languages are marked rtl', () => {
+  const r = execute(translate, { trigger: product(), staticData: {}, configOverride: TR_CFG });
+  const prepared = r.outputs['🔒 Protect literals and check what changed'][0].json;
+  assert(prepared.isRtl === true, 'Arabic was not flagged as RTL');
+});
+
+check('a translation that loses a placeholder is NOT published', () => {
+  const r = execute(translate, { trigger: product(), staticData: {}, configOverride: TR_CFG });
+  const restored = r.outputs['🔓 Restore literals and verify']?.[0]?.json;
+  assert(restored, 'restore node produced nothing');
+  // The mock model response carries no placeholders, so verification must fail.
+  assert(restored.published === false, 'a translation missing its placeholders was published');
+  assert(restored.problems.length > 0, 'no problems were reported for a broken translation');
+  assert(restored.title === 'Trading Masterclass', 'source text was not preserved on failure');
+});
+
+check('unchanged source skips the model entirely', () => {
+  const shared = { translations: {} };
+  execute(translate, { trigger: product(), staticData: shared, configOverride: TR_CFG });
+  // Seed a successful prior translation with the matching hash.
+  const prepared = execute(translate, { trigger: product(), staticData: { translations: {} }, configOverride: TR_CFG })
+    .outputs['🔒 Protect literals and check what changed'][0].json;
+  shared.translations['book-01|ar'] = {
+    sourceHash: prepared.sourceHash, title: 'ت', description: 'د', dir: 'rtl', at: Date.now(),
+  };
+  shared.seen = {};
+  const r = execute(translate, { trigger: product(), staticData: shared, configOverride: TR_CFG });
+  assert(r.effects.httpCalls.length === 0, 'unchanged content still called the model — that costs money for nothing');
+});
+
+check('a product with no title fails loudly', () => {
+  const r = execute(translate, { trigger: { body: { productId: 'x' }, headers: {} }, staticData: {}, configOverride: TR_CFG });
+  assert(r.effects.errors.length > 0, 'a product with no title passed silently');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A6-02 · AI Sales Page Writer');
+
+const writer = load('a6-content-localization/ai-sales-page-writer/workflow.json');
+
+const facts = (o = {}) => ({
+  body: { productName: 'Delivery Template', whatItIs: 'An n8n workflow',
+          problemItSolves: 'Buyers not receiving files', price: '$49', ...o },
+  headers: {},
+});
+
+check('missing facts are reported rather than invented', () => {
+  const r = execute(writer, { trigger: facts(), staticData: {} });
+  const collected = r.outputs['📥 Collect the facts'][0].json;
+  assert(collected.missingFacts.length > 0, 'no missing facts reported despite proof and limits being absent');
+  assert(collected.missingFacts.some((m) => /proof/.test(m)), 'absent proof was not reported');
+});
+
+check('an unreadable model response does not publish an empty page', () => {
+  const r = execute(writer, { trigger: facts(), staticData: {} });
+  const rendered = r.outputs['📄 Render the listing'][0].json;
+  assert(rendered.ok === false, 'an unreadable response was treated as a valid listing');
+  assert(rendered.markdown === null, 'an empty page was rendered for publication');
+});
+
+check('a listing with no facts still refuses without productName', () => {
+  const r = execute(writer, { trigger: { body: { price: '$1' }, headers: {} }, staticData: {} });
+  assert(r.effects.errors.length > 0, 'a listing request with no product name passed silently');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A7-01 · Sales Anomaly Detection');
+
+const anomaly = load('a7-analytics/sales-anomaly-detection/workflow.json');
+
+const AN_CFG = {
+  storeName: 'T', alertEmail: 'me@x.test', fromEmail: 'a@x.test', currency: 'USD',
+  minDailyOrders: 3, dropThreshold: 0.5, baselineWeeks: 4, minHistoryDays: 14,
+  alertCooldownHours: 12,
+};
+
+/** Build N days of history ending yesterday, all on the same weekday cadence. */
+function seedHistory({ orders = 20, starts = 25, days = 21 } = {}) {
+  const stats = {};
+  const now = new Date();
+  for (let i = 1; i <= days; i++) {
+    const d = new Date(now.getTime() - i * 86400000);
+    const key = d.toISOString().slice(0, 10);
+    stats[key] = { date: key, weekday: d.getUTCDay(), ts: Date.now(),
+                   orders, revenue: orders * 50, checkoutStarts: starts, failures: 0 };
+  }
+  return stats;
+}
+
+check('insufficient history reports honestly instead of guessing', () => {
+  const r = execute(anomaly, { trigger: {}, staticData: { dailyStats: seedHistory({ days: 3 }) }, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const out = r.outputs['🔬 Compare against the weekday baseline'][0].json;
+  assert(out.verdict === 'insufficient_history', `verdict was "${out.verdict}"`);
+  assert(out.shouldAlert === false, 'alerted despite having no baseline');
+});
+
+check('a normal day does not alert', () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const stats = seedHistory();
+  stats[today] = { date: today, weekday: new Date().getUTCDay(), ts: Date.now(),
+                   orders: 20, revenue: 1000, checkoutStarts: 25, failures: 0 };
+  const r = execute(anomaly, { trigger: {}, staticData: { dailyStats: stats }, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const out = r.outputs['🔬 Compare against the weekday baseline'][0].json;
+  assert(out.verdict === 'normal', `a normal day produced verdict "${out.verdict}"`);
+  assert(r.effects.emails.length === 0, 'a normal day sent an alert');
+});
+
+check('total silence is diagnosed as BROKEN, never as low demand', () => {
+  const r = execute(anomaly, { trigger: {}, staticData: { dailyStats: seedHistory() }, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const out = r.outputs['🔬 Compare against the weekday baseline'][0].json;
+  assert(out.verdict === 'anomaly', `no anomaly detected on a zero-order day (verdict ${out.verdict})`);
+  assert(out.cause === 'broken', `zero events diagnosed as "${out.cause}" — silence always means broken`);
+  assert(out.confidence === 'high', 'confidence should be high when nothing is arriving at all');
+});
+
+check('traffic normal but orders down is diagnosed as BROKEN', () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const stats = seedHistory();
+  stats[today] = { date: today, weekday: new Date().getUTCDay(), ts: Date.now(),
+                   orders: 1, revenue: 50, checkoutStarts: 24, failures: 0 };
+  const r = execute(anomaly, { trigger: {}, staticData: { dailyStats: stats }, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const out = r.outputs['🔬 Compare against the weekday baseline'][0].json;
+  assert(out.cause === 'broken',
+    `people arrived and could not buy, diagnosed as "${out.cause}" — that is the checkout-broken signature`);
+});
+
+check('traffic and orders down together is diagnosed as DEMAND', () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const stats = seedHistory();
+  stats[today] = { date: today, weekday: new Date().getUTCDay(), ts: Date.now(),
+                   orders: 2, revenue: 100, checkoutStarts: 3, failures: 0 };
+  const r = execute(anomaly, { trigger: {}, staticData: { dailyStats: stats }, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const out = r.outputs['🔬 Compare against the weekday baseline'][0].json;
+  assert(out.cause === 'demand',
+    `both traffic and orders fell together, diagnosed as "${out.cause}" — that is a marketing signature`);
+});
+
+check('failed payments outnumbering successes is diagnosed as BROKEN', () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const stats = seedHistory();
+  stats[today] = { date: today, weekday: new Date().getUTCDay(), ts: Date.now(),
+                   orders: 1, revenue: 50, checkoutStarts: 20, failures: 15 };
+  const r = execute(anomaly, { trigger: {}, staticData: { dailyStats: stats }, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const out = r.outputs['🔬 Compare against the weekday baseline'][0].json;
+  assert(out.cause === 'broken', `payments failing en masse diagnosed as "${out.cause}"`);
+  assert(/failed payment/i.test(out.evidence), 'the evidence does not mention the payment failures');
+});
+
+check('the alert leads with the diagnosis and a checklist', () => {
+  const r = execute(anomaly, { trigger: {}, staticData: { dailyStats: seedHistory() }, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const mail = r.effects.emails[0];
+  assert(mail, 'no alert was sent for a total stop');
+  assert(/BROKEN/.test(mail.subject), `subject does not lead with the diagnosis: ${mail.subject}`);
+  assert(/DO THIS/.test(mail.text), 'the alert has no action checklist');
+});
+
+check('an ongoing drop does not re-page inside the cooldown', () => {
+  const shared = { dailyStats: seedHistory() };
+  const first = execute(anomaly, { trigger: {}, staticData: shared, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const second = execute(anomaly, { trigger: {}, staticData: shared, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  assert(first.effects.emails.length === 1, 'first detection should alert');
+  assert(second.effects.emails.length === 0,
+    'the same ongoing drop paged twice — running every 4h that is 4 pages a day, which gets muted');
+});
+
+check('low-volume stores are told there is nothing to detect', () => {
+  const r = execute(anomaly, { trigger: {}, staticData: { dailyStats: seedHistory({ orders: 1, starts: 1 }) }, configOverride: AN_CFG, from: 'Check every 4 hours' });
+  const out = r.outputs['🔬 Compare against the weekday baseline'][0].json;
+  assert(out.verdict === 'volume_too_low', `verdict was "${out.verdict}"`);
+  assert(out.shouldAlert === false, 'alerted on a store with no statistical signal');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {

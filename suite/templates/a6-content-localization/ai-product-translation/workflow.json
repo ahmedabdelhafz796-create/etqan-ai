@@ -1,0 +1,478 @@
+{
+  "name": "DCA-A6-01 · AI Product Translation & Sync (prices and formatting stay intact)",
+  "nodes": [
+    {
+      "id": "76fd6324-e0b1-5830-a399-f8aae89d4a44",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -540
+      ],
+      "parameters": {
+        "content": "## 🌍 AI Product Translation & Sync\n**Write once → translated everywhere → prices and formatting untouched.**\n\n### Setup (about 15 minutes)\n1. **⚙️ Config** → set `targetLanguages` and `protectedTerms`\n   (your brand, product names — anything that must never be translated).\n2. Set `aiEndpoint` / `aiModel`, add your API key as **Header Auth** on\n   **🧠 Translate**.\n3. POST your product to the Production URL:\n   ```json\n   { \"productId\": \"book-01\", \"title\": \"...\",\n     \"description\": \"...\", \"price\": \"$49\" }\n   ```\n4. Wire **📤 Deliver translations** to your CMS / site / database.\n\n### It only pays for what changed\nSource text is hashed. Re-send the same product and unchanged fields are\n**skipped entirely** — no API call, no cost, no gratuitous diff.",
+        "height": 560,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "1af729d9-9977-5806-ab4e-b1ee891effa8",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -540
+      ],
+      "parameters": {
+        "content": "### 🔒 What must never be translated\nNaive translation workflows break these three things:\n\n**Prices** — `$49` becomes `٤٩ دولارًا` and your checkout breaks.\n**Brand and product names** — helpfully rendered into Arabic and now\nnobody can find them.\n**Formatting** — markdown and HTML come back rearranged, so the page\nrenders wrong in exactly the languages you cannot read.\n\nThis replaces them with placeholders **before** translating and restores\nthem after, then verifies every placeholder came back.",
+        "height": 420,
+        "width": 500,
+        "color": 5
+      }
+    },
+    {
+      "id": "cf093706-5ebc-5ca3-b554-d55e96238067",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -540
+      ],
+      "parameters": {
+        "content": "### ↔️ RTL is handled, not assumed\nArabic · Hebrew · Farsi · Urdu need `dir=\"rtl\"`.\n\nA translation that is linguistically perfect and renders left-to-right\n**looks broken** to the reader.\n\nDirection is emitted with every translation so your site does not have to\nremember which languages need it.",
+        "height": 320,
+        "width": 440,
+        "color": 7
+      }
+    },
+    {
+      "id": "5fa7b8ec-c2b0-58e2-b19d-2a648f904ceb",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        420
+      ],
+      "parameters": {
+        "content": "### ✅ Structure is verified after translation\nEvery translation is checked before it is delivered:\n\n· all protected placeholders returned\n· markdown/HTML tag counts match the source\n· output is not suspiciously short or empty\n\nA failed check **does not silently publish**. It is flagged and the\noriginal is kept, because a broken translation on a live sales page is\nworse than no translation.",
+        "height": 340,
+        "width": 460,
+        "color": 4
+      }
+    },
+    {
+      "id": "9b764619-e322-57ed-9a8c-00037c4d7d9c",
+      "name": "📝 Product content",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -680,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/translate",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST {productId, title, description, price?, features?}.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7935332d-c718-50bb-9221-2ddea7f72ade",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"targetLanguages\": [\"ar\", \"tr\", \"es\", \"fr\", \"de\"],\n  \"sourceLanguage\": \"en\",\n  \"protectedTerms\": [\"YOUR_BRAND_NAME\"],\n  \"rtlLanguages\": [\"ar\", \"he\", \"fa\", \"ur\"],\n  \"aiEndpoint\": \"https://api.anthropic.com/v1/messages\",\n  \"aiModel\": \"claude-sonnet-5\",\n  \"maxTokens\": 2000,\n  \"tone\": \"professional but warm; keep sentences short\",\n  \"minLengthRatio\": 0.4,\n  \"skipUnchanged\": true,\n  \"historyTtlDays\": 90\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "protectedTerms: your brand and product names. These are never translated.",
+      "notesInFlow": false
+    },
+    {
+      "id": "518b206e-0f47-599f-abb9-2c1b56120bda",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 1 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.productId ?? '') + '|' + String(j.body?.title ?? '').slice(0, 40) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "1df1a37a-11b9-5ee8-854a-2ed42dc3f1c6",
+      "name": "🔒 Protect literals and check what changed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Two jobs before any model sees the text.\n//\n// 1. Replace anything that must survive translation with an opaque placeholder.\n//    Models are helpful by default and will happily convert \"$49\" into local\n//    numerals or translate a brand name, both of which break things downstream.\n// 2. Hash the source so unchanged content is skipped. Re-running a catalogue\n//    should cost nothing for the parts that did not change.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.translations = store.translations || {};\n\nconst now = Date.now();\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nfor (const [k, r] of Object.entries(store.translations)) {\n  if (now - (r.at || 0) > ttlMs) delete store.translations[k];\n}\n\n// Small, dependency-free string hash. Only needs to detect change, not resist\n// attack, so a cryptographic digest would be ceremony here.\nfunction hash(s) {\n  let h = 5381;\n  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;\n  return String(h >>> 0);\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n\n  const productId = String(b.productId ?? b.product_id ?? b.id ?? '').trim();\n  const title = String(b.title ?? b.name ?? '').trim();\n  const description = String(b.description ?? b.body ?? '').trim();\n\n  if (!productId || !title) {\n    throw new Error('Translation needs at least productId and title. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  // Everything the model must not touch, in one place.\n  const protect = [];\n  const stash = (value) => {\n    const token = `«${protect.length}»`;\n    protect.push({ token, value });\n    return token;\n  };\n\n  const protectText = (text) => {\n    let t = text;\n    // Order matters: longest/most specific patterns first, or a shorter pattern\n    // eats part of a longer one and the restore comes back wrong.\n    // Currency amounts in several common shapes.\n    t = t.replace(/(?:[$€£¥₺]\\s?\\d[\\d.,]*|\\d[\\d.,]*\\s?(?:USD|EUR|GBP|TRY|AED|SAR|EGP))/gi, m => stash(m));\n    // URLs and emails.\n    t = t.replace(/https?:\\/\\/\\S+/gi, m => stash(m));\n    t = t.replace(/[\\w.+-]+@[\\w-]+\\.[\\w.]+/gi, m => stash(m));\n    // Seller-declared terms — brand names, product names.\n    for (const term of (cfg.protectedTerms || [])) {\n      if (!term) continue;\n      const esc = String(term).replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n      t = t.replace(new RegExp(esc, 'g'), m => stash(m));\n    }\n    return t;\n  };\n\n  const protectedTitle = protectText(title);\n  const protectedDescription = protectText(description);\n\n  // Structural fingerprint of the source, checked again after translation.\n  const countStructure = (s) => ({\n    markdownBold: (s.match(/\\*\\*/g) || []).length,\n    markdownLinks: (s.match(/\\[[^\\]]*\\]\\([^)]*\\)/g) || []).length,\n    htmlTags: (s.match(/<[^>]+>/g) || []).length,\n    lineBreaks: (s.match(/\\n/g) || []).length,\n    bullets: (s.match(/^\\s*[-*•]\\s/gm) || []).length,\n  });\n\n  const sourceHash = hash(title + '\\u241F' + description);\n\n  for (const lang of (cfg.targetLanguages || [])) {\n    const key = `${productId}|${lang}`;\n    const prior = store.translations[key];\n\n    if (cfg.skipUnchanged && prior && prior.sourceHash === sourceHash) {\n      out.push({ json: {\n        productId, lang, skipped: true,\n        reason: 'source unchanged since last translation',\n        title: prior.title, description: prior.description,\n        dir: prior.dir,\n        __config: cfg,\n      }});\n      continue;\n    }\n\n    out.push({ json: {\n      productId, lang, skipped: false,\n      sourceTitle: title,\n      sourceDescription: description,\n      protectedTitle, protectedDescription,\n      protectedMap: protect,\n      sourceStructure: countStructure(description),\n      sourceHash,\n      isRtl: (cfg.rtlLanguages || []).includes(lang),\n      __config: cfg,\n    }});\n  }\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Placeholders protect prices/brands/URLs. Hashing skips unchanged text so you only pay for real changes.",
+      "notesInFlow": false
+    },
+    {
+      "id": "2ae93e73-6b4f-52b8-bc92-72b32e240be8",
+      "name": "🔄 Needs translating?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        200
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "35efac7b-4644-5548-b80f-285a1799e246",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.skipped }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "671a85d7-bb7c-5dd0-8618-26af2da8ff2d",
+      "name": "🧠 Translate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        80
+      ],
+      "parameters": {
+        "url": "={{ $json.__config.aiEndpoint }}",
+        "method": "POST",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: $json.__config.aiModel,\n  max_tokens: $json.__config.maxTokens,\n  system: 'You translate e-commerce product copy from ' + $json.__config.sourceLanguage + ' to the requested language.\\n\\n'\n    + 'ABSOLUTE RULES:\\n'\n    + '1. Any token shaped like «0», «1», «2» is a placeholder. Copy it EXACTLY and UNCHANGED into your output. '\n    + 'Never translate it, never renumber it, never add or remove one. They hold prices, URLs and brand names.\\n'\n    + '2. Preserve ALL formatting exactly: markdown, HTML tags, line breaks, bullet points.\\n'\n    + '3. Translate meaning, not words. Marketing copy should read as if written natively.\\n'\n    + '4. Tone: ' + $json.__config.tone + '\\n\\n'\n    + 'Reply with STRICT JSON only, no markdown fence:\\n'\n    + '{\"title\": \"<translated title>\", \"description\": \"<translated description>\"}',\n  messages: [ { role: 'user', content: 'Target language code: ' + $json.lang + '\\n\\nTITLE:\\n' + $json.protectedTitle + '\\n\\nDESCRIPTION:\\n' + $json.protectedDescription } ]\n}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "notes": "Add your API key as a Header Auth credential.",
+      "notesInFlow": false
+    },
+    {
+      "id": "f14e4e70-88fe-54ff-ad4a-7742d326e73a",
+      "name": "🔓 Restore literals and verify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        80
+      ],
+      "parameters": {
+        "jsCode": "// Put the protected values back, then check the model actually respected the\n// contract. A translation that lost its placeholders or mangled its markup must\n// NOT reach a live sales page — in these languages the seller cannot see the\n// damage themselves.\nconst src = $('🔒 Protect literals and check what changed').all();\n\nfunction extract(p) {\n  return p?.content?.[0]?.text ?? p?.choices?.[0]?.message?.content ?? '';\n}\n\nreturn $input.all().map((item, idx) => {\n  // Items stay aligned because the model call is one-in-one-out.\n  const o = src[idx]?.json ?? src[0].json;\n  const cfg = o.__config;\n  const raw = String(extract(item.json) || '').trim();\n\n  let parsed = null;\n  try {\n    parsed = JSON.parse(raw.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim());\n  } catch {\n    const m = raw.match(/\\{[\\s\\S]*\\}/);\n    if (m) { try { parsed = JSON.parse(m[0]); } catch { /* fall through */ } }\n  }\n\n  const problems = [];\n\n  if (!parsed || typeof parsed.title !== 'string' || typeof parsed.description !== 'string') {\n    return { json: { ...o,\n      ok: false, published: false,\n      problems: ['model returned an unreadable response'],\n      title: o.sourceTitle, description: o.sourceDescription,\n      dir: o.isRtl ? 'rtl' : 'ltr',\n    }};\n  }\n\n  let title = parsed.title;\n  let description = parsed.description;\n\n  // ── Placeholder integrity, checked BEFORE restoring ──────────\n  for (const p of (o.protectedMap || [])) {\n    const inOutput = (title + description).includes(p.token);\n    if (!inOutput) {\n      problems.push(`placeholder ${p.token} (${p.value}) was lost in translation`);\n    }\n  }\n\n  // Restore. Done after the check so a lost placeholder is still detectable.\n  for (const p of (o.protectedMap || [])) {\n    const re = new RegExp(p.token.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'), 'g');\n    title = title.replace(re, p.value);\n    description = description.replace(re, p.value);\n  }\n\n  // Any leftover placeholder means the model invented one we cannot resolve.\n  if (/«\\d+»/.test(title + description)) {\n    problems.push('output contains placeholders that do not map to any protected value');\n  }\n\n  // ── Structure ────────────────────────────────────────────────\n  const s = o.sourceStructure || {};\n  const t = {\n    markdownBold: (description.match(/\\*\\*/g) || []).length,\n    markdownLinks: (description.match(/\\[[^\\]]*\\]\\([^)]*\\)/g) || []).length,\n    htmlTags: (description.match(/<[^>]+>/g) || []).length,\n    bullets: (description.match(/^\\s*[-*•]\\s/gm) || []).length,\n  };\n  for (const k of ['markdownBold', 'markdownLinks', 'htmlTags', 'bullets']) {\n    if ((s[k] ?? 0) !== (t[k] ?? 0)) {\n      problems.push(`${k} count changed (${s[k] ?? 0} → ${t[k] ?? 0})`);\n    }\n  }\n\n  // ── Plausibility ─────────────────────────────────────────────\n  // Languages legitimately differ in length, so the bar is deliberately low —\n  // this catches truncation and empty output, not stylistic variation.\n  const ratio = o.sourceDescription.length > 0\n    ? description.length / o.sourceDescription.length\n    : 1;\n  if (description.length === 0 || ratio < Number(cfg.minLengthRatio)) {\n    problems.push(`translation is suspiciously short (${Math.round(ratio * 100)}% of source length)`);\n  }\n\n  const ok = problems.length === 0;\n\n  return { json: { ...o,\n    ok, published: ok, problems,\n    // On failure keep the source. A broken sales page is worse than an\n    // untranslated one.\n    title: ok ? title : o.sourceTitle,\n    description: ok ? description : o.sourceDescription,\n    dir: o.isRtl ? 'rtl' : 'ltr',\n    lang: o.lang,\n  }};\n});"
+      },
+      "notes": "Verifies placeholders and structure. A failed check keeps the source rather than publishing something broken.",
+      "notesInFlow": false
+    },
+    {
+      "id": "953a0dde-3abe-5587-9430-192a6f1cfd33",
+      "name": "💾 Remember what was translated",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        80
+      ],
+      "parameters": {
+        "jsCode": "// Cache successful translations against the source hash so an unchanged rerun\n// costs nothing. Failures are deliberately NOT cached — they should be retried.\nconst store = $getWorkflowStaticData('global');\nstore.translations = store.translations || {};\n\nreturn $input.all().map(i => {\n  const o = i.json;\n  if (o.ok) {\n    store.translations[`${o.productId}|${o.lang}`] = {\n      sourceHash: o.sourceHash,\n      title: o.title,\n      description: o.description,\n      dir: o.dir,\n      at: Date.now(),\n    };\n  }\n  return { json: o };\n});"
+      },
+      "notes": "Only successful translations are cached, so failures retry next run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a1e2aac2-61f2-5614-a0bb-994f353c578a",
+      "name": "⏭️ Unchanged — reuse existing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        340
+      ],
+      "parameters": {
+        "jsCode": "// Source has not changed since the last successful translation. Emit the cached\n// result so downstream sees a complete set for every language regardless.\nreturn $input.all().map(i => ({ json: {\n  ...i.json, ok: true, published: true, problems: [], fromCache: true,\n}}));"
+      },
+      "notes": "No API call. This is where the cost saving comes from.",
+      "notesInFlow": false
+    },
+    {
+      "id": "91bfdcb8-0c3e-5e9b-90d7-4a3db7d0e326",
+      "name": "📤 Deliver translations",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Final payload for your CMS, site or database. Includes `dir` so RTL renders\n// correctly without the site having to know which languages need it, and\n// reports anything that failed verification rather than hiding it.\nconst out = [];\nconst failures = [];\n\nfor (const i of $input.all()) {\n  const o = i.json;\n  if (!o.ok) failures.push({ lang: o.lang, problems: o.problems });\n\n  out.push({ json: {\n    productId: o.productId,\n    lang: o.lang,\n    dir: o.dir,\n    title: o.title,\n    description: o.description,\n    verified: !!o.ok,\n    fromCache: !!o.fromCache,\n    problems: o.problems || [],\n    // Ready to drop into an HTML attribute set.\n    htmlAttrs: `lang=\"${o.lang}\" dir=\"${o.dir}\"`,\n    updatedAt: new Date().toISOString(),\n  }});\n}\n\nif (failures.length) {\n  out.push({ json: {\n    __alert: true,\n    message: `⚠️ ${failures.length} translation(s) failed verification and were NOT published. Source text kept.`,\n    failures,\n  }});\n}\n\nreturn out;"
+      },
+      "notes": "Wire to your CMS. Anything unverified is reported, never silently published.",
+      "notesInFlow": false
+    },
+    {
+      "id": "d16475ce-f038-5427-8bf3-02aab9f1725c",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        340
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"translation\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"ai-product-translation\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "fdd4ace4-921c-5b92-96d1-d0ebbbebe0ea",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "📝 Product content": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "🔒 Protect literals and check what changed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔒 Protect literals and check what changed": {
+      "main": [
+        [
+          {
+            "node": "🔄 Needs translating?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔄 Needs translating?": {
+      "main": [
+        [
+          {
+            "node": "🧠 Translate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⏭️ Unchanged — reuse existing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Translate": {
+      "main": [
+        [
+          {
+            "node": "🔓 Restore literals and verify",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔓 Restore literals and verify": {
+      "main": [
+        [
+          {
+            "node": "💾 Remember what was translated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Remember what was translated": {
+      "main": [
+        [
+          {
+            "node": "📤 Deliver translations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏭️ Unchanged — reuse existing": {
+      "main": [
+        [
+          {
+            "node": "📤 Deliver translations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "📤 Deliver translations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📤 Deliver translations": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "ai-agent"
+    },
+    {
+      "name": "localization"
+    },
+    {
+      "name": "content"
+    },
+    {
+      "name": "i18n"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "ai-product-translation",
+    "category": "a6-content-localization",
+    "version": "1.0.0"
+  }
+}

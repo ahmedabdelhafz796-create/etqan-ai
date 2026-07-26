@@ -288,6 +288,7 @@ for (const [email, c] of Object.entries(store.carts)) {
     .filter(Boolean);
 
   out.push({ json: {
+    __summary: false,
     email, name: c.name, total: c.total, currency: c.currency,
     itemNames, itemCount: itemNames.length || 1,
     stage, isFinal: stage === 2,

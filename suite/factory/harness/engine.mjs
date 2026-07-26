@@ -91,8 +91,14 @@ function buildSandbox(ctx) {
 function compareValues(left, right, op) {
   const { type, operation } = op;
   if (type === 'boolean') {
-    if (operation === 'true') return left === true || left === 'true';
-    if (operation === 'false') return left === false || left === 'false';
+    // n8n's loose type validation coerces, so undefined/null/'' read as false.
+    // Matching that here matters: getting it wrong sent every item down the
+    // wrong branch and made two templates look broken when they were not.
+    const truthy = left === true || left === 'true';
+    const falsy = left === false || left === 'false' ||
+                  left === undefined || left === null || left === '';
+    if (operation === 'true') return truthy;
+    if (operation === 'false') return falsy;
   }
   const l = type === 'number' ? Number(left) : left;
   const r = type === 'number' ? Number(right) : right;
@@ -130,6 +136,13 @@ function evalConditionGroup(group, ctx) {
  * @param {object} opts.secrets        { "Node Name": "secret" } for Crypto nodes
  * @param {object} opts.staticData     seed static data (carry between runs to test dedupe)
  * @param {object} opts.configOverride shallow-merged over the Config node's values
+ * @param {string} opts.from           name (or substring) of the trigger to start
+ *                                     from. Required for templates with more
+ *                                     than one entry point — several here pair
+ *                                     a webhook that captures events with a
+ *                                     schedule that acts on them, and without
+ *                                     this only the first-declared branch would
+ *                                     ever be exercised.
  */
 export function execute(workflow, opts = {}) {
   const {
@@ -137,6 +150,7 @@ export function execute(workflow, opts = {}) {
     secrets = {},
     staticData = {},
     configOverride = null,
+    from = null,
   } = opts;
 
   const nodes = new Map(
@@ -153,10 +167,20 @@ export function execute(workflow, opts = {}) {
   };
   const executed = [];
 
-  const triggerNode = [...nodes.values()].find(
+  const triggers = [...nodes.values()].filter(
     (n) => n.type.toLowerCase().includes('trigger') || n.type === 'n8n-nodes-base.webhook'
   );
-  if (!triggerNode) throw new Error('workflow has no trigger');
+  if (!triggers.length) throw new Error('workflow has no trigger');
+
+  const triggerNode = from
+    ? triggers.find((n) => n.name === from || n.name.includes(from))
+    : triggers[0];
+
+  if (!triggerNode) {
+    throw new Error(
+      `no trigger matching ${JSON.stringify(from)}. Available: ${triggers.map((t) => t.name).join(' | ')}`
+    );
+  }
 
   const queue = [{ name: triggerNode.name, items: [{ json: trigger }] }];
 
@@ -167,9 +191,10 @@ export function execute(workflow, opts = {}) {
 
     let produced;
     let outputIndex = 0;
+    let extraOutputs = null;
 
     try {
-      ({ produced, outputIndex } = runNode(node, items, {
+      ({ produced, outputIndex, extraOutputs = null } = runNode(node, items, {
         outputs, staticData, effects, secrets, configOverride,
       }));
     } catch (e) {
@@ -185,16 +210,28 @@ export function execute(workflow, opts = {}) {
       }
     }
 
-    outputs[name] = produced;
+    // Record the primary output for $('Node') lookups. When a router split the
+    // batch, keep every branch's items visible so a later node referencing this
+    // one by name still sees everything it produced.
+    const allProduced = extraOutputs
+      ? [...produced, ...Object.values(extraOutputs).flat()]
+      : produced;
+    outputs[name] = allProduced.length ? allProduced : produced;
     executed.push({ node: name, items: produced.length, output: outputIndex });
 
-    // No items means this branch is intentionally finished — the dedupe guard
-    // returning zero is a success, not a failure.
-    if (!produced.length) continue;
-
     const main = conns[name]?.main ?? [];
-    const slot = main[outputIndex] ?? [];
-    for (const link of slot) queue.push({ name: link.node, items: produced });
+
+    const dispatch = (idx, batch) => {
+      // No items means the branch is intentionally finished — the dedupe guard
+      // returning zero is a success, not a failure.
+      if (!batch || !batch.length) return;
+      for (const link of main[idx] ?? []) queue.push({ name: link.node, items: batch });
+    };
+
+    dispatch(outputIndex, produced);
+    if (extraOutputs) {
+      for (const [idx, batch] of Object.entries(extraOutputs)) dispatch(Number(idx), batch);
+    }
   }
 
   return { outputs, effects, executed, staticData };
@@ -243,31 +280,55 @@ function runNode(node, items, env) {
     return { produced, outputIndex: 0 };
   }
 
+  // IF and Switch route each item independently in n8n. Evaluating only the
+  // first item and sending the whole batch one way silently broke every
+  // template that emits a mixed batch — the scheduled branches here emit due
+  // records plus a trailing summary record, and those must separate.
   if (t === 'n8n-nodes-base.if') {
-    const pass = evalConditionGroup(node.parameters.conditions, ctxFor(items[0]));
-    return { produced: items, outputIndex: pass ? 0 : 1 };
+    const branches = [[], []];
+    for (const item of items) {
+      const pass = evalConditionGroup(node.parameters.conditions, ctxFor(item));
+      branches[pass ? 0 : 1].push(item);
+    }
+    return { produced: branches[0], outputIndex: 0, extraOutputs: { 1: branches[1] } };
   }
 
   if (t === 'n8n-nodes-base.switch') {
     const rules = node.parameters.rules?.values ?? [];
-    for (let i = 0; i < rules.length; i++) {
-      if (evalConditionGroup(rules[i].conditions, ctxFor(items[0]))) {
-        return { produced: items, outputIndex: i };
-      }
-    }
     const fb = node.parameters.options?.fallbackOutput;
-    return { produced: items, outputIndex: typeof fb === 'number' ? fb : 0 };
+    const branches = {};
+    for (const item of items) {
+      let idx = typeof fb === 'number' ? fb : 0;
+      for (let i = 0; i < rules.length; i++) {
+        if (evalConditionGroup(rules[i].conditions, ctxFor(item))) { idx = i; break; }
+      }
+      (branches[idx] = branches[idx] || []).push(item);
+    }
+    const first = Object.keys(branches).map(Number).sort((a, b) => a - b)[0] ?? 0;
+    const extra = { ...branches };
+    delete extra[first];
+    return { produced: branches[first] ?? [], outputIndex: first, extraOutputs: extra };
   }
 
   if (t === 'n8n-nodes-base.emailSend') {
     for (const item of items) {
       const c = ctxFor(item);
+      // Capture BOTH bodies. Several templates send plain-text alerts rather
+      // than HTML, and reading only `html` made their body invisible to tests —
+      // an assertion on alert content would pass against undefined.
+      const html = evaluateExpression(node.parameters.html ?? '', c);
+      const text = evaluateExpression(node.parameters.text ?? '', c);
       effects.emails.push({
         node: node.name,
         to: evaluateExpression(node.parameters.toEmail, c),
         from: evaluateExpression(node.parameters.fromEmail, c),
         subject: evaluateExpression(node.parameters.subject, c),
-        html: evaluateExpression(node.parameters.html, c),
+        format: node.parameters.emailFormat ?? 'html',
+        html,
+        text,
+        // Whatever body this email actually carries, for assertions that do not
+        // care which format was used.
+        body: node.parameters.emailFormat === 'text' ? text : (html || text),
       });
     }
     return { produced: items, outputIndex: 0 };
