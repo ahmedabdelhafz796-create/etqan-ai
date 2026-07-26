@@ -2,8 +2,8 @@
 
 Production-hardened n8n templates for people who sell digital products.
 
-**Status:** Phase 1 in progress — 7 templates + 1 test tool built, all passing the gate.
-**37 behavioural tests passing.**
+**Status:** Phase 1 complete — **12 templates + 2 spine workflows + 1 test tool**,
+all passing the gate. **68 behavioural tests · 14 gate probes · 0 failures.**
 
 ---
 
@@ -62,25 +62,62 @@ now default-deny, and this test keeps it that way.
 
 ## Built so far
 
+### The system spine
+
+These two are what make the rest a *system* rather than a folder of files, and
+they are what justifies a suite price over a per-template price.
+
+| Workflow | Does |
+| --- | --- |
+| [`central-error-hub`](./templates/sys-spine/central-error-hub/) | Every failure from every template, ranked by business impact, storm-suppressed, explained in plain language |
+| [`daily-business-pulse`](./templates/sys-spine/daily-business-pulse/) | One daily message: what needs you, what was recovered, what ran — so working automation stops being invisible |
+
+### The templates
+
 | Template | Category | Solves |
 | --- | --- | --- |
 | [`instant-digital-delivery`](./templates/a1-delivery/instant-digital-delivery/) | A1 · Delivery | "Paid and never received it" — 6 gateways → one order shape → signed link |
 | [`secure-download-endpoint`](./templates/a1-delivery/secure-download-endpoint/) | A1 · Delivery | Expired/leaked links, and refusals that explain themselves |
+| [`automatic-invoice-vat`](./templates/a2-payments-finance/automatic-invoice-vat/) | A2 · Finance | Gap-free sequential invoices, cross-border tax evidence |
 | [`pre-payment-fraud-scoring`](./templates/a3-fraud-security/pre-payment-fraud-scoring/) | A3 · Fraud 🎯 | Fraud caught **before** delivery — no paid API |
 | [`chargeback-early-warning`](./templates/a3-fraud-security/chargeback-early-warning/) | A3 · Fraud 🎯 | Disputes lost by default; evidence that expires before it's collected |
+| [`download-problem-self-service`](./templates/a4-support/download-problem-self-service/) | A4 · Support | The one message that dominates a digital seller's inbox |
 | [`cart-abandonment-recovery`](./templates/a5-marketing-revenue/cart-abandonment-recovery/) | A5 · Revenue 💰 | Interrupted checkouts, without training buyers to expect a coupon |
-| [`failed-payment-recovery`](./templates/b4-saas-subscriptions/failed-payment-recovery/) | B4 · SaaS 💰 | Subscriptions lost silently to an expired card |
 | [`ai-customer-support-agent`](./templates/b1-ai-agents/ai-customer-support-agent/) | B1 · AI Agent 🤖 | AI support that invents policies — this one refuses instead |
+| [`ai-lead-qualifier`](./templates/b1-ai-agents/ai-lead-qualifier/) | B1 · AI Agent 🤖 | Buyers waiting behind tyre-kickers in an arrival-order inbox |
+| [`failed-payment-recovery`](./templates/b4-saas-subscriptions/failed-payment-recovery/) | B4 · SaaS 💰 | Subscriptions lost silently to an expired card |
 | [`delivery-test-runner`](./templates/z-tools/delivery-test-runner/) | Tool | Testing a webhook template with no terminal (works from a phone) |
 
-**Matched pairs.** `instant-digital-delivery` mints the signed link;
-`secure-download-endpoint` verifies it — same secret, same payload order, and a
-test asserts they still agree. `pre-payment-fraud-scoring` screens orders before
-delivery; `chargeback-early-warning` handles what gets through.
+### How they connect
 
-**The two 💰 templates sell themselves** because the buyer can do the
-arithmetic: recovering one $50 subscription or one $49 cart pays for the
-template, and it keeps working every month.
+**One URL contract, three templates.** `instant-digital-delivery` mints a signed
+link, `download-problem-self-service` reissues one, and
+`secure-download-endpoint` verifies both. They share a secret and a payload field
+order, and tests assert they still agree — nothing else would catch them
+drifting apart.
+
+**Screening, then defence.** `pre-payment-fraud-scoring` stops fraud before
+delivery; `chargeback-early-warning` handles what gets through and tracks the
+ratio that closes payment accounts.
+
+**Two templates sell themselves** 💰 because the buyer does the arithmetic:
+recovering one $50 subscription or one $49 cart pays for the template, and it
+keeps working every month.
+
+### Two agents, one deliberate non-agent
+
+Both AI templates run a **deterministic layer before any model call** — cheaper,
+and an obviously-qualified lead or an obviously-sensitive support request never
+depends on a model being up.
+
+They also score in opposite directions on purpose. The support agent is
+defensive: it must not invent a refund policy, so it refuses when unsure. The
+lead qualifier is inclusive: a false positive costs minutes, a false negative
+costs a deal.
+
+`download-problem-self-service` uses **no AI at all**, and that is the point —
+it performs a transaction, not a judgement. No model means no API cost, no
+latency, and no possibility of inventing a policy.
 
 ### Verified in real n8n
 
