@@ -411,6 +411,69 @@ check('a request missing its message fails loudly', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-A3-02 · Chargeback Early Warning');
+
+const cb = load('a3-fraud-security/chargeback-early-warning/workflow.json');
+
+const alertEvt = (o = {}) => ({
+  body: { id: 'evt_cb_1', type: 'charge.dispute.created',
+          data: { object: { id: 'ch_1', amount: 4900, currency: 'usd', reason: 'product_not_received',
+                            customer_email: 'buyer@example.com', metadata: { order_id: 'o-99' } } }, ...o },
+  headers: {},
+});
+
+check('an early fraud warning recommends refunding now', () => {
+  const r = execute(cb, { trigger: alertEvt({ type: 'radar.early_fraud_warning.created' }), staticData: {} });
+  const out = r.outputs['📁 Build evidence pack'][0].json;
+  assert(out.kind === 'early_warning', `classified as ${out.kind}, expected early_warning`);
+  assert(out.recommendation.action === 'refund_now',
+    `early warning recommended "${out.recommendation.action}" — the whole point is to act inside this window`);
+});
+
+check('an early warning is NOT counted in the chargeback ratio', () => {
+  const shared = {};
+  const r = execute(cb, { trigger: alertEvt({ id: 'evt_ew', type: 'radar.early_fraud_warning.created' }), staticData: shared });
+  const out = r.outputs['📈 Track the chargeback ratio'][0].json;
+  assert(out.disputes30d === 0,
+    'an early warning was counted as a chargeback — that punishes the seller for acting correctly');
+});
+
+check('a real dispute IS counted and produces a deadline', () => {
+  const r = execute(cb, { trigger: alertEvt(), staticData: {} });
+  const out = r.outputs['📈 Track the chargeback ratio'][0].json;
+  assert(out.kind === 'dispute', `classified as ${out.kind}`);
+  assert(out.disputes30d === 1, 'a formal dispute was not counted in the ratio');
+  assert(out.hoursToRespond > 0, 'no response deadline was computed');
+});
+
+check('a fightable reason recommends fighting with evidence', () => {
+  const r = execute(cb, { trigger: alertEvt(), staticData: {} });
+  const out = r.outputs['📁 Build evidence pack'][0].json;
+  assert(out.recommendation.action === 'fight_with_evidence',
+    `product_not_received should be fightable, got "${out.recommendation.action}"`);
+  assert(out.evidencePack.refundPolicyUrl, 'evidence pack has no terms URL');
+});
+
+check('crossing the ratio threshold raises a critical status', () => {
+  const shared = {};
+  let last;
+  // 100 monthly orders, critical at 0.75% → the 1st dispute already crosses it.
+  for (let i = 0; i < 2; i++) {
+    last = execute(cb, { trigger: alertEvt({ id: `evt_r${i}` }), staticData: shared });
+  }
+  const out = last.outputs['📈 Track the chargeback ratio'][0].json;
+  assert(out.ratioStatus === 'critical',
+    `ratio ${out.chargebackRate}% reported status "${out.ratioStatus}" — account-closing risk must escalate`);
+});
+
+check('the evidence pack never fabricates values', () => {
+  const r = execute(cb, { trigger: alertEvt(), staticData: {} });
+  const pack = r.outputs['📁 Build evidence pack'][0].json.evidencePack;
+  assert(/⚠️ FILL/.test(pack.downloadIp),
+    'evidence fields were invented instead of flagged for the seller to fill');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {

@@ -1,0 +1,406 @@
+{
+  "name": "DCA-A3-02 · Chargeback Early Warning & Evidence Builder",
+  "nodes": [
+    {
+      "id": "0568345f-fc2a-5040-974d-68fe62c89645",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -520
+      ],
+      "parameters": {
+        "content": "## 🛡️ Chargeback Early Warning\n**Alert arrives → evidence assembled → recommendation with reasoning.**\n\n### Setup (about 15 minutes)\n1. **⚙️ Config** → `storeName`, `alertEmail`, `monthlyOrderCount`.\n2. Point these gateway webhooks at the Production URL:\n   - Stripe: `radar.early_fraud_warning.created`, `charge.dispute.created`\n   - PayPal: `CUSTOMER.DISPUTE.CREATED`\n   - Paddle / Lemon Squeezy: their dispute events\n3. Attach SMTP to **📨 Send the alert**.\n4. Activate.\n\n### Pairs with A3-01\nA3-01 stops fraud **before** delivery. This handles what gets through.\nRun both — screening alone never catches everything.",
+        "height": 540,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "ae81e8eb-d9ff-5863-93df-fad5aad79163",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -520
+      ],
+      "parameters": {
+        "content": "### ⚡ Why the early window matters\nCard networks emit a fraud alert **before** a formal dispute exists.\n\nRefunding inside that window costs you the sale — but avoids the dispute\nfee **and keeps the chargeback off your ratio**.\n\nThat second part is usually worth far more than the sale itself.",
+        "height": 300,
+        "width": 460,
+        "color": 4
+      }
+    },
+    {
+      "id": "ae227712-21fd-5b40-952c-f448a0176ba9",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -180
+      ],
+      "parameters": {
+        "content": "### 📈 The ratio is the real risk\nSellers watch the disputed amount. The number that ends businesses is the\nchargeback **rate**.\n\nCross roughly **1%** and processors impose monitoring programmes, hold\nreserves, or close the account entirely.\n\nThis tracks your running rate and warns **before** that line — because\nlosing your payment account costs more than every dispute combined.\n\n⚠️ Set `monthlyOrderCount` honestly or the rate is meaningless.",
+        "height": 340,
+        "width": 460,
+        "color": 5
+      }
+    },
+    {
+      "id": "b418c1f8-fe82-515c-930d-03851973d1a0",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        -520
+      ],
+      "parameters": {
+        "content": "### 📁 The evidence pack\nBuilt the moment the alert lands, **while the records still exist**.\n\nFor digital goods you must prove the customer received the product:\ndelivery timestamp · download IP · download count · link expiry ·\nthe terms they accepted.\n\nWire **📁 Build evidence pack** to your order log (A1-01 writes exactly\nthis shape) so it fills in automatically.\n\n⚠️ **Honest note:** a strong pack improves your odds. Nothing wins a\ndispute reliably — the issuer decides, and they favour the cardholder.",
+        "height": 400,
+        "width": 480,
+        "color": 7
+      }
+    },
+    {
+      "id": "c0412ca5-7e34-5dd0-8b0b-0a83acee95c6",
+      "name": "⚠️ Fraud alert / dispute",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -680,
+        180
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/chargeback",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Point your gateway's fraud-warning and dispute webhooks here.",
+      "notesInFlow": false
+    },
+    {
+      "id": "d8832d85-5c55-5aa2-af2f-3245d351afa0",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"alertEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"alerts@yourdomain.com\",\n  \"monthlyOrderCount\": 100,\n  \"ratioWarnAt\": 0.005,\n  \"ratioCriticalAt\": 0.0075,\n  \"autoRefundUnder\": 0,\n  \"termsUrl\": \"https://yourdomain.com/terms\",\n  \"responseDays\": 7,\n  \"historyTtlDays\": 90\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "monthlyOrderCount drives the ratio. ratioWarnAt 0.005 = 0.5%, half the danger line.",
+      "notesInFlow": false
+    },
+    {
+      "id": "76d43be3-45b0-5416-b9a3-07f9d12c1732",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 168 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String(j.body?.id ?? j.body?.data?.object?.id ?? j.body?.dispute_id ?? j.body?.resource?.dispute_id ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "51b5a6dd-f3c2-5589-97a0-3520691853aa",
+      "name": "🔄 Normalise the alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Gateways disagree on everything here — field names, amount units, and most\n// importantly on whether this is an early warning or an actual dispute. That\n// distinction drives the whole recommendation, so it is resolved once, here.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n  const type = String(b.type ?? b.event_type ?? b.meta?.event_name ?? '').toLowerCase();\n  const d = b.data?.object ?? b.resource ?? b.data?.attributes ?? b;\n\n  // An early fraud warning is a chance to act. A dispute is a deadline.\n  const isEarlyWarning =\n    type.includes('early_fraud') || type.includes('fraud_warning') ||\n    String(b.alert_type ?? '').toLowerCase().includes('fraud');\n\n  const isDispute =\n    type.includes('dispute') || type.includes('chargeback') || !!d.reason;\n\n  const amountRaw = Number(d.amount ?? d.disputed_amount?.value ?? d.total ?? 0);\n  const amount = amountRaw > 1000 ? amountRaw / 100 : amountRaw;\n\n  const reason = String(d.reason ?? d.reason_code ?? b.reason ?? 'unknown');\n\n  // Deadline: use the gateway's if given, else assume the shorter end of the\n  // typical 7-21 day window. Assuming short is the safe direction to be wrong.\n  const dueTs = d.evidence_details?.due_by\n    ? Number(d.evidence_details.due_by) * 1000\n    : Date.now() + Number(cfg.responseDays) * 24 * 60 * 60 * 1000;\n\n  out.push({ json: {\n    alertId: item.json.__eventId,\n    kind: isEarlyWarning ? 'early_warning' : (isDispute ? 'dispute' : 'unknown'),\n    chargeId: d.charge ?? d.id ?? d.transaction_id ?? null,\n    orderId: d.metadata?.order_id ?? d.invoice ?? d.order_id ?? null,\n    email: d.customer_email ?? d.billing_details?.email ?? b.email ?? null,\n    amount,\n    currency: String(d.currency ?? 'USD').toUpperCase(),\n    reason,\n    // Friendly-fraud reasons are the ones worth fighting for digital goods,\n    // because delivery evidence directly contradicts \"I never got it\".\n    reasonIsFightable: /product_not_received|not_received|unrecognized|subscription_canceled|duplicate|product_unacceptable/i.test(reason),\n    dueBy: new Date(dueTs).toISOString(),\n    hoursToRespond: Math.max(0, Math.round((dueTs - Date.now()) / 3600000)),\n    receivedAt: new Date().toISOString(),\n    __config: cfg,\n  }});\n}\n\nreturn out;"
+      },
+      "notes": "Separates early warnings from formal disputes — that distinction drives everything downstream.",
+      "notesInFlow": false
+    },
+    {
+      "id": "dd59135e-a512-5a2e-a3a9-3d06e0f5543c",
+      "name": "📈 Track the chargeback ratio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Rolling 30-day count against declared monthly volume. This is the number that\n// decides whether the seller keeps a payment account at all.\nconst store = $getWorkflowStaticData('global');\nstore.chargebacks = store.chargebacks || [];\n\nconst now = Date.now();\nconst DAY = 24 * 60 * 60 * 1000;\n\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n\n  store.chargebacks = store.chargebacks\n    .filter(c => now - c.t < Number(cfg.historyTtlDays) * DAY)\n    .slice(-1000);\n\n  // Early warnings are counted separately: acting on them is precisely how you\n  // keep them OUT of the ratio, so counting them as chargebacks would punish\n  // the seller for the behaviour we want.\n  if (o.kind === 'dispute') {\n    store.chargebacks.push({ t: now, amount: o.amount, id: o.alertId });\n  }\n\n  const last30 = store.chargebacks.filter(c => now - c.t < 30 * DAY);\n  const monthly = Math.max(1, Number(cfg.monthlyOrderCount));\n  const rate = last30.length / monthly;\n\n  let ratioStatus = 'ok';\n  if (rate >= Number(cfg.ratioCriticalAt)) ratioStatus = 'critical';\n  else if (rate >= Number(cfg.ratioWarnAt)) ratioStatus = 'warning';\n\n  return { json: { ...o,\n    disputes30d: last30.length,\n    disputedValue30d: Math.round(last30.reduce((s, c) => s + (c.amount || 0), 0) * 100) / 100,\n    chargebackRate: Math.round(rate * 10000) / 100,   // percent, 2dp\n    ratioStatus,\n  }};\n});"
+      },
+      "alwaysOutputData": true,
+      "notes": "Early warnings are excluded from the ratio on purpose — acting on them is how you keep them out.",
+      "notesInFlow": false
+    },
+    {
+      "id": "d2141be0-6495-54ae-9246-da714296b0c4",
+      "name": "📁 Build evidence pack",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Assemble the pack now, while the records still exist. For digital goods the\n// central claim is \"the customer received and used the product\", and the proof\n// for that expires: links lapse, logs roll over, download counters reset.\n//\n// The lookup fields are left empty and clearly labelled rather than invented —\n// a fabricated evidence pack is worse than none, because submitting one you\n// cannot support damages your standing with the processor.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n\n  const recommendation = (() => {\n    if (o.kind === 'early_warning') {\n      return {\n        action: 'refund_now',\n        confidence: 'high',\n        why: 'This is a fraud warning, not yet a dispute. Refunding now costs the sale but avoids the dispute fee AND keeps it off your chargeback ratio — usually worth far more than the sale.',\n      };\n    }\n    if (o.amount > 0 && o.amount <= Number(cfg.autoRefundUnder)) {\n      return {\n        action: 'refund_now',\n        confidence: 'high',\n        why: `Disputed amount (${o.amount}) is at or below your autoRefundUnder threshold. Fighting costs more in time than the amount at stake.`,\n      };\n    }\n    if (o.reasonIsFightable) {\n      return {\n        action: 'fight_with_evidence',\n        confidence: 'medium',\n        why: `Reason \"${o.reason}\" is contradicted by delivery evidence. Fill the pack below and submit before the deadline.`,\n      };\n    }\n    return {\n      action: 'review_manually',\n      confidence: 'low',\n      why: `Reason \"${o.reason}\" is not one delivery records reliably rebut. Judge this one yourself.`,\n    };\n  })();\n\n  return { json: { ...o,\n    recommendation,\n    evidencePack: {\n      // Fill these from your order log. A1-01 writes exactly this shape.\n      productDescription: '⚠️ FILL: what was sold',\n      deliveryTimestamp: '⚠️ FILL from order log: when the link was sent',\n      deliveryEmail: o.email || '⚠️ FILL: buyer email',\n      downloadIp: '⚠️ FILL from download log: IP that collected the file',\n      downloadCount: '⚠️ FILL from download log: times it was downloaded',\n      downloadTimestamp: '⚠️ FILL from download log: when',\n      linkExpiry: '⚠️ FILL: when access expired',\n      customerCommunication: '⚠️ FILL: any support thread with this buyer',\n      refundPolicyUrl: cfg.termsUrl,\n      termsAcceptedAt: '⚠️ FILL: when they accepted terms at checkout',\n      note: 'Submit only what you can actually evidence. A pack you cannot support is worse than a thin one.',\n    },\n  }};\n});"
+      },
+      "notes": "Recommendation carries its reasoning. Evidence fields are labelled, never invented.",
+      "notesInFlow": false
+    },
+    {
+      "id": "4f71971d-0795-50a5-bf36-a2d86241970c",
+      "name": "✍️ Compose the alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// One message that a busy person can act on immediately: what happened, how\n// long they have, what to do, and whether the account-level risk is rising.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const r = o.recommendation;\n\n  const urgency = o.hoursToRespond < 48 ? '🔴 URGENT' : (o.kind === 'early_warning' ? '🟡 ACT NOW' : '🟠');\n\n  const ratioLine =\n    o.ratioStatus === 'critical'\n      ? `\\n🚨 CHARGEBACK RATE ${o.chargebackRate}% — ABOVE YOUR CRITICAL LINE.\\n   Processors close accounts over this. Address it now.`\n      : o.ratioStatus === 'warning'\n        ? `\\n⚠️ Chargeback rate ${o.chargebackRate}% — approaching the danger zone.`\n        : `\\nChargeback rate: ${o.chargebackRate}% (${o.disputes30d} in 30 days)`;\n\n  const text =\n`${urgency} ${o.kind === 'early_warning' ? 'FRAUD WARNING' : 'DISPUTE OPENED'}\n\nAmount:   ${o.amount} ${o.currency}\nOrder:    ${o.orderId || '(not supplied)'}\nBuyer:    ${o.email || '(not supplied)'}\nReason:   ${o.reason}\nDeadline: ${o.dueBy}  (${o.hoursToRespond}h left)\n\n── RECOMMENDATION ──────────────────\n${r.action.replace(/_/g, ' ').toUpperCase()}  (confidence: ${r.confidence})\n${r.why}\n${ratioLine}\n\n── EVIDENCE PACK ───────────────────\nFill the ⚠️ fields from your order and download logs, then submit through\nyour gateway's dispute form BEFORE the deadline above.\n\n${JSON.stringify(o.evidencePack, null, 2)}\n\nNote: most disputes are lost by default, not argued and lost. Responding at\nall puts you ahead of the majority.`;\n\n  return { json: { ...o, alertText: text, subject: `${urgency} ${o.kind === 'early_warning' ? 'Fraud warning' : 'Dispute'} — ${o.amount} ${o.currency}` } };\n});"
+      },
+      "notes": "A single actionable message: what, deadline, recommendation, ratio, evidence.",
+      "notesInFlow": false
+    },
+    {
+      "id": "dadd9120-aaa9-5633-b158-17f553c4bfd8",
+      "name": "📨 Send the alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        180
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.alertEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.alertText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Attach SMTP. Swap for Slack/Telegram if you prefer.",
+      "notesInFlow": false
+    },
+    {
+      "id": "c5bcd32b-2798-547f-b2f2-5fa511543f5b",
+      "name": "📒 Dispute log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Your record of what was disputed, what you decided, and how the ratio moved.\n// Keep it — processors sometimes ask how you handle disputes, and a log is the\n// difference between a conversation and a closed account.\nreturn $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  alertId: i.json.alertId,\n  kind: i.json.kind,\n  orderId: i.json.orderId,\n  amount: i.json.amount,\n  currency: i.json.currency,\n  reason: i.json.reason,\n  recommendedAction: i.json.recommendation?.action,\n  dueBy: i.json.dueBy,\n  chargebackRate: i.json.chargebackRate,\n  ratioStatus: i.json.ratioStatus,\n}}));"
+      },
+      "notes": "Append to Sheets/Airtable. This log is worth keeping.",
+      "notesInFlow": false
+    },
+    {
+      "id": "addc7a51-91b2-5089-8d7f-db39b7a47b0a",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        400
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"chargeback-alert\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"chargeback-early-warning\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "0f7baadf-b2eb-54f6-beb9-38db7e9d8675",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        180
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, kind: $json.kind, action: $json.recommendedAction }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "⚠️ Fraud alert / dispute": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "🔄 Normalise the alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔄 Normalise the alert": {
+      "main": [
+        [
+          {
+            "node": "📈 Track the chargeback ratio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📈 Track the chargeback ratio": {
+      "main": [
+        [
+          {
+            "node": "📁 Build evidence pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📁 Build evidence pack": {
+      "main": [
+        [
+          {
+            "node": "✍️ Compose the alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Compose the alert": {
+      "main": [
+        [
+          {
+            "node": "📨 Send the alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Send the alert": {
+      "main": [
+        [
+          {
+            "node": "📒 Dispute log",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Dispute log": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "fraud"
+    },
+    {
+      "name": "chargeback"
+    },
+    {
+      "name": "disputes"
+    },
+    {
+      "name": "digital-products"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "chargeback-early-warning",
+    "category": "a3-fraud-security",
+    "version": "1.0.0"
+  }
+}
