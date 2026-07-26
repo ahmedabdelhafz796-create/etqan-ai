@@ -1453,6 +1453,183 @@ check('the report leads with whether it is safe to go live', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-B3-01 · Sales Pipeline & Follow-Up');
+
+const pipeline = load('b3-sales-crm/sales-pipeline-followup/workflow.json');
+
+const PIPE_CFG = {
+  ownerEmail: 'me@x.test', fromEmail: 'p@x.test', businessName: 'B', currency: 'USD',
+  staleDays: 4, highValueThreshold: 1000, lowValueThreshold: 100,
+  abandonAfterDays: 45, maxDigestItems: 15, historyTtlDays: 180,
+};
+
+const DAY = 86400000;
+const deal = (o = {}) => ({ dealId: 'd1', contact: 'Alice', email: 'a@x.test',
+  value: 500, stage: 'proposal', openedAt: Date.now(), lastContactAt: Date.now(),
+  touchCount: 1, status: 'open', currency: 'USD', ...o });
+
+check('recording contact does not wipe the deal details', () => {
+  const shared = {};
+  execute(pipeline, { trigger: { body: { dealId: 'd1', contact: 'Alice', value: 500, stage: 'proposal' }, headers: {} },
+                      staticData: shared, configOverride: PIPE_CFG });
+  shared.seen = {};
+  execute(pipeline, { trigger: { body: { dealId: 'd1', event: 'contacted' }, headers: {} },
+                      staticData: shared, configOverride: PIPE_CFG });
+  assert(shared.deals.d1.value === 500, 'a contact event wiped the deal value');
+  assert(shared.deals.d1.contact === 'Alice', 'a contact event wiped the contact name');
+  assert(shared.deals.d1.touchCount === 1, 'the touch was not counted');
+});
+
+check('a high-value deal is chased sooner than a low-value one', () => {
+  const silent = Date.now() - 3 * DAY;   // 3 days: past high threshold (2), under normal (4)
+  const shared = { deals: {
+    big: deal({ dealId: 'big', value: 5000, lastContactAt: silent }),
+    small: deal({ dealId: 'small', value: 50, lastContactAt: silent }),
+  }};
+  const r = execute(pipeline, { trigger: {}, staticData: shared, configOverride: PIPE_CFG, from: 'Daily digest' });
+  const out = r.outputs['🔍 Find deals going cold'][0].json;
+  const ids = out.needsChasing.map((d) => d.dealId);
+  assert(ids.includes('big'), 'a 5000 deal silent for 3 days was not surfaced');
+  assert(!ids.includes('small'), 'a 50 deal was chased as urgently as a 5000 one');
+});
+
+check('the digest is ordered by deal value', () => {
+  const silent = Date.now() - 10 * DAY;
+  const shared = { deals: {
+    a: deal({ dealId: 'a', value: 200, lastContactAt: silent }),
+    b: deal({ dealId: 'b', value: 9000, lastContactAt: silent }),
+  }};
+  const r = execute(pipeline, { trigger: {}, staticData: shared, configOverride: PIPE_CFG, from: 'Daily digest' });
+  const out = r.outputs['🔍 Find deals going cold'][0].json;
+  assert(out.needsChasing[0].dealId === 'b', 'the digest is not led by the most valuable deal');
+});
+
+check('nothing is ever sent to the prospect', () => {
+  const shared = { deals: { d1: deal({ lastContactAt: Date.now() - 10 * DAY }) } };
+  const r = execute(pipeline, { trigger: {}, staticData: shared, configOverride: PIPE_CFG, from: 'Daily digest' });
+  assert(r.effects.emails.length === 1, 'expected exactly the owner digest');
+  assert(r.effects.emails[0].to === 'me@x.test',
+    `an email went to ${r.effects.emails[0].to} — this template must never contact the prospect`);
+});
+
+check('a recently contacted deal is not chased', () => {
+  const shared = { deals: { d1: deal({ lastContactAt: Date.now() }) } };
+  const r = execute(pipeline, { trigger: {}, staticData: shared, configOverride: PIPE_CFG, from: 'Daily digest' });
+  assert(r.effects.emails.length === 0, 'a deal contacted today was listed as going cold');
+});
+
+check('closed deals drop out of the digest', () => {
+  const shared = { deals: { d1: deal({ status: 'won', closedAt: Date.now(), lastContactAt: Date.now() - 20 * DAY }) } };
+  const r = execute(pipeline, { trigger: {}, staticData: shared, configOverride: PIPE_CFG, from: 'Daily digest' });
+  const out = r.outputs['🔍 Find deals going cold'][0].json;
+  assert(out.totalStale === 0, 'a won deal was still being chased');
+});
+
+check('abandoned deals stop appearing', () => {
+  const shared = { deals: { d1: deal({ openedAt: Date.now() - 60 * DAY, lastContactAt: Date.now() - 60 * DAY }) } };
+  const r = execute(pipeline, { trigger: {}, staticData: shared, configOverride: PIPE_CFG, from: 'Daily digest' });
+  const out = r.outputs['🔍 Find deals going cold'][0].json;
+  assert(out.totalStale === 0, 'a two-month-dead deal still appears daily, which trains you to skim the digest');
+});
+
+check('every listed deal carries a draft and a stated reason', () => {
+  const shared = { deals: { d1: deal({ lastContactAt: Date.now() - 10 * DAY }) } };
+  const r = execute(pipeline, { trigger: {}, staticData: shared, configOverride: PIPE_CFG, from: 'Daily digest' });
+  const text = r.effects.emails[0].body;
+  assert(/DRAFT:/.test(text), 'no draft was written for a stale deal');
+  assert(/days silent/.test(text), 'the digest does not say why the deal is listed');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-B5-01 · CV Screening & Triage');
+
+const cvs = load('b5-recruitment/cv-screening-triage/workflow.json');
+
+const CV_CFG = {
+  roleTitle: 'Engineer', mustHaves: ['3 years Python'], niceToHaves: ['n8n'],
+  yearsExperienceExpected: 3, aiEndpoint: 'https://api.test/v1', aiModel: 'm',
+  maxTokens: 800, shortlistSize: 20, reviewerEmail: 'me@x.test',
+  fromEmail: 'h@x.test', companyName: 'C', historyTtlDays: 90,
+};
+
+const application = (o = {}) => ({
+  body: { candidateId: 'c1', name: 'Candidate', email: 'c@x.test',
+          cvText: 'x'.repeat(400), ...o },
+  headers: {},
+});
+
+check('an unreadable assessment marks the candidate for review, not zero', () => {
+  const shared = {};
+  execute(cvs, { trigger: application(), staticData: shared, configOverride: CV_CFG });
+  const rec = shared.candidates.c1;
+  assert(rec, 'the candidate was not recorded at all');
+  assert(rec.score === null, `a failed assessment produced a score of ${rec.score} — that would rank them last`);
+  assert(rec.needsManualReview === true, 'a failed assessment did not flag for manual review');
+});
+
+check('a very short application is flagged, not discarded', () => {
+  const shared = {};
+  execute(cvs, { trigger: application({ candidateId: 'c2', cvText: 'See my LinkedIn' }), staticData: shared, configOverride: CV_CFG });
+  assert(shared.candidates.c2, 'a short application was discarded');
+  assert(shared.candidates.c2.needsManualReview === true, 'a short application was not flagged');
+});
+
+check('unscored candidates are listed FIRST in the digest', () => {
+  const shared = { candidates: {
+    good: { candidateId: 'good', name: 'Scored', email: 'g@x.test', at: Date.now(),
+            score: 90, needsManualReview: false, mustHavesMet: [], mustHavesMissing: [],
+            strengths: '', questions: [], reasoning: 'strong' },
+    unk: { candidateId: 'unk', name: 'Unscored', email: 'u@x.test', at: Date.now(),
+           score: null, needsManualReview: true, reviewReason: 'could not be read',
+           mustHavesMet: [], mustHavesMissing: [], strengths: '', questions: [], reasoning: '' },
+  }};
+  const r = execute(cvs, { trigger: {}, staticData: shared, configOverride: CV_CFG, from: 'Daily shortlist' });
+  const text = r.effects.emails[0].body;
+  assert(text.indexOf('NEEDS A HUMAN') < text.indexOf('RANKED'),
+    'unscored candidates were buried below the ranking — those are the ones most likely to be lost');
+});
+
+check('the digest states plainly that nobody was rejected', () => {
+  const shared = { candidates: {
+    a: { candidateId: 'a', name: 'A', email: 'a@x.test', at: Date.now(), score: 40,
+         needsManualReview: false, mustHavesMet: [], mustHavesMissing: ['3 years Python'],
+         strengths: '', questions: [], reasoning: 'limited evidence' },
+  }};
+  const r = execute(cvs, { trigger: {}, staticData: shared, configOverride: CV_CFG, from: 'Daily shortlist' });
+  const text = r.effects.emails[0].body;
+  assert(/Nobody has been rejected/i.test(text), 'the digest does not state that no rejection occurred');
+  assert(/reading order, not a decision/i.test(text), 'the digest does not frame itself as a reading order');
+});
+
+check('candidates are ranked by score', () => {
+  const shared = { candidates: {
+    lo: { candidateId: 'lo', name: 'Lo', email: 'l@x.test', at: Date.now(), score: 30,
+          needsManualReview: false, mustHavesMet: [], mustHavesMissing: [], strengths: '', questions: [], reasoning: 'r' },
+    hi: { candidateId: 'hi', name: 'Hi', email: 'h@x.test', at: Date.now(), score: 95,
+          needsManualReview: false, mustHavesMet: [], mustHavesMissing: [], strengths: '', questions: [], reasoning: 'r' },
+  }};
+  const r = execute(cvs, { trigger: {}, staticData: shared, configOverride: CV_CFG, from: 'Daily shortlist' });
+  const out = r.outputs['🏅 Build the shortlist'][0].json;
+  assert(out.shortlist[0].candidateId === 'hi', 'the shortlist is not ordered by score');
+});
+
+check('no email is ever sent to a candidate', () => {
+  const shared = { candidates: {
+    a: { candidateId: 'a', name: 'A', email: 'candidate@x.test', at: Date.now(), score: 80,
+         needsManualReview: false, mustHavesMet: [], mustHavesMissing: [], strengths: '', questions: [], reasoning: 'r' },
+  }};
+  const r = execute(cvs, { trigger: {}, staticData: shared, configOverride: CV_CFG, from: 'Daily shortlist' });
+  for (const m of r.effects.emails) {
+    assert(m.to === 'me@x.test', `an email was addressed to ${m.to} — candidates must never be contacted by this template`);
+  }
+});
+
+check('an application with no CV text fails loudly', () => {
+  const r = execute(cvs, { trigger: { body: { candidateId: 'x' }, headers: {} }, staticData: {}, configOverride: CV_CFG });
+  assert(r.effects.errors.length > 0, 'an empty application passed silently');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {

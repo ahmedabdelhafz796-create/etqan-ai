@@ -1,0 +1,586 @@
+{
+  "name": "DCA-B5-01 · CV Screening & Candidate Triage (ranks, never rejects)",
+  "nodes": [
+    {
+      "id": "c4bbfeeb-0120-5274-ac29-06f129ffad1d",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -560
+      ],
+      "parameters": {
+        "content": "## 👥 CV Screening & Candidate Triage\n**Every application read → scored against YOUR requirements → ranked.**\n\n### Setup (about 18 minutes)\n1. **⚙️ Config** → write `roleTitle`, `mustHaves`, `niceToHaves`.\n   Be specific — vague requirements produce vague scoring.\n2. Set `aiEndpoint`/`aiModel`, add your API key as **Header Auth** on\n   **🧠 Assess the application**.\n3. POST each application:\n   ```json\n   { \"candidateId\": \"...\", \"name\": \"...\",\n     \"email\": \"...\", \"cvText\": \"...\" }\n   ```\n4. The digest arrives with the shortlist ranked.\n\n⚠️ **You must still read the shortlist.** This reduces reading time; it\ndoes not make hiring decisions.",
+        "height": 560,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "920b3b75-303e-5fd8-8bd4-d2a58f035abe",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -560
+      ],
+      "parameters": {
+        "content": "### 🚫 It ranks. It NEVER rejects.\nNo candidate is ever auto-rejected, and there is no setting to enable it.\n\n**Why this is not negotiable:** a wrong score here is not a lost sale, it\nis a person filtered out of a job for a reason that was never valid.\n\nEvery application reaches a reviewable list. The template only decides\nwhat **order** you read them in.",
+        "height": 360,
+        "width": 480,
+        "color": 5
+      }
+    },
+    {
+      "id": "b10eb810-fe34-563b-b701-908ce7f51967",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -560
+      ],
+      "parameters": {
+        "content": "### ⚖️ What the model is told to ignore\nNames · photos · age · gender · nationality · marital status · address ·\npersonal interests.\n\nThese carry bias and say nothing about whether someone can do the job.\n\nThe model scores **only** against the must-haves and nice-to-haves you\nwrote — and every score comes back with the reasoning, so you can see the\nbasis and overrule it.\n\n**An unexplained ranking cannot be audited.**",
+        "height": 380,
+        "width": 500,
+        "color": 7
+      }
+    },
+    {
+      "id": "1f87528c-ac32-55eb-a1ad-200a6069b5da",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        400
+      ],
+      "parameters": {
+        "content": "### 🛟 When the model fails\nAn unreadable response ranks the candidate for **manual review** — it\nnever removes them and never scores them zero.\n\nA candidate must not lose their chance because an API had a bad minute.",
+        "height": 280,
+        "width": 440,
+        "color": 4
+      }
+    },
+    {
+      "id": "d33860f9-c5fd-575c-af9d-c340f2448c36",
+      "name": "📄 Application received",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -700,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/application",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST {candidateId, name, email, cvText}. Wire your form or ATS here.",
+      "notesInFlow": false
+    },
+    {
+      "id": "cf7b41ef-652a-586c-9cb2-0884168af389",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"roleTitle\": \"REPLACE: the job title\",\n  \"mustHaves\": [\"REPLACE: a specific, checkable requirement\", \"REPLACE: another one\"],\n  \"niceToHaves\": [\"REPLACE: something that helps but is not essential\"],\n  \"yearsExperienceExpected\": 3,\n  \"aiEndpoint\": \"https://api.anthropic.com/v1/messages\",\n  \"aiModel\": \"claude-sonnet-5\",\n  \"maxTokens\": 800,\n  \"shortlistSize\": 20,\n  \"reviewerEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"hiring@yourdomain.com\",\n  \"companyName\": \"YOUR_COMPANY\",\n  \"historyTtlDays\": 90\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "mustHaves drive everything. Write requirements a person could check objectively, not aspirations.",
+      "notesInFlow": false
+    },
+    {
+      "id": "25880ad8-abe8-56d5-8248-b4d7b2b2a93e",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 168 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.candidateId ?? j.body?.email ?? '') + '|' + String(j.body?.cvText ?? '').slice(0, 40) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "5ddad968-8593-5604-98c5-b30cafdeb7dc",
+      "name": "📥 Prepare the application",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Deliberately minimal. Unlike the fraud and lead templates there is no\n// deterministic pre-scoring here, because the cheap signals available in a CV —\n// name, address, school — are exactly the ones that carry bias and say nothing\n// about competence. Keyword matching on a CV rewards people who know to repeat\n// the job ad's wording, which is a writing skill, not a job skill.\n//\n// So the only pre-processing is hygiene.\nconst cfg = $('⚙️ Config').first().json.__config;\n\nreturn $input.all().map(item => {\n  const b = item.json.body ?? item.json;\n\n  const cvText = String(b.cvText ?? b.cv ?? b.resume ?? b.text ?? '').trim();\n  const email = String(b.email ?? '').trim().toLowerCase();\n  const candidateId = String(b.candidateId ?? b.candidate_id ?? email ?? '').trim();\n\n  if (!cvText || !candidateId) {\n    throw new Error('An application needs candidateId (or email) and cvText. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  // Very short submissions are flagged, not discarded — a link-only application\n  // is a process problem to fix, not a candidate to drop.\n  const tooShort = cvText.length < 200;\n\n  return { json: {\n    candidateId,\n    name: String(b.name ?? '').trim(),\n    email,\n    cvText: cvText.slice(0, 12000),\n    appliedFor: String(b.role ?? cfg.roleTitle).trim(),\n    receivedAt: new Date().toISOString(),\n    tooShort,\n    __config: cfg,\n  }};\n});"
+      },
+      "notes": "No keyword pre-scoring — it rewards CV-writing skill, not job skill, and carries bias.",
+      "notesInFlow": false
+    },
+    {
+      "id": "477896a8-c115-5480-8c00-e0ddda48cb6f",
+      "name": "🧠 Assess the application",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {
+        "url": "={{ $json.__config.aiEndpoint }}",
+        "method": "POST",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: $json.__config.aiModel,\n  max_tokens: $json.__config.maxTokens,\n  system: 'You assess job applications for ' + $json.__config.companyName + '.\\n\\n'\n    + 'ROLE: ' + $json.__config.roleTitle + '\\n'\n    + 'MUST HAVE:\\n' + ($json.__config.mustHaves || []).map(m => '  - ' + m).join('\\n') + '\\n'\n    + 'NICE TO HAVE:\\n' + ($json.__config.niceToHaves || []).map(m => '  - ' + m).join('\\n') + '\\n\\n'\n    + 'RULES YOU MUST FOLLOW:\\n'\n    + '1. Judge ONLY against the requirements above. Ignore the candidate\\'s name, age, gender, '\n    + 'nationality, marital status, address, photo and personal interests entirely. These carry bias '\n    + 'and are irrelevant to whether someone can do this job.\\n'\n    + '2. You are RANKING, not rejecting. Nobody is removed on your assessment. Score fairly.\\n'\n    + '3. State your reasoning for every score. An unexplained ranking cannot be reviewed.\\n'\n    + '4. If the CV does not mention a requirement, say it is not evidenced — do not assume it is '\n    + 'absent, and do not assume it is present.\\n'\n    + '5. Note anything a reviewer should ask about rather than guessing at it yourself.\\n\\n'\n    + 'Reply with STRICT JSON only, no markdown fence:\\n'\n    + '{\"score\": <0..100>, \"mustHavesMet\": [\"<which ones, with evidence>\"], '\n    + '\"mustHavesMissing\": [\"<which ones are not evidenced>\"], '\n    + '\"strengths\": \"<one or two sentences>\", \"questionsForInterview\": [\"<what to ask>\"], '\n    + '\"reasoning\": \"<why this score>\"}',\n  messages: [ { role: 'user', content: 'APPLICATION:\\n\\n' + $json.cvText } ]\n}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "notes": "Add your API key as a Header Auth credential. The prompt forbids scoring on personal characteristics.",
+      "notesInFlow": false
+    },
+    {
+      "id": "695cc0bb-5835-59a6-a831-012077dac9e2",
+      "name": "📊 Record the assessment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Store the assessment. A model failure produces a \"needs manual review\" entry\n// rather than a low score, because a candidate must not lose their chance\n// because an API had a bad minute.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst src = $('📥 Prepare the application').all();\nconst store = $getWorkflowStaticData('global');\nstore.candidates = store.candidates || {};\n\nconst now = Date.now();\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nfor (const [k, c] of Object.entries(store.candidates)) {\n  if (now - (c.at || 0) > ttlMs) delete store.candidates[k];\n}\n\nfunction extract(p) {\n  return p?.content?.[0]?.text ?? p?.choices?.[0]?.message?.content ?? '';\n}\n\nreturn $input.all().map((item, idx) => {\n  const o = src[idx]?.json ?? src[0].json;\n  const raw = String(extract(item.json) || '').trim();\n\n  let a = null;\n  try {\n    a = JSON.parse(raw.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim());\n  } catch {\n    const m = raw.match(/\\{[\\s\\S]*\\}/);\n    if (m) { try { a = JSON.parse(m[0]); } catch { /* fall through */ } }\n  }\n\n  const scored = a && Number.isFinite(Number(a.score));\n\n  const record = {\n    candidateId: o.candidateId,\n    name: o.name,\n    email: o.email,\n    at: now,\n    // A failed assessment is explicitly NOT a zero — it is an unknown, and it\n    // sorts into the review queue rather than the bottom of the ranking.\n    score: scored ? Math.max(0, Math.min(100, Number(a.score))) : null,\n    needsManualReview: !scored || o.tooShort,\n    reviewReason: !scored\n      ? 'the assessment could not be read — this candidate has NOT been scored and needs a human'\n      : (o.tooShort ? 'the application was very short — possibly a link-only submission' : null),\n    mustHavesMet: scored ? (a.mustHavesMet || []) : [],\n    mustHavesMissing: scored ? (a.mustHavesMissing || []) : [],\n    strengths: scored ? String(a.strengths || '').trim() : '',\n    questions: scored ? (a.questionsForInterview || []) : [],\n    reasoning: scored ? String(a.reasoning || '').trim() : '',\n  };\n\n  store.candidates[o.candidateId] = record;\n\n  return { json: { ...record, __config: cfg } };\n});"
+      },
+      "notes": "A failed assessment is an unknown, never a zero — it routes to manual review.",
+      "notesInFlow": false
+    },
+    {
+      "id": "4786a11c-cb26-50b2-9a6c-523b6311fbdb",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, received: true }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    },
+    {
+      "id": "95a879dd-a037-55c4-8a15-223d720388e6",
+      "name": "🕕 Daily shortlist",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -700,
+        620
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ee9eacc7-4e16-5e04-af61-5afd62a1d22f",
+      "name": "⚙️ Config (digest side)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Mirror of the main Config — n8n cannot share a node across trigger branches.\nconst CONFIG = {\n  \"roleTitle\": \"REPLACE: the job title\",\n  \"shortlistSize\": 20,\n  \"reviewerEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"hiring@yourdomain.com\",\n  \"companyName\": \"YOUR_COMPANY\"\n};\nreturn [{ json: { __config: CONFIG } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "⚠️ Mirror of the main Config. Change one, change both.",
+      "notesInFlow": false
+    },
+    {
+      "id": "c597ce15-3c9b-5736-a7f3-4fdbf62fb1c5",
+      "name": "🏅 Build the shortlist",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Rank the scored candidates and surface the unscored ones separately. The\n// review queue is listed FIRST, because those are the applications a machine\n// could not read — and they are the ones most at risk of being quietly lost.\nconst cfg = $input.first().json.__config;\nconst store = $getWorkflowStaticData('global');\nconst all = Object.values(store.candidates || {});\n\nconst needsReview = all.filter(c => c.needsManualReview);\nconst scored = all.filter(c => !c.needsManualReview && c.score !== null)\n                  .sort((a, b) => b.score - a.score);\n\nreturn [{ json: {\n  total: all.length,\n  needsReview,\n  shortlist: scored.slice(0, Number(cfg.shortlistSize)),\n  remainder: Math.max(0, scored.length - Number(cfg.shortlistSize)),\n  hasCandidates: all.length > 0,\n  __config: cfg,\n}}];"
+      },
+      "alwaysOutputData": true,
+      "notes": "Unscored candidates are listed first — they are the ones most at risk of being lost.",
+      "notesInFlow": false
+    },
+    {
+      "id": "5bab3b15-1102-5262-8ef2-932607212fde",
+      "name": "📋 Any applications?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -20,
+        620
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "a1911562-a866-5d13-8bc0-973e93ee68f1",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.hasCandidates }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "3d995f63-47d3-59d1-86c2-036a88e4cf64",
+      "name": "✍️ Write the shortlist digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        540
+      ],
+      "parameters": {
+        "jsCode": "const o = $input.first().json;\nconst cfg = o.__config;\n\nconst reviewBlock = o.needsReview.length\n  ? `\\n⚠️ NEEDS A HUMAN — NOT SCORED (${o.needsReview.length})\\n${'─'.repeat(52)}\\n` +\n    o.needsReview.map(c =>\n      `  ${c.name || c.candidateId} <${c.email || 'no email'}>\\n   ${c.reviewReason}`\n    ).join('\\n\\n') +\n    `\\n\\n   These were NOT assessed. Read them yourself — do not skip them.\\n`\n  : '';\n\nconst listBlock = o.shortlist.length\n  ? `\\n🏅 RANKED (${o.shortlist.length}${o.remainder ? ` of ${o.shortlist.length + o.remainder}` : ''})\\n${'─'.repeat(52)}\\n` +\n    o.shortlist.map((c, i) =>\n`  ${i + 1}. ${c.name || c.candidateId}  —  ${c.score}/100\n     <${c.email || 'no email'}>\n     ${c.reasoning}\n${c.mustHavesMet.length ? `     ✓ Evidenced: ${c.mustHavesMet.join('; ')}\\n` : ''}${c.mustHavesMissing.length ? `     ? Not evidenced: ${c.mustHavesMissing.join('; ')}\\n` : ''}${c.questions.length ? `     Ask: ${c.questions.join(' · ')}` : ''}`\n    ).join('\\n\\n')\n  : '';\n\nconst text =\n`👥 Shortlist — ${cfg.roleTitle} at ${cfg.companyName}\n${new Date().toISOString().slice(0, 10)}\n\n${o.total} application(s) received.\n${reviewBlock}${listBlock}\n${o.remainder ? `\\n   …and ${o.remainder} more below the shortlist cut.\\n` : ''}\n─────────────────────────────────────\n⚠️ Nobody has been rejected. This is a reading order, not a decision.\nScores reflect only the requirements you wrote. If a ranking looks wrong,\nit probably means the requirements need rewording — the reasoning above\nshows you exactly what was judged.`;\n\nreturn [{ json: { ...o, digestText: text,\n  subject: `👥 ${o.total} application(s) for ${cfg.roleTitle}${o.needsReview.length ? ` (${o.needsReview.length} need a human)` : ''}` }}];"
+      },
+      "notes": "States plainly that nobody was rejected and that a wrong ranking usually means the requirements need rewording.",
+      "notesInFlow": false
+    },
+    {
+      "id": "2bf98438-f4db-58b0-b6e8-1cccef0d5a8b",
+      "name": "📨 Send the shortlist",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        540
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.reviewerEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.digestText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "notes": "Goes to the reviewer. Nothing is ever sent to candidates by this template.",
+      "notesInFlow": false
+    },
+    {
+      "id": "b7e6d7df-384b-5aa2-a26c-6c26f88c17d9",
+      "name": "🤫 No applications yet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        720
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { checkedAt: new Date().toISOString(), total: 0,\n                  note: 'No applications received.' }}];"
+      },
+      "notes": "Logged so an empty day is distinguishable from a stopped schedule.",
+      "notesInFlow": false
+    },
+    {
+      "id": "aab29ec3-6475-5984-9458-08afbb29c30f",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        380
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"cv-screening\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"cv-screening-triage\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "d6970d58-1fbf-57bb-b23f-34d68a8ec87e",
+      "name": "📒 Screening log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        620
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  total: i.json.total ?? null,\n  shortlisted: (i.json.shortlist ?? []).length,\n  needsReview: (i.json.needsReview ?? []).length,\n}}));"
+      },
+      "notes": "Track how many needed manual review — a high number means the intake format needs fixing.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "📄 Application received": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📥 Prepare the application",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Prepare the application": {
+      "main": [
+        [
+          {
+            "node": "🧠 Assess the application",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Assess the application": {
+      "main": [
+        [
+          {
+            "node": "📊 Record the assessment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Record the assessment": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🕕 Daily shortlist": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config (digest side)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config (digest side)": {
+      "main": [
+        [
+          {
+            "node": "🏅 Build the shortlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🏅 Build the shortlist": {
+      "main": [
+        [
+          {
+            "node": "📋 Any applications?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Any applications?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Write the shortlist digest",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🤫 No applications yet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Write the shortlist digest": {
+      "main": [
+        [
+          {
+            "node": "📨 Send the shortlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Send the shortlist": {
+      "main": [
+        [
+          {
+            "node": "📒 Screening log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤫 No applications yet": {
+      "main": [
+        [
+          {
+            "node": "📒 Screening log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "ai-agent"
+    },
+    {
+      "name": "recruitment"
+    },
+    {
+      "name": "hiring"
+    },
+    {
+      "name": "screening"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "cv-screening-triage",
+    "category": "b5-recruitment",
+    "version": "1.0.0"
+  }
+}

@@ -1,0 +1,473 @@
+{
+  "name": "DCA-B3-01 · Sales Pipeline & Follow-Up Engine",
+  "nodes": [
+    {
+      "id": "9d25e31f-c7d4-58b9-b92d-f00b14e2f566",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -540
+      ],
+      "parameters": {
+        "content": "## 📊 Sales Pipeline & Follow-Up Engine\n**Deals tracked → silence measured → one digest of who to chase.**\n\n### Setup (about 12 minutes)\n1. **⚙️ Config** → `ownerEmail`, `staleDays`, `valueTiers`.\n2. POST a deal when one opens:\n   ```json\n   { \"dealId\": \"...\", \"contact\": \"name\",\n     \"email\": \"...\", \"value\": 500, \"stage\": \"proposal\" }\n   ```\n3. Record contact with `{dealId, event:'contacted'}` — one line, no form.\n4. Close with `{dealId, event:'won'}` or `{dealId, event:'lost'}`.\n5. Attach SMTP. Activate.\n\n### Pairs with B1-02\nThe lead qualifier decides who deserves attention. This makes sure they\nactually get it.",
+        "height": 560,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "466cf5a4-4927-52db-af8e-22727612efbf",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -540
+      ],
+      "parameters": {
+        "content": "### 🤐 It never messages the prospect\nAutomated follow-up to someone you are **mid-conversation with** reads as\nexactly what it is, and it damages the relationship you are building.\n\nThis drafts and reminds. **A human presses send.**\n\nThat is not a limitation — it is the difference between a tool that helps\nyou sell and one that quietly costs you deals.",
+        "height": 340,
+        "width": 480,
+        "color": 5
+      }
+    },
+    {
+      "id": "924771cb-84bd-5755-899b-9a7c329fefea",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -540
+      ],
+      "parameters": {
+        "content": "### 💰 Escalation by value\n| Deal value | Chased after |\n| --- | --- |\n| high | `staleDays` ÷ 2 |\n| normal | `staleDays` |\n| low | `staleDays` × 2 |\n\nChasing a $50 deal as hard as a $5,000 one wastes your scarcest\nresource. The digest says **why** each deal is listed, so you can\ndisagree with the ordering.",
+        "height": 360,
+        "width": 460,
+        "color": 7
+      }
+    },
+    {
+      "id": "de997294-60c7-5571-a728-7561c5bf1f68",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        380
+      ],
+      "parameters": {
+        "content": "### 🕰️ Silence is the default assumption\nStaleness is measured from the **last recorded contact**. Anything you\nhave not explicitly updated is assumed to be going cold.\n\nThat is the correct default: a deal you have not thought about is exactly\nthe deal at risk.\n\nRecording contact takes one POST, not a form — because the moment logging\nbecomes work, it stops happening and the reminders go wrong.",
+        "height": 340,
+        "width": 460,
+        "color": 4
+      }
+    },
+    {
+      "id": "6f309e25-62ba-57fe-bcb7-dd29a997a44d",
+      "name": "📇 Deal event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -700,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/deal",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST a new deal, or {dealId, event:'contacted'|'won'|'lost'}.",
+      "notesInFlow": false
+    },
+    {
+      "id": "e5c4e63f-2eb4-5522-a570-a137ba498e92",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"ownerEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"pipeline@yourdomain.com\",\n  \"businessName\": \"YOUR_BUSINESS_NAME\",\n  \"currency\": \"USD\",\n  \"staleDays\": 4,\n  \"highValueThreshold\": 1000,\n  \"lowValueThreshold\": 100,\n  \"abandonAfterDays\": 45,\n  \"maxDigestItems\": 15,\n  \"historyTtlDays\": 180\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "staleDays is the baseline. High-value deals are chased at half that, low-value at double.",
+      "notesInFlow": false
+    },
+    {
+      "id": "25d722cb-d3dd-5241-bc50-e98b25e14dc1",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 6 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.dealId ?? '') + '|' + (j.body?.event ?? 'new') + '|' + Math.floor(Date.now() / 60000) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "700233c4-8bcd-5d68-9b83-1dc7743a0f48",
+      "name": "📝 Track the deal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// One record per deal. Contact events only move the clock — they never overwrite\n// the deal's details, so a quick \"contacted\" POST cannot accidentally wipe the\n// value or the contact name.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.deals = store.deals || {};\n\nconst now = Date.now();\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nfor (const [k, d] of Object.entries(store.deals)) {\n  if (now - (d.openedAt || 0) > ttlMs) delete store.deals[k];\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n  const dealId = String(b.dealId ?? b.deal_id ?? b.id ?? '').trim();\n\n  if (!dealId) {\n    throw new Error('Every deal event needs a dealId. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  const event = String(b.event ?? b.type ?? 'upsert').toLowerCase();\n  const existing = store.deals[dealId];\n\n  // ── Closed ───────────────────────────────────────────────────\n  if (event === 'won' || event === 'lost') {\n    if (!existing) {\n      out.push({ json: { action: 'unknown_deal', dealId, note: 'No open deal with that id.' } });\n      continue;\n    }\n    existing.status = event;\n    existing.closedAt = now;\n    store.deals[dealId] = existing;\n    out.push({ json: {\n      action: `marked_${event}`, dealId,\n      value: existing.value,\n      daysOpen: Math.round((now - existing.openedAt) / 86400000),\n    }});\n    continue;\n  }\n\n  // ── Contact recorded ─────────────────────────────────────────\n  if (event === 'contacted' || event === 'contact' || event === 'touch') {\n    if (!existing) {\n      out.push({ json: { action: 'unknown_deal', dealId, note: 'No open deal with that id.' } });\n      continue;\n    }\n    existing.lastContactAt = now;\n    existing.touchCount = (existing.touchCount || 0) + 1;\n    if (b.note) existing.lastNote = String(b.note).slice(0, 300);\n    store.deals[dealId] = existing;\n    out.push({ json: {\n      action: 'contact_recorded', dealId,\n      touchCount: existing.touchCount,\n    }});\n    continue;\n  }\n\n  // ── New or updated deal ──────────────────────────────────────\n  const deal = existing || {\n    dealId,\n    openedAt: now,\n    lastContactAt: now,\n    touchCount: 0,\n    status: 'open',\n  };\n\n  // Only overwrite fields that were actually supplied, so a partial update\n  // cannot blank out details recorded earlier.\n  if (b.contact !== undefined) deal.contact = String(b.contact).trim();\n  if (b.email !== undefined) deal.email = String(b.email).trim().toLowerCase();\n  if (b.company !== undefined) deal.company = String(b.company).trim();\n  if (b.value !== undefined) deal.value = Number(b.value) || 0;\n  if (b.stage !== undefined) deal.stage = String(b.stage).trim();\n  if (b.note !== undefined) deal.lastNote = String(b.note).slice(0, 300);\n  deal.currency = String(b.currency ?? deal.currency ?? cfg.currency).toUpperCase();\n\n  store.deals[dealId] = deal;\n\n  out.push({ json: {\n    action: existing ? 'deal_updated' : 'deal_opened',\n    dealId, value: deal.value, stage: deal.stage,\n  }});\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Contact events move the clock only — a quick touch cannot wipe the deal's details.",
+      "notesInFlow": false
+    },
+    {
+      "id": "b67e7a7a-eb7a-56e0-b90d-ae079eefede2",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, action: $json.action }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    },
+    {
+      "id": "fd86ccc4-da37-5690-adb4-483ea07723e9",
+      "name": "🕘 Daily digest",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -700,
+        620
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "f1380ef8-a560-5393-a3ed-866c462de829",
+      "name": "⚙️ Config (digest side)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Mirror of the main Config — n8n cannot share a node across trigger branches.\nconst CONFIG = {\n  \"ownerEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"pipeline@yourdomain.com\",\n  \"businessName\": \"YOUR_BUSINESS_NAME\",\n  \"currency\": \"USD\",\n  \"staleDays\": 4,\n  \"highValueThreshold\": 1000,\n  \"lowValueThreshold\": 100,\n  \"abandonAfterDays\": 45,\n  \"maxDigestItems\": 15\n};\nreturn [{ json: { __config: CONFIG } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "⚠️ Mirror of the main Config. Change one, change both.",
+      "notesInFlow": false
+    },
+    {
+      "id": "0bff5142-b0c7-58a1-8e85-1dc2cb451847",
+      "name": "🔍 Find deals going cold",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Work out which open deals have been silent longer than their value warrants.\nconst cfg = $input.first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.deals = store.deals || {};\n\nconst now = Date.now();\nconst DAY = 86400000;\n\nconst needsChasing = [];\nlet openCount = 0, openValue = 0;\nlet wonToday = 0, wonValue = 0;\n\nfor (const d of Object.values(store.deals)) {\n  if (d.status === 'won') {\n    if (now - (d.closedAt || 0) < DAY) { wonToday++; wonValue += Number(d.value) || 0; }\n    continue;\n  }\n  if (d.status === 'lost') continue;\n\n  openCount++;\n  openValue += Number(d.value) || 0;\n\n  const silentDays = (now - (d.lastContactAt || d.openedAt)) / DAY;\n  const ageDays = (now - d.openedAt) / DAY;\n\n  // Past the abandon point this is not a live deal any more, and listing it\n  // every day trains the reader to skim the digest.\n  if (ageDays > Number(cfg.abandonAfterDays)) continue;\n\n  const value = Number(d.value) || 0;\n  let tier, threshold;\n  if (value >= Number(cfg.highValueThreshold)) {\n    tier = 'high'; threshold = Number(cfg.staleDays) / 2;\n  } else if (value <= Number(cfg.lowValueThreshold)) {\n    tier = 'low'; threshold = Number(cfg.staleDays) * 2;\n  } else {\n    tier = 'normal'; threshold = Number(cfg.staleDays);\n  }\n\n  if (silentDays < threshold) continue;\n\n  needsChasing.push({\n    dealId: d.dealId,\n    contact: d.contact || d.email || d.dealId,\n    email: d.email || null,\n    company: d.company || null,\n    value, currency: d.currency || cfg.currency,\n    stage: d.stage || 'unknown',\n    tier,\n    silentDays: Math.floor(silentDays),\n    ageDays: Math.floor(ageDays),\n    touchCount: d.touchCount || 0,\n    lastNote: d.lastNote || null,\n    // State the reason, so the reader can disagree with the ordering.\n    reason: `${Math.floor(silentDays)} days silent · ${tier}-value deal (chased after ${threshold} days)`,\n  });\n}\n\n// Highest value first — the digest should be readable top-down and abandonable\n// halfway without missing the deals that matter.\nneedsChasing.sort((a, b) => b.value - a.value);\n\nreturn [{ json: {\n  needsChasing: needsChasing.slice(0, Number(cfg.maxDigestItems)),\n  totalStale: needsChasing.length,\n  hidden: Math.max(0, needsChasing.length - Number(cfg.maxDigestItems)),\n  openCount,\n  openValue: Math.round(openValue * 100) / 100,\n  wonToday, wonValue: Math.round(wonValue * 100) / 100,\n  hasWork: needsChasing.length > 0,\n  __config: cfg,\n}}];"
+      },
+      "alwaysOutputData": true,
+      "notes": "Value-aware thresholds, sorted by what each deal is worth. Abandoned deals drop out.",
+      "notesInFlow": false
+    },
+    {
+      "id": "dab7a6c1-2ae1-540b-9011-aa3443365120",
+      "name": "📋 Anything to chase?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -20,
+        620
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "dbabc80a-4311-5709-bbe1-2db834e7c8ee",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.hasWork }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "0a2c8feb-9263-5ecf-85e1-dd63ad2a4598",
+      "name": "✍️ Write the digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        540
+      ],
+      "parameters": {
+        "jsCode": "// A draft for each deal, so the seller edits rather than composes. The drafts\n// are deliberately short and specific — a long generic template gets rewritten\n// anyway, which defeats the purpose.\nconst o = $input.first().json;\nconst cfg = o.__config;\n\nconst icon = { high: '🔴', normal: '🟠', low: '🟡' };\n\nconst drafts = o.needsChasing.map((d, i) => {\n  const stageLine = {\n    proposal: `following up on the proposal I sent`,\n    demo: `checking in after our call`,\n    quote: `seeing where you landed on the quote`,\n  }[String(d.stage).toLowerCase()] || `following up on our conversation`;\n\n  return `${icon[d.tier]} ${i + 1}. ${d.contact}${d.company ? ` — ${d.company}` : ''}   [${d.value} ${d.currency}]\n   ${d.reason}\n   Stage: ${d.stage} · contacted ${d.touchCount}× so far${d.lastNote ? `\\n   Last note: ${d.lastNote}` : ''}\n   ${d.email ? `Email: ${d.email}` : '(no email on record)'}\n\n   DRAFT:\n   \"Hi ${String(d.contact).split(' ')[0]}, just ${stageLine} — is this still\n    something you're considering? Happy to answer anything outstanding, and\n    equally happy to close the file if the timing isn't right.\"`;\n}).join('\\n\\n');\n\nconst text =\n`📊 Pipeline digest — ${cfg.businessName}\n${new Date().toISOString().slice(0, 10)}\n\n${o.totalStale} deal(s) going cold${o.hidden ? ` (showing top ${o.needsChasing.length})` : ''}\nPipeline: ${o.openCount} open, worth ${o.openValue} ${cfg.currency}${o.wonToday ? `\\nClosed today: ${o.wonToday} deal(s), ${o.wonValue} ${cfg.currency} 🎉` : ''}\n\n━━ CHASE THESE ━━━━━━━━━━━━━━━━━━━━\n\n${drafts}\n\n─────────────────────────────────────\nDrafts are starting points — send them in your own words.\nAfter you reach out, POST {dealId, event:\"contacted\"} so this stops\nlisting them tomorrow.`;\n\nreturn [{ json: { ...o, digestText: text,\n  subject: `📊 ${o.totalStale} deal(s) need chasing — ${o.openValue} ${cfg.currency} open` }}];"
+      },
+      "notes": "Short, specific drafts. Long generic ones get rewritten anyway.",
+      "notesInFlow": false
+    },
+    {
+      "id": "79c69c56-88e9-5c8f-8903-5b7c98aa6f0c",
+      "name": "📨 Send the digest",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        540
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.ownerEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.digestText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "notes": "Goes to you, never to the prospect.",
+      "notesInFlow": false
+    },
+    {
+      "id": "019c384a-0511-5e27-8dc6-01e75e0c620c",
+      "name": "✅ Pipeline is current",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        720
+      ],
+      "parameters": {
+        "jsCode": "// Nothing stale. Worth saying so — silence from a digest is ambiguous, and the\n// reader should be able to tell \"all current\" from \"the schedule stopped\".\nconst o = $input.first().json;\nreturn [{ json: {\n  checkedAt: new Date().toISOString(),\n  openCount: o.openCount,\n  openValue: o.openValue,\n  note: o.openCount\n    ? 'Every open deal has been contacted recently. Nothing to chase.'\n    : 'No open deals in the pipeline.',\n}}];"
+      },
+      "notes": "Distinguishes 'all current' from 'not running'.",
+      "notesInFlow": false
+    },
+    {
+      "id": "f649f175-be50-5a87-bac3-66f47280697e",
+      "name": "📒 Pipeline log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Daily snapshot. Reviewed over a month this shows whether the pipeline is\n// growing or just aging, which a single day never reveals.\nreturn $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  openCount: i.json.openCount ?? null,\n  openValue: i.json.openValue ?? null,\n  staleCount: i.json.totalStale ?? 0,\n  wonToday: i.json.wonToday ?? 0,\n}}));"
+      },
+      "notes": "Append to a Sheet. Growth vs aging only shows up over weeks.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "📇 Deal event": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📝 Track the deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Track the deal": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🕘 Daily digest": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config (digest side)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config (digest side)": {
+      "main": [
+        [
+          {
+            "node": "🔍 Find deals going cold",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Find deals going cold": {
+      "main": [
+        [
+          {
+            "node": "📋 Anything to chase?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Anything to chase?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Write the digest",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "✅ Pipeline is current",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Write the digest": {
+      "main": [
+        [
+          {
+            "node": "📨 Send the digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Send the digest": {
+      "main": [
+        [
+          {
+            "node": "📒 Pipeline log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Pipeline is current": {
+      "main": [
+        [
+          {
+            "node": "📒 Pipeline log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "sales"
+    },
+    {
+      "name": "crm"
+    },
+    {
+      "name": "pipeline"
+    },
+    {
+      "name": "follow-up"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "sales-pipeline-followup",
+    "category": "b3-sales-crm",
+    "version": "1.0.0"
+  }
+}
