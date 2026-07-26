@@ -1338,6 +1338,121 @@ check('recent earnings are held until the refund window passes', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-SYS-02 · Setup Checker');
+
+const setup = load('sys-spine/setup-checker/workflow.json');
+
+// The checker signs a fixed probe with each configured secret, so the harness
+// must supply each Crypto node the value the Config declares — exactly as n8n
+// would resolve the expression at runtime.
+function setupRun(cfgOverride) {
+  const c = {
+    linkSecret_A1_01: 's1', linkSecret_A1_02: 's1', linkSecret_A4_01: 's1', linkSecret_A1_04: 's1',
+    downloadBaseUrl: 'https://real.test/download', fromEmail: 'orders@real.test',
+    storeName: 'Real Store', webhookSigningSecret: 'whsec_realvalue',
+    testModeStillOn: false, errorWorkflowConfigured: true,
+    templatesActivated: ['A1-01', 'A1-02'], aiApiKeyConfigured: true,
+    orderLogWired: true, reportEmail: 'me@real.test',
+    ...cfgOverride,
+  };
+  return execute(setup, {
+    trigger: {},
+    configOverride: c,
+    secrets: {
+      '🔏 Sign with A1-01 secret': c.linkSecret_A1_01,
+      '🔏 Sign with A1-02 secret': c.linkSecret_A1_02,
+      '🔏 Sign with A4-01 secret': c.linkSecret_A4_01,
+      '🔏 Sign with A1-04 secret': c.linkSecret_A1_04,
+    },
+    staticData: {},
+  });
+}
+
+const findingsOf = (r) => r.outputs['🔎 Run every check'][0].json;
+
+check('a correct installation reports ready with no blockers', () => {
+  const out = findingsOf(setupRun());
+  assert(out.blockers === 0, `a clean install reported ${out.blockers} blocker(s): ` +
+    out.findings.filter((f) => f.severity === 'blocker').map((f) => f.title).join(' | '));
+  assert(out.readyForCustomers === true, 'a clean install was not marked ready');
+});
+
+check('MISMATCHED signing secrets are caught — the check that matters most', () => {
+  const out = findingsOf(setupRun({ linkSecret_A1_02: 'DIFFERENT' }));
+  const f = out.findings.find((x) => /DO NOT MATCH/.test(x.title));
+  assert(f, 'four templates using different secrets was not detected — every download would fail');
+  assert(f.severity === 'blocker', `mismatched secrets ranked "${f.severity}"`);
+  assert(/A1-02/.test(f.why), 'the report does not name which template disagrees');
+});
+
+check('a secret differing only by trailing whitespace is still caught', () => {
+  const out = findingsOf(setupRun({ linkSecret_A4_01: 's1 ' }));
+  assert(out.findings.some((x) => /DO NOT MATCH/.test(x.title)),
+    'a trailing space slipped through — that is invisible on screen and breaks every link');
+});
+
+check('testMode left on is a blocker', () => {
+  const out = findingsOf(setupRun({ testModeStillOn: true }));
+  const f = out.findings.find((x) => /testMode/.test(x.title));
+  assert(f && f.severity === 'blocker', 'testMode left on was not flagged as a blocker');
+  assert(out.readyForCustomers === false, 'an install with testMode on was marked ready');
+});
+
+check('placeholder values are detected', () => {
+  const out = findingsOf(setupRun({ downloadBaseUrl: 'https://yourdomain.com/download', storeName: 'YOUR_STORE_NAME' }));
+  const f = out.findings.find((x) => /Placeholder/.test(x.title));
+  assert(f && f.severity === 'blocker', 'placeholder Config values were not flagged');
+  assert(/downloadBaseUrl/.test(f.title), 'the report does not name which values are placeholders');
+});
+
+check('a missing webhook secret is flagged as forgeable', () => {
+  const out = findingsOf(setupRun({ webhookSigningSecret: 'PASTE_YOUR_GATEWAY_WEBHOOK_SECRET' }));
+  const f = out.findings.find((x) => /Webhook signing secret/.test(x.title));
+  assert(f && f.severity === 'blocker', 'a missing webhook secret was not a blocker');
+  assert(/free orders|forged|anyone/i.test(f.why), 'the report does not explain the actual risk');
+});
+
+check('no activated templates is a blocker', () => {
+  const out = findingsOf(setupRun({ templatesActivated: [] }));
+  const f = out.findings.find((x) => /activated/i.test(x.title));
+  assert(f && f.severity === 'blocker', 'an install with nothing activated was not blocked');
+  assert(/404/.test(f.why), 'the report does not explain that inactive webhooks return 404');
+});
+
+check('a missing Error Workflow is important but not a blocker', () => {
+  const out = findingsOf(setupRun({ errorWorkflowConfigured: false }));
+  const f = out.findings.find((x) => /Error Workflow/.test(x.title));
+  assert(f && f.severity === 'important', `Error Workflow ranked "${f?.severity}"`);
+  assert(out.readyForCustomers === true, 'an important-only issue wrongly blocked go-live');
+});
+
+check('a missing AI key is only advisable', () => {
+  const out = findingsOf(setupRun({ aiApiKeyConfigured: false }));
+  const f = out.findings.find((x) => /AI provider/.test(x.title));
+  assert(f && f.severity === 'advisable', `a missing AI key ranked "${f?.severity}"`);
+});
+
+check('every finding carries a concrete fix', () => {
+  const out = findingsOf(setupRun({
+    linkSecret_A1_02: 'X', testModeStillOn: true, templatesActivated: [],
+    errorWorkflowConfigured: false, orderLogWired: false, aiApiKeyConfigured: false,
+    downloadBaseUrl: 'https://yourdomain.com/x', webhookSigningSecret: 'PASTE_ME',
+  }));
+  const actionable = out.findings.filter((f) => f.severity !== 'passed');
+  assert(actionable.length > 0, 'a deliberately broken install produced no findings');
+  for (const f of actionable) {
+    assert(f.fix && f.fix.length > 30, `finding "${f.title}" has no usable fix instruction`);
+  }
+});
+
+check('the report leads with whether it is safe to go live', () => {
+  const r = setupRun({ testModeStillOn: true });
+  const text = r.outputs['📋 Setup report'][0].json.report;
+  assert(/NOT READY/.test(text), 'a blocked install does not say so up front');
+  assert(text.indexOf('NOT READY') < text.indexOf('MUST FIX'), 'the verdict is buried below the detail');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {
