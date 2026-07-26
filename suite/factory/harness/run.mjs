@@ -300,6 +300,117 @@ check('a link minted by A1-01 verifies in A1-02 (shared secret + payload order)'
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-B4-02 · Failed Payment Recovery');
+
+const dunning = load('b4-saas-subscriptions/failed-payment-recovery/workflow.json');
+
+const failedPayment = (o = {}) => ({
+  body: { id: 'inv_1', email: 'sub@example.com', amount: 5000, currency: 'USD', name: 'Sub Buyer', ...o },
+  headers: {},
+});
+
+check('a failed payment opens a case and sends the first notice', () => {
+  const r = execute(dunning, { trigger: failedPayment(), staticData: {} });
+  assert(r.effects.emails.length === 1, `expected 1 first notice, got ${r.effects.emails.length}`);
+  const mail = r.effects.emails[0];
+  assert(mail.to === 'sub@example.com', `first notice went to the wrong address: ${mail.to}`);
+  // The thing that makes the email useful is the recovery action, not any
+  // particular wording — assert the link, not the copy.
+  assert(/href="[^"]*billing/i.test(mail.html), 'first notice contains no update-payment link');
+  assert(/5000|50/.test(mail.html), 'first notice does not state the amount owed');
+});
+
+check('a second failure does NOT restart the sequence', () => {
+  const shared = {};
+  const a = execute(dunning, { trigger: failedPayment({ id: 'inv_a' }), staticData: shared });
+  const b = execute(dunning, { trigger: failedPayment({ id: 'inv_b' }), staticData: shared });
+  assert(a.effects.emails.length === 1, 'first failure should send one notice');
+  assert(b.effects.emails.length === 0,
+    'a repeat failure re-sent the day-one email — the customer would be spammed');
+});
+
+check('a recovered payment closes the case', () => {
+  const shared = {};
+  execute(dunning, { trigger: failedPayment({ id: 'inv_r' }), staticData: shared });
+  const r = execute(dunning, { trigger: failedPayment({ id: 'inv_r2', event: 'recovered' }), staticData: shared });
+  assert(r.effects.emails.length === 0, 'a recovered customer was emailed again');
+  assert(shared.cases['sub@example.com'].recovered === true, 'case was not marked recovered');
+});
+
+check('a payment-failed event with no email fails loudly', () => {
+  const r = execute(dunning, { trigger: { body: { id: 'x', amount: 100 }, headers: {} }, staticData: {} });
+  assert(r.effects.errors.length > 0, 'a payload with no customer email passed silently');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-A5-01 · Cart Abandonment Recovery');
+
+const cart = load('a5-marketing-revenue/cart-abandonment-recovery/workflow.json');
+
+const cartEvent = (o = {}) => ({
+  body: { email: 'shopper@example.com', cartId: 'c1', total: 49, currency: 'USD', items: [{ name: 'Course' }], ...o },
+  headers: {},
+});
+
+check('an abandoned cart is tracked', () => {
+  const shared = {};
+  const r = execute(cart, { trigger: cartEvent(), staticData: shared });
+  assert(shared.carts['shopper@example.com'], 'cart was not recorded');
+  assert(r.outputs['📝 Track the cart'][0].json.action === 'cart_opened', 'cart was not opened');
+});
+
+check('a purchase deletes the cart so the buyer is never chased', () => {
+  const shared = {};
+  execute(cart, { trigger: cartEvent(), staticData: shared });
+  execute(cart, { trigger: cartEvent({ cartId: 'c2', event: 'purchased' }), staticData: shared });
+  assert(!shared.carts['shopper@example.com'],
+    'a paying customer still has an open cart and would be chased for it');
+});
+
+check('adding an item does not restart the abandonment clock', () => {
+  const shared = {};
+  execute(cart, { trigger: cartEvent(), staticData: shared });
+  const firstAt = shared.carts['shopper@example.com'].abandonedAt;
+  shared.carts['shopper@example.com'].abandonedAt = firstAt - 3_600_000;  // pretend an hour passed
+  const aged = shared.carts['shopper@example.com'].abandonedAt;
+  execute(cart, { trigger: cartEvent({ cartId: 'c1b', total: 98 }), staticData: shared });
+  assert(shared.carts['shopper@example.com'].abandonedAt === aged,
+    'adding an item reset the clock — the reminder would never fire');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+section('DCA-B1-01 · AI Support Agent');
+
+const agent = load('b1-ai-agents/ai-customer-support-agent/workflow.json');
+
+const ask = (message, o = {}) => ({
+  body: { email: 'cust@example.com', name: 'Cust', subject: 'Question', message, ...o },
+  headers: {},
+});
+
+check('a refund question is escalated without ever calling the model', () => {
+  const r = execute(agent, { trigger: ask('I want a refund please'), staticData: {} });
+  assert(r.effects.httpCalls.length === 0,
+    'a sensitive request reached the model — it must be caught by deterministic triage first');
+  assert(r.executed.some((e) => e.node.includes('Hand to a human')), 'refund request was not escalated');
+});
+
+check('an angry customer is escalated, not answered by AI', () => {
+  const r = execute(agent, { trigger: ask('THIS IS ABSOLUTELY UNACCEPTABLE AND TERRIBLE') , staticData: {} });
+  assert(r.executed.some((e) => e.node.includes('Hand to a human')), 'an upset customer was not escalated');
+});
+
+check('a routine question does reach the model', () => {
+  const r = execute(agent, { trigger: ask('What format is the book in?'), staticData: {} });
+  assert(r.effects.httpCalls.length === 1, 'a routine question did not reach the model');
+});
+
+check('a request missing its message fails loudly', () => {
+  const r = execute(agent, { trigger: { body: { email: 'a@b.c' }, headers: {} }, staticData: {} });
+  assert(r.effects.errors.length > 0, 'a request with no message passed silently');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {
