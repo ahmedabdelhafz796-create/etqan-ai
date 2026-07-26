@@ -1,0 +1,463 @@
+{
+  "name": "DCA-A5-01 · Cart Abandonment Recovery",
+  "nodes": [
+    {
+      "id": "f9af5106-ca1e-567b-9100-a63f3146972f",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -500
+      ],
+      "parameters": {
+        "content": "## 🛒 Cart Abandonment Recovery\n**Cart abandoned → timed reminder → sale recovered.**\n\n### Setup (about 12 minutes)\n1. **⚙️ Config** → `storeName`, `fromEmail`, `checkoutUrl`.\n2. Send a POST to the Production URL when someone reaches checkout and\n   does not complete. Minimum payload:\n   ```json\n   { \"email\": \"...\", \"cartId\": \"...\",\n     \"items\": [...], \"total\": 49 }\n   ```\n3. **Also** send `{\"email\":\"...\",\"event\":\"purchased\"}` when they buy —\n   this is what stops the sequence.\n4. Attach SMTP. Activate.\n\n⚠️ **Step 3 is not optional.** Without it you will email people about a\ncart they already paid for, which is worse than sending nothing at all.",
+        "height": 580,
+        "width": 580,
+        "color": 6
+      }
+    },
+    {
+      "id": "8949a791-a4eb-59f4-ad79-663de56be7d4",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -500
+      ],
+      "parameters": {
+        "content": "### 💸 Why discounting is OFF by default\nThe obvious build offers a discount straight away. It is a trap.\n\nBuyers learn quickly that abandoning a cart produces a coupon — so you\nend up **paying a discount on sales you would have made at full price**,\nand you train your best customers to always abandon first.\n\nThis sends a plain reminder first. The incentive appears only on the\nfinal message, and only if you set `enableDiscount: true` yourself.\n\n**Try it with discounts off for a month.** Most stores recover more than\nthey expect on the reminder alone.",
+        "height": 440,
+        "width": 500,
+        "color": 4
+      }
+    },
+    {
+      "id": "4c638d6d-eab7-5cf0-b568-9b171e1cab3f",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        -500
+      ],
+      "parameters": {
+        "content": "### ⏱️ The sequence\n| When | Message |\n| --- | --- |\n| +1 hour | \"You left something behind\" |\n| +24 hours | Last reminder *(+ discount if enabled)* |\n| — | **Stop.** |\n\n**Two messages, hard cap.** A third converts almost nobody and reliably\nproduces spam complaints — which damage the sending reputation that every\nother template here depends on.",
+        "height": 380,
+        "width": 440,
+        "color": 7
+      }
+    },
+    {
+      "id": "39f22d7f-2a16-56f6-86ea-666c99bde5d9",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        400
+      ],
+      "parameters": {
+        "content": "### ⚠️ Honest expectations\nRecovery rates for digital products typically land in the **single digits\nto low teens**. Anyone promising 30% is selling something.\n\nAt a 5% recovery rate on 100 carts of $49, that is ~$245/month from a\ntemplate you configure once. That is the real case — not a miracle, just\nmoney that was otherwise left on the table.",
+        "height": 300,
+        "width": 440,
+        "color": 5
+      }
+    },
+    {
+      "id": "c74f01fb-7ad0-517b-857f-9db1d2749625",
+      "name": "🛒 Cart event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -660,
+        160
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/cart",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Accepts abandonment events and {\"event\":\"purchased\"} to stop a sequence.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ffd73504-4fe2-59e0-871b-c1691817e339",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"hello@yourdomain.com\",\n  \"supportEmail\": \"support@yourdomain.com\",\n  \"checkoutUrl\": \"https://yourdomain.com/checkout\",\n  \"firstReminderHours\": 1,\n  \"finalReminderHours\": 24,\n  \"enableDiscount\": false,\n  \"discountCode\": \"COMEBACK10\",\n  \"discountText\": \"10% off\",\n  \"currency\": \"USD\",\n  \"minCartValue\": 0,\n  \"historyTtlDays\": 14\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "enableDiscount is false on purpose. Read the green note before turning it on.",
+      "notesInFlow": false
+    },
+    {
+      "id": "8846b7ff-a98a-5c7c-bb1c-5e14bec3a05d",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 24 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.email ?? '') + '|' + (j.body?.cartId ?? j.body?.cart_id ?? j.body?.event ?? Date.now()) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "f2e5808e-783b-510c-afae-25029fc737a0",
+      "name": "📝 Track the cart",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// One open cart per email. A buyer who adds more items should not start a\n// second sequence — they should update the one already running.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.carts = store.carts || {};\n\nconst now = Date.now();\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nfor (const [k, c] of Object.entries(store.carts)) {\n  if (now - (c.abandonedAt || 0) > ttlMs) delete store.carts[k];\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n  const email = String(b.email ?? b.customer_email ?? '').trim().toLowerCase();\n\n  if (!email) {\n    throw new Error('No email on the cart event — nothing to recover. Capture the email before checkout, not after.');\n  }\n\n  const isPurchase =\n    String(b.event ?? b.type ?? '').toLowerCase().includes('purchas') ||\n    b.status === 'paid' || b.completed === true;\n\n  if (isPurchase) {\n    // Stop chasing immediately. Chasing a paying customer is the fastest way to\n    // turn a good sequence into a complaint.\n    const had = !!store.carts[email];\n    delete store.carts[email];\n    out.push({ json: {\n      action: 'purchased', email,\n      message: had ? 'Cart recovered — sequence stopped.' : 'No open cart for this buyer.',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  const total = Number(b.total ?? b.amount ?? b.value ?? 0);\n  if (cfg.minCartValue > 0 && total < Number(cfg.minCartValue)) {\n    out.push({ json: { action: 'ignored_below_min', email, total, __config: cfg }});\n    continue;\n  }\n\n  const items = Array.isArray(b.items) ? b.items : [];\n  const existing = store.carts[email];\n\n  store.carts[email] = {\n    email,\n    name: String(b.name ?? b.customer_name ?? '').trim(),\n    cartId: b.cartId ?? b.cart_id ?? null,\n    total,\n    currency: b.currency ?? cfg.currency,\n    items: items.slice(0, 10),\n    // Preserve the original timestamp so adding an item does not reset the clock.\n    abandonedAt: existing?.abandonedAt ?? now,\n    stage: existing?.stage ?? 0,\n    updatedAt: now,\n  };\n\n  out.push({ json: {\n    action: existing ? 'cart_updated' : 'cart_opened',\n    email, total, __config: cfg,\n  }});\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Opens/updates a cart, or closes it on purchase. Adding items never restarts the clock.",
+      "notesInFlow": false
+    },
+    {
+      "id": "770bcd5a-5ced-583a-8857-20d8f0eaf4ba",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, action: $json.action }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    },
+    {
+      "id": "9feb210b-8791-5382-b097-de751d1ab135",
+      "name": "🕐 Check carts every 30 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -660,
+        560
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ea2450f3-761a-59a3-b78a-43ec1a4866d6",
+      "name": "⚙️ Config (schedule side)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        560
+      ],
+      "parameters": {
+        "jsCode": "// Mirror of the main Config. n8n cannot share a node between two trigger\n// branches, so these values are duplicated — keep them in sync.\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"hello@yourdomain.com\",\n  \"supportEmail\": \"support@yourdomain.com\",\n  \"checkoutUrl\": \"https://yourdomain.com/checkout\",\n  \"firstReminderHours\": 1,\n  \"finalReminderHours\": 24,\n  \"enableDiscount\": false,\n  \"discountCode\": \"COMEBACK10\",\n  \"discountText\": \"10% off\",\n  \"currency\": \"USD\"\n};\nreturn [{ json: { __config: CONFIG } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "⚠️ Mirror of the main Config. Change one, change both.",
+      "notesInFlow": false
+    },
+    {
+      "id": "21f08171-66fc-51f9-825c-84e286b9de51",
+      "name": "🔍 Find carts due a reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        560
+      ],
+      "parameters": {
+        "jsCode": "// Decide which carts are due, advance their stage, and retire anything that has\n// had both messages. The hard cap lives here.\nconst cfg = $input.first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.carts = store.carts || {};\n\nconst now = Date.now();\nconst HOUR = 60 * 60 * 1000;\nconst out = [];\nlet open = 0;\n\nfor (const [email, c] of Object.entries(store.carts)) {\n  const ageHours = (now - c.abandonedAt) / HOUR;\n  open++;\n\n  let stage = null;\n  if ((c.stage || 0) < 1 && ageHours >= Number(cfg.firstReminderHours)) stage = 1;\n  else if ((c.stage || 0) < 2 && ageHours >= Number(cfg.finalReminderHours)) stage = 2;\n\n  if (stage === null) continue;\n\n  c.stage = stage;\n  store.carts[email] = c;\n\n  // Both messages sent — retire the cart. Two is the cap, deliberately.\n  if (stage === 2) delete store.carts[email];\n\n  const itemNames = (c.items || [])\n    .map(i => (typeof i === 'string' ? i : (i.name ?? i.title ?? i.product_name ?? 'item')))\n    .filter(Boolean);\n\n  out.push({ json: {\n    email, name: c.name, total: c.total, currency: c.currency,\n    itemNames, itemCount: itemNames.length || 1,\n    stage, isFinal: stage === 2,\n    ageHours: Math.floor(ageHours),\n    __config: cfg,\n  }});\n}\n\nout.push({ json: { __summary: true, openCarts: open, remindersSent: out.length, __config: cfg }});\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Two messages then the cart is retired. The cap is enforced here.",
+      "notesInFlow": false
+    },
+    {
+      "id": "034d6850-dd40-5096-b459-093f30879cd2",
+      "name": "👤 A cart to chase?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        560
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "13c61585-754d-59c5-a6e9-54102872560c",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.__summary }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "a9fd2ad1-99ab-5ad7-9984-b24cdbcea843",
+      "name": "✍️ Compose the reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// Two messages, different jobs. The first assumes interruption and simply\n// restores context. The second acknowledges it is the last one — and only\n// mentions a discount if the seller explicitly enabled it.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n\n  const itemLine = o.itemNames.length\n    ? o.itemNames.slice(0, 3).join(', ') + (o.itemNames.length > 3 ? ` and ${o.itemNames.length - 3} more` : '')\n    : 'your items';\n\n  const showDiscount = o.isFinal && cfg.enableDiscount === true;\n\n  const subject = o.isFinal\n    ? (showDiscount\n        ? `${cfg.discountText} on the items you left behind`\n        : `Last reminder about your cart`)\n    : `You left something behind at ${cfg.storeName}`;\n\n  const lead = o.isFinal\n    ? `This is the last we'll mention it — <strong>${itemLine}</strong> is still waiting in your cart.`\n    : `You were partway through checking out and left <strong>${itemLine}</strong> behind. Your cart is still saved.`;\n\n  const discountBlock = showDiscount\n    ? `<div style=\"background:#f5f5f5;border-radius:8px;padding:16px;margin:0 0 20px;text-align:center\">\n         <div style=\"color:#555;font-size:13px;margin-bottom:6px\">Use this code at checkout</div>\n         <div style=\"font-size:22px;font-weight:700;letter-spacing:1px\">${cfg.discountCode}</div>\n         <div style=\"color:#555;font-size:13px;margin-top:6px\">${cfg.discountText}</div>\n       </div>`\n    : '';\n\n  return { json: { ...o,\n    subject,\n    html:\n`<div style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:540px;margin:0 auto;padding:32px 24px;color:#111\">\n  <h2 style=\"margin:0 0 12px;font-size:20px\">Hi${o.name ? ' ' + o.name : ' there'}</h2>\n  <p style=\"color:#555;line-height:1.65;margin:0 0 20px\">${lead}</p>\n  ${discountBlock}\n  <a href=\"${cfg.checkoutUrl}\" style=\"display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600\">Finish checkout${o.total ? ` — ${o.total} ${o.currency}` : ''}</a>\n  <p style=\"color:#777;font-size:13px;margin:24px 0 0\">\n    Changed your mind? No problem — you won't hear from us about this again.\n  </p>\n  <p style=\"color:#777;font-size:13px;margin:8px 0 0\">\n    Something not working? Reply here or email <a href=\"mailto:${cfg.supportEmail}\">${cfg.supportEmail}</a>.\n  </p>\n</div>`\n  }};\n});"
+      },
+      "notes": "Discount block only renders when enableDiscount is true AND it is the final message.",
+      "notesInFlow": false
+    },
+    {
+      "id": "40dbcf01-c3e9-5526-9682-3cc089d655b9",
+      "name": "📧 Send the reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        460
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Attach your SMTP credential.",
+      "notesInFlow": false
+    },
+    {
+      "id": "26fcde2b-e7d4-5abc-b97b-ec1d64ed6f75",
+      "name": "📈 Recovery summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        680
+      ],
+      "parameters": {
+        "jsCode": "// Runs every cycle so the seller can see the sequence working. Pair it with\n// your order log to compute the actual recovery rate over a month.\nconst s = $input.first().json;\nreturn [{ json: {\n  reportedAt: new Date().toISOString(),\n  openCarts: s.openCarts ?? 0,\n  remindersSent: Math.max(0, (s.remindersSent ?? 1) - 1),\n  note: 'Compare against your order log to measure the real recovery rate. Expect single digits to low teens.',\n}}];"
+      },
+      "notes": "Optional. Wire to Slack/Sheets if you want a running record.",
+      "notesInFlow": false
+    },
+    {
+      "id": "135fb05c-6699-5299-9d16-451dffaa5b01",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        660
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"cart-reminder\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"cart-abandonment-recovery\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🛒 Cart event": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📝 Track the cart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Track the cart": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🕐 Check carts every 30 min": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config (schedule side)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config (schedule side)": {
+      "main": [
+        [
+          {
+            "node": "🔍 Find carts due a reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Find carts due a reminder": {
+      "main": [
+        [
+          {
+            "node": "👤 A cart to chase?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "👤 A cart to chase?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Compose the reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📈 Recovery summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Compose the reminder": {
+      "main": [
+        [
+          {
+            "node": "📧 Send the reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Send the reminder": {
+      "main": [
+        [],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "marketing"
+    },
+    {
+      "name": "revenue-recovery"
+    },
+    {
+      "name": "ecommerce"
+    },
+    {
+      "name": "digital-products"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "cart-abandonment-recovery",
+    "category": "a5-marketing-revenue",
+    "version": "1.0.0"
+  }
+}

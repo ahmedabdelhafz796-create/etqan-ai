@@ -1,0 +1,635 @@
+{
+  "name": "DCA-B4-02 · Failed Payment Recovery (dunning sequence)",
+  "nodes": [
+    {
+      "id": "982790fa-f9e6-56cc-aa55-1f5934cf49cd",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -480
+      ],
+      "parameters": {
+        "content": "## 💳 Failed Payment Recovery\n**Failed renewal → timed recovery sequence → revenue saved.**\n\n### Why this pays for itself immediately\nRecovering **one** $50 subscription covers this template twice over —\nand it keeps running every month afterwards.\n\n### Setup (about 12 minutes)\n1. **⚙️ Config** → set `storeName`, `fromEmail`, `updateCardUrl`.\n2. Point your gateway's **payment failed** webhook at the Production URL.\n   *Stripe: `invoice.payment_failed` · Lemon Squeezy: `subscription_payment_failed`*\n3. Attach SMTP to the two send nodes.\n4. Activate. The schedule then runs the follow-ups by itself.\n\n### Two entry points, on purpose\n**Webhook** catches the failure immediately — the first hours are when\nrecovery odds are highest.\n**Schedule** runs the follow-up sequence, because a cadence needs a clock.",
+        "height": 560,
+        "width": 580,
+        "color": 6
+      }
+    },
+    {
+      "id": "3acff39f-fd4b-5c4e-a873-b035ed3ec471",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -480
+      ],
+      "parameters": {
+        "content": "### 📅 The sequence\n| When | Message | Tone |\n| --- | --- | --- |\n| Immediately | \"Your card was declined\" | helpful, no alarm |\n| Day 3 | \"Still can't process\" | gentle reminder |\n| Day 7 | \"Access pauses soon\" | clear consequence |\n\n**It stops the instant the payment succeeds** — send a `recovered` event\nto the webhook, or the next scheduled run clears it.\n\n⚠️ **Tone matters more than frequency.** The customer has not done\nanything wrong — a card expired. Sounding like a debt collector on day\none loses customers who would happily have paid.",
+        "height": 440,
+        "width": 480,
+        "color": 4
+      }
+    },
+    {
+      "id": "0d845947-461f-500c-b849-cae7918c1747",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -200
+      ],
+      "parameters": {
+        "content": "### 📊 What it reports\nThe scheduled run emits a summary: how many are in recovery, how many\nwere recovered, how much revenue that represents.\n\nWire **📈 Recovery report** to Slack or email so you see the number this\ntemplate is actually earning you. Without that, it is invisible work.",
+        "height": 260,
+        "width": 420,
+        "color": 7
+      }
+    },
+    {
+      "id": "ec38b4a5-88d7-5362-b390-cdf58afe00b7",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        140
+      ],
+      "parameters": {
+        "content": "### ⚠️ Honest limits\nThis recovers payments that fail for **fixable** reasons — expired card,\ninsufficient funds at that moment, a bank block.\n\nIt cannot recover a customer who has decided to leave, and it does not\nretry the charge itself — your gateway does that. This template makes\nsure a human is actually told, which is the part that is usually missing.",
+        "height": 280,
+        "width": 420,
+        "color": 5
+      }
+    },
+    {
+      "id": "6e06927c-1bc8-5761-839e-df8fd1f80a69",
+      "name": "🔔 Payment failed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -660,
+        140
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/payment-failed",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Point your gateway's payment-failed webhook here. Also accepts {\"event\":\"recovered\"} to stop a sequence.",
+      "notesInFlow": false
+    },
+    {
+      "id": "18d5b4d4-0054-5c8c-b74d-459bf995f5a7",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        140
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"billing@yourdomain.com\",\n  \"supportEmail\": \"support@yourdomain.com\",\n  \"updateCardUrl\": \"https://yourdomain.com/billing\",\n  \"followUpDays\": [3, 7],\n  \"pauseAfterDays\": 10,\n  \"currency\": \"USD\",\n  \"historyTtlDays\": 45\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "followUpDays controls the sequence. pauseAfterDays is when you stop chasing.",
+      "notesInFlow": false
+    },
+    {
+      "id": "3d046f92-903c-5d3c-b7e4-ba442ec914b7",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        140
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 72 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String(j.body?.id ?? j.body?.event_id ?? (j.body?.email + '|' + (j.body?.invoiceId ?? j.body?.invoice_id ?? Date.now())) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a166ffc4-3c34-5372-83bf-22fa377cbc60",
+      "name": "📝 Open or close a recovery case",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        140
+      ],
+      "parameters": {
+        "jsCode": "// One case per customer. The webhook both opens cases (a failure arrived) and\n// closes them (a 'recovered' event arrived), because the gateway is the only\n// thing that reliably knows the payment finally went through.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.cases = store.cases || {};\n\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nconst now = Date.now();\n\n// Keep the case file bounded.\nfor (const [k, c] of Object.entries(store.cases)) {\n  if (now - (c.openedAt || 0) > ttlMs) delete store.cases[k];\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n\n  // Normalise across gateways.\n  const email = String(\n    b.email ?? b.customer_email ?? b.data?.object?.customer_email ??\n    b.data?.attributes?.user_email ?? ''\n  ).trim().toLowerCase();\n\n  if (!email) {\n    throw new Error('No customer email on the payment-failed event — cannot start recovery. Check your gateway includes customer email in the webhook.');\n  }\n\n  const amountRaw = Number(\n    b.amount ?? b.amount_due ?? b.data?.object?.amount_due ??\n    b.data?.attributes?.total ?? 0\n  );\n  // Stripe and Lemon Squeezy both send minor units.\n  const amount = amountRaw > 1000 ? amountRaw / 100 : amountRaw;\n\n  const name = String(b.name ?? b.customer_name ?? b.data?.object?.customer_name ?? '').trim();\n  const isRecovered =\n    String(b.event ?? b.type ?? b.meta?.event_name ?? '').toLowerCase().includes('recovered') ||\n    String(b.event ?? '').toLowerCase() === 'recovered' ||\n    b.status === 'paid';\n\n  const existing = store.cases[email];\n\n  if (isRecovered) {\n    if (existing) {\n      existing.recovered = true;\n      existing.recoveredAt = now;\n      store.cases[email] = existing;\n    }\n    out.push({ json: {\n      action: 'closed', email, amount,\n      message: existing ? 'Recovery case closed — payment went through.' : 'No open case for this customer.',\n      __config: cfg, __sendNow: false,\n    }});\n    continue;\n  }\n\n  if (existing && !existing.recovered) {\n    // Already chasing. Do not restart the clock or the customer gets the\n    // day-one email repeatedly, which is how a helpful sequence turns into spam.\n    existing.failures = (existing.failures || 1) + 1;\n    store.cases[email] = existing;\n    out.push({ json: {\n      action: 'already_open', email, amount, name,\n      openedAt: new Date(existing.openedAt).toISOString(),\n      message: 'Case already open — not restarting the sequence.',\n      __config: cfg, __sendNow: false,\n    }});\n    continue;\n  }\n\n  store.cases[email] = {\n    email, name, amount,\n    currency: b.currency ?? cfg.currency,\n    openedAt: now,\n    lastContactAt: now,\n    stage: 0,\n    failures: 1,\n    recovered: false,\n  };\n\n  out.push({ json: {\n    action: 'opened', email, name, amount,\n    currency: b.currency ?? cfg.currency,\n    stage: 0,\n    __config: cfg,\n    __sendNow: true,\n  }});\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Opens a case on failure, closes it on recovery, and refuses to restart a sequence that is already running.",
+      "notesInFlow": false
+    },
+    {
+      "id": "b0f6fa2a-86e5-5307-b48c-50df4be9c2b7",
+      "name": "📨 First contact needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        140
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3956145b-1bbc-5c4f-a85b-5189b1784600",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.__sendNow }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "d0182b0e-25e3-5a23-9a54-1eda74ab7aad",
+      "name": "✍️ Compose first notice",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        40
+      ],
+      "parameters": {
+        "jsCode": "// Day zero. The customer almost certainly does not know anything happened, and\n// in most cases has done nothing wrong. Tone: helpful, specific, one action.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n  return { json: { ...o,\n    subject: `Your payment didn't go through — quick fix`,\n    html:\n`<div style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:540px;margin:0 auto;padding:32px 24px;color:#111\">\n  <h2 style=\"margin:0 0 12px;font-size:20px\">Hi${o.name ? ' ' + o.name : ''}, your card was declined</h2>\n  <p style=\"color:#555;line-height:1.65;margin:0 0 20px\">\n    We tried to process <strong>${o.amount} ${o.currency}</strong> for your ${cfg.storeName} subscription and your bank declined it.\n    This is usually just an expired card — it takes a minute to fix and nothing has been interrupted.\n  </p>\n  <a href=\"${cfg.updateCardUrl}\" style=\"display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600\">Update payment method</a>\n  <p style=\"color:#777;font-size:13px;margin:24px 0 0\">\n    Already fixed it? Then you can ignore this — we'll retry automatically.\n  </p>\n  <p style=\"color:#777;font-size:13px;margin:8px 0 0\">\n    Questions? Just reply, or email <a href=\"mailto:${cfg.supportEmail}\">${cfg.supportEmail}</a>.\n  </p>\n</div>`\n  }};\n});"
+      },
+      "notes": "Friendly, one clear action. No alarm language on day one.",
+      "notesInFlow": false
+    },
+    {
+      "id": "8da5fa90-09c6-5e4c-9367-a4b91546b27b",
+      "name": "📧 Send first notice",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        700,
+        40
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Attach your SMTP credential.",
+      "notesInFlow": false
+    },
+    {
+      "id": "86607d1a-25a1-5ac9-a332-b0cdc639d60c",
+      "name": "⏭️ Nothing to send",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        260
+      ],
+      "parameters": {
+        "jsCode": "// Case was closed, or a sequence is already running. Recorded, not acted on.\nreturn $input.all().map(i => ({ json: { logged: true, action: i.json.action, email: i.json.email } }));"
+      },
+      "notes": "Closed or duplicate cases end here.",
+      "notesInFlow": false
+    },
+    {
+      "id": "8e454638-8199-578e-beb1-18a2243597ed",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        140
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    },
+    {
+      "id": "77d2ea49-6024-5b4d-a3e9-d356966b3738",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        340
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"dunning-first-notice\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"failed-payment-recovery\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "19d0fdcb-4ad9-59da-99a7-bd17c61173df",
+      "name": "🕐 Daily follow-up run",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -660,
+        620
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "f193e1a6-88ee-5a06-94ec-d6cd82749cda",
+      "name": "⚙️ Config (schedule side)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// The scheduled branch has no upstream Config node to read from, so it restates\n// the same values. Keep these in sync with the main Config node — they are\n// duplicated because n8n branches from separate triggers cannot share a node.\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"billing@yourdomain.com\",\n  \"supportEmail\": \"support@yourdomain.com\",\n  \"updateCardUrl\": \"https://yourdomain.com/billing\",\n  \"followUpDays\": [3, 7],\n  \"pauseAfterDays\": 10,\n  \"currency\": \"USD\"\n};\nreturn [{ json: { __config: CONFIG } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "⚠️ Mirror of the main Config. If you change one, change both.",
+      "notesInFlow": false
+    },
+    {
+      "id": "455bddb0-82c5-5ed0-8060-69e2c77df0f9",
+      "name": "🔍 Find cases due for follow-up",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Walk the open cases and decide which are due today. Emitting one item per due\n// case lets the send node fan out naturally.\nconst cfg = $input.first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.cases = store.cases || {};\n\nconst now = Date.now();\nconst DAY = 24 * 60 * 60 * 1000;\nconst stages = cfg.followUpDays || [3, 7];\nconst out = [];\n\nlet openCount = 0, recoveredCount = 0, recoveredValue = 0;\n\nfor (const [email, c] of Object.entries(store.cases)) {\n  if (c.recovered) {\n    recoveredCount++;\n    recoveredValue += Number(c.amount) || 0;\n    continue;\n  }\n\n  openCount++;\n  const ageDays = (now - c.openedAt) / DAY;\n\n  // Past the pause point: stop chasing. Continuing past this annoys people and\n  // recovers almost nothing.\n  if (ageDays >= Number(cfg.pauseAfterDays)) {\n    c.stage = 99;\n    store.cases[email] = c;\n    continue;\n  }\n\n  // Which stage is due? stage 0 = first notice already sent on day zero.\n  let dueStage = null;\n  for (let i = 0; i < stages.length; i++) {\n    if (ageDays >= stages[i] && (c.stage || 0) < i + 1) { dueStage = i + 1; break; }\n  }\n  if (dueStage === null) continue;\n\n  c.stage = dueStage;\n  c.lastContactAt = now;\n  store.cases[email] = c;\n\n  const isFinal = dueStage === stages.length;\n  out.push({ json: {\n    email, name: c.name, amount: c.amount, currency: c.currency,\n    stage: dueStage, ageDays: Math.floor(ageDays), isFinal,\n    daysUntilPause: Math.max(0, Math.ceil(Number(cfg.pauseAfterDays) - ageDays)),\n    __config: cfg,\n  }});\n}\n\n// Always emit a summary item so the report runs even on a quiet day.\nout.push({ json: {\n  __summary: true,\n  openCases: openCount,\n  recoveredCases: recoveredCount,\n  recoveredValue: Math.round(recoveredValue * 100) / 100,\n  dueToday: out.length,\n  __config: cfg,\n}});\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Decides who is due, advances their stage, and stops chasing past pauseAfterDays.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7f1e9c3d-e747-5a60-95e8-6bce96575ce8",
+      "name": "👤 A customer to contact?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        620
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ee3de4c3-7d0a-5566-b613-49690ce53526",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.__summary }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "b265f832-23e8-5601-aa1c-54e6af94caab",
+      "name": "✍️ Compose follow-up",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        520
+      ],
+      "parameters": {
+        "jsCode": "// Escalates only in clarity, never in hostility. The final message states the\n// consequence plainly because vagueness at this point is what actually loses\n// the customer — they need to know access is about to stop.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n\n  const subject = o.isFinal\n    ? `Action needed — your ${cfg.storeName} access pauses soon`\n    : `Still can't process your payment`;\n\n  const body = o.isFinal\n    ? `<p style=\"color:#555;line-height:1.65;margin:0 0 20px\">\n         We've tried a few times over the last ${o.ageDays} days and the payment of\n         <strong>${o.amount} ${o.currency}</strong> still isn't going through.\n         To avoid your access pausing in <strong>${o.daysUntilPause} day(s)</strong>, please update your card.\n       </p>`\n    : `<p style=\"color:#555;line-height:1.65;margin:0 0 20px\">\n         Your payment of <strong>${o.amount} ${o.currency}</strong> still hasn't gone through.\n         Nothing has changed on your account yet — updating your card takes about a minute.\n       </p>`;\n\n  return { json: { ...o,\n    subject,\n    html:\n`<div style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:540px;margin:0 auto;padding:32px 24px;color:#111\">\n  <h2 style=\"margin:0 0 12px;font-size:20px\">Hi${o.name ? ' ' + o.name : ''}</h2>\n  ${body}\n  <a href=\"${cfg.updateCardUrl}\" style=\"display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600\">Update payment method</a>\n  <p style=\"color:#777;font-size:13px;margin:24px 0 0\">\n    If something else is going on, reply to this email — we would rather sort it out than lose you.\n  </p>\n</div>`\n  }};\n});"
+      },
+      "notes": "Escalates in clarity, not in tone.",
+      "notesInFlow": false
+    },
+    {
+      "id": "34e8fd5e-98ba-58bb-a5e8-1fe30218b448",
+      "name": "📧 Send follow-up",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        520
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Attach the same SMTP credential.",
+      "notesInFlow": false
+    },
+    {
+      "id": "1da16eb2-80d0-5d45-8d7c-0dd10aefc1ad",
+      "name": "📈 Recovery report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        740
+      ],
+      "parameters": {
+        "jsCode": "// The number that proves this template is earning its keep. Send it somewhere\n// you will actually see, or the work stays invisible and gets switched off.\nconst s = $input.first().json;\nconst cfg = s.__config;\nreturn [{ json: {\n  reportedAt: new Date().toISOString(),\n  openCases: s.openCases ?? 0,\n  recoveredCases: s.recoveredCases ?? 0,\n  recoveredValue: s.recoveredValue ?? 0,\n  currency: cfg.currency,\n  summary:\n    `💳 Payment recovery — ${new Date().toISOString().slice(0, 10)}\\n` +\n    `Recovered: ${s.recoveredCases ?? 0} payment(s) worth ${s.recoveredValue ?? 0} ${cfg.currency}\\n` +\n    `Still chasing: ${s.openCases ?? 0}\\n` +\n    `Contacted today: ${(s.dueToday ?? 1) - 1}`,\n}}];"
+      },
+      "notes": "Wire to Slack/Telegram/email. This is the number that justifies the template.",
+      "notesInFlow": false
+    },
+    {
+      "id": "1a1f39f6-a02e-5b6c-bfa0-72a060014e6d",
+      "name": "🚨 Handle follow-up failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        720
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"dunning-follow-up\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"failed-payment-recovery\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🔔 Payment failed": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📝 Open or close a recovery case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Open or close a recovery case": {
+      "main": [
+        [
+          {
+            "node": "📨 First contact needed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 First contact needed?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Compose first notice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⏭️ Nothing to send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Compose first notice": {
+      "main": [
+        [
+          {
+            "node": "📧 Send first notice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Send first notice": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏭️ Nothing to send": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🕐 Daily follow-up run": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config (schedule side)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config (schedule side)": {
+      "main": [
+        [
+          {
+            "node": "🔍 Find cases due for follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Find cases due for follow-up": {
+      "main": [
+        [
+          {
+            "node": "👤 A customer to contact?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "👤 A customer to contact?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Compose follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📈 Recovery report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Compose follow-up": {
+      "main": [
+        [
+          {
+            "node": "📧 Send follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Send follow-up": {
+      "main": [
+        [],
+        [
+          {
+            "node": "🚨 Handle follow-up failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "saas"
+    },
+    {
+      "name": "subscriptions"
+    },
+    {
+      "name": "revenue-recovery"
+    },
+    {
+      "name": "dunning"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "failed-payment-recovery",
+    "category": "b4-saas-subscriptions",
+    "version": "1.0.0"
+  }
+}
