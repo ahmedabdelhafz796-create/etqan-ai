@@ -1630,6 +1630,92 @@ check('an application with no CV text fails loudly', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-A5-02 · Post-Purchase Sequence');
+
+const seq = load('a5-marketing-revenue/post-purchase-sequence/workflow.json');
+
+const SEQ_CFG = {
+  storeName: 'S', fromEmail: 'h@x.test', supportEmail: 'sup@x.test',
+  reviewUrl: 'https://x.test/review', usageTip: 'Do the thing first.',
+  helpAfterHours: 24, tipAfterDays: 3, checkInAfterDays: 7, upsellAfterDays: 21,
+  enableUpsell: false, upsellText: 'Other product.', batchSize: 50, historyTtlDays: 60,
+};
+
+const enrolled = (o = {}) => ({ key: 'b@x.test|o1', email: 'b@x.test', orderId: 'o1',
+  name: 'Buyer', productName: 'Course', startedAt: Date.now(), stage: 0,
+  stopped: false, happy: null, ...o });
+
+check('an unsubscribe is honoured for future orders too', () => {
+  const shared = {};
+  execute(seq, { trigger: { body: { email: 'b@x.test', event: 'unsubscribe' }, headers: {} },
+                 staticData: shared, configOverride: SEQ_CFG });
+  shared.seen = {};
+  const r = execute(seq, { trigger: { body: { orderId: 'o2', email: 'b@x.test' }, headers: {} },
+                           staticData: shared, configOverride: SEQ_CFG });
+  assert(r.outputs['📝 Enrol the buyer'][0].json.action === 'skipped_opted_out',
+    'a new order restarted contact with someone who had unsubscribed');
+});
+
+check('the help nudge comes first, not a review request', () => {
+  const shared = { sequences: { k: enrolled({ startedAt: Date.now() - 2 * 86400000 }) } };
+  const r = execute(seq, { trigger: {}, staticData: shared, configOverride: SEQ_CFG, from: 'Advance sequences' });
+  const out = r.outputs['✍️ Compose for this stage'][0].json;
+  assert(out.kind === 'help', `the first message was "${out.kind}" — help must come before any ask`);
+  assert(!/review/i.test(out.subject), 'the first message mentions reviews');
+});
+
+check('the review ask only arrives after the check-in delay', () => {
+  const shared = { sequences: { k: enrolled({ startedAt: Date.now() - 8 * 86400000, stage: 2 }) } };
+  const r = execute(seq, { trigger: {}, staticData: shared, configOverride: SEQ_CFG, from: 'Advance sequences' });
+  const out = r.outputs['✍️ Compose for this stage'][0].json;
+  assert(out.kind === 'checkin', `expected the check-in stage, got "${out.kind}"`);
+  assert(/review/i.test(out.html), 'the check-in offers no review link');
+});
+
+check('unhappy buyers are directed to reply privately, not to a review page', () => {
+  const shared = { sequences: { k: enrolled({ startedAt: Date.now() - 8 * 86400000, stage: 2 }) } };
+  const r = execute(seq, { trigger: {}, staticData: shared, configOverride: SEQ_CFG, from: 'Advance sequences' });
+  const html = r.effects.emails[0].html;
+  assert(/If not.*repl(y|ies)/is.test(html),
+    'the check-in does not route dissatisfaction into a private reply');
+});
+
+check('only one stage advances per run', () => {
+  const shared = { sequences: { k: enrolled({ startedAt: Date.now() - 30 * 86400000 }) } };
+  const r = execute(seq, { trigger: {}, staticData: shared, configOverride: SEQ_CFG, from: 'Advance sequences' });
+  assert(r.effects.emails.length === 1,
+    `a month-old sequence sent ${r.effects.emails.length} emails at once — that defeats a timed sequence`);
+});
+
+check('the upsell is skipped entirely when disabled', () => {
+  const shared = { sequences: { k: enrolled({ startedAt: Date.now() - 30 * 86400000, stage: 3 }) } };
+  const r = execute(seq, { trigger: {}, staticData: shared, configOverride: SEQ_CFG, from: 'Advance sequences' });
+  assert(r.effects.emails.length === 0, 'an upsell was sent with enableUpsell false');
+});
+
+check('the upsell waits for the refund window even when enabled', () => {
+  const withUpsell = { ...SEQ_CFG, enableUpsell: true };
+  // 10 days old, stage 3 done, but upsellAfterDays is 21.
+  const shared = { sequences: { k: enrolled({ startedAt: Date.now() - 10 * 86400000, stage: 3 }) } };
+  const r = execute(seq, { trigger: {}, staticData: shared, configOverride: withUpsell, from: 'Advance sequences' });
+  assert(r.effects.emails.length === 0,
+    'an upsell went out before the refund window closed — that invites reconsidering both purchases');
+});
+
+check('every email carries an unsubscribe route', () => {
+  const shared = { sequences: { k: enrolled({ startedAt: Date.now() - 2 * 86400000 }) } };
+  const r = execute(seq, { trigger: {}, staticData: shared, configOverride: SEQ_CFG, from: 'Advance sequences' });
+  assert(/unsubscribe/i.test(r.effects.emails[0].html), 'a marketing email has no unsubscribe route');
+});
+
+check('a completed sequence stops contacting the buyer', () => {
+  const shared = { sequences: { k: enrolled({ startedAt: Date.now() - 40 * 86400000, stage: 3 }) } };
+  execute(seq, { trigger: {}, staticData: shared, configOverride: SEQ_CFG, from: 'Advance sequences' });
+  const r = execute(seq, { trigger: {}, staticData: shared, configOverride: SEQ_CFG, from: 'Advance sequences' });
+  assert(r.effects.emails.length === 0, 'a finished sequence kept emailing');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {
