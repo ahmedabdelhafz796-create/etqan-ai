@@ -187,23 +187,56 @@ def validate_workflow(wf: dict[str, Any]) -> list[Finding]:
                     f"{n['name']!r} ({n['type'].split('.')[-1]}) crosses the network without a retry policy",
                 )
             )
-        if not n.get("onError"):
-            out.append(
-                Finding("warn", "hardening/error-path", f"{n['name']!r} has no explicit onError route")
-            )
+    # Failure handling is checked per node, not once for the whole workflow.
+    #
+    # The earlier version asked only whether *some* node in the file had a wired
+    # error output, which a template with one handled node and five unhandled
+    # ones passed cleanly. It also recognised a single strategy. Both are fixed
+    # here, because there are two legitimate ways to handle a failing node and
+    # the standard should accept either:
+    #
+    #   continueErrorOutput   → the failure leaves by output 1, down a distinct
+    #                           branch that must actually be wired.
+    #   continueRegularOutput → the failure continues along output 0 carrying
+    #                           its error, to be recorded by whatever follows.
+    #                           Used where a separate branch would be ceremony —
+    #                           the Error Hub's own alert send, for instance,
+    #                           which cannot route failures to itself.
+    #
+    # A node with no onError at all stops its branch dead, and that is the case
+    # this rule exists to prevent.
+    for n in net_nodes:
+        mode = n.get("onError")
+        slots = conns.get(n["name"], {}).get("main", [])
 
-    # An error branch only counts if something is actually wired to output 1 of
-    # a node that declares continueErrorOutput.
-    has_error_route = any(
-        n.get("onError") == "continueErrorOutput" for n in real
-    ) and any(
-        len(types.get("main", [])) > 1 and types["main"][1]
-        for types in conns.values()
-    )
-    if net_nodes and not has_error_route:
-        out.append(
-            Finding("error", "hardening/error-path", "no failure branch is wired — errors would vanish silently")
-        )
+        if mode == "continueErrorOutput":
+            wired = len(slots) > 1 and bool(slots[1])
+            if not wired:
+                out.append(
+                    Finding(
+                        "error",
+                        "hardening/error-path",
+                        f"{n['name']!r} declares an error output but nothing is wired to it — failures would vanish",
+                    )
+                )
+        elif mode == "continueRegularOutput":
+            wired = len(slots) > 0 and bool(slots[0])
+            if not wired:
+                out.append(
+                    Finding(
+                        "error",
+                        "hardening/error-path",
+                        f"{n['name']!r} continues on error but leads nowhere — failures would vanish",
+                    )
+                )
+        else:
+            out.append(
+                Finding(
+                    "error",
+                    "hardening/error-path",
+                    f"{n['name']!r} has no onError policy — a failure there stops the branch silently",
+                )
+            )
 
     joined = json.dumps(wf, ensure_ascii=False)
     if "__config" not in joined and "CONFIG" not in joined:

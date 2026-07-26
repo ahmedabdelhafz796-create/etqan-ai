@@ -1,0 +1,361 @@
+{
+  "name": "DCA-SYS-00 · Central Error Hub (every failure, one place, in plain language)",
+  "nodes": [
+    {
+      "id": "cd68dcca-9e44-50a4-95f5-cf35f2a6c627",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -480
+      ],
+      "parameters": {
+        "content": "## 🧭 Central Error Hub — the spine of the system\n**Every failure, from every template, in one place.**\n\n### Setup (about 8 minutes, do this ONCE)\n1. Import and **Activate** this workflow.\n2. Open **every other template** → `Settings` → **Error Workflow** →\n   choose **DCA-SYS-00 · Central Error Hub**.\n3. **⚙️ Config** → set `alertEmail`.\n4. Attach SMTP to **📨 Send alert**.\n\nThat is it. From now on, if anything anywhere breaks, you hear about it\n**once**, in language you can act on.\n\n### Why this is worth more than any single template\nA template that fails silently costs you money for weeks. This is the\ndifference between owning a system and owning a pile of files.",
+        "height": 520,
+        "width": 580,
+        "color": 6
+      }
+    },
+    {
+      "id": "603d62be-74df-5739-8660-bc3b23801b0a",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -480
+      ],
+      "parameters": {
+        "content": "### 🎚️ Severity is business impact, not stack trace\n| Level | Means | You get |\n| --- | --- | --- |\n| 🔴 **critical** | a customer paid and did not get it | immediate alert |\n| 🟠 **high** | money at risk — fraud, dispute, dunning | immediate alert |\n| 🟡 **medium** | marketing/support degraded | immediate alert |\n| ⚪ **low** | logging, reporting | counted only |\n\nA failed delivery and a failed analytics write are not the same\nemergency, and treating them alike teaches you to ignore both.",
+        "height": 400,
+        "width": 500,
+        "color": 5
+      }
+    },
+    {
+      "id": "ab067636-576c-5b46-bedb-00f34839b5d0",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        -480
+      ],
+      "parameters": {
+        "content": "### 🌊 Storm suppression\nWhen an upstream API goes down the same error fires hundreds of times.\n\nForwarding every one buries all other signals and trains you to ignore\nalerts — **worse than having none at all**.\n\nSo the first occurrence alerts. Repeats inside `stormWindowMinutes` are\ncounted silently, and you get one summary instead of two hundred pages.",
+        "height": 340,
+        "width": 460,
+        "color": 7
+      }
+    },
+    {
+      "id": "4eed7e76-985d-55e5-835d-d42785cb4fa3",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        200
+      ],
+      "parameters": {
+        "content": "### 🗣️ Written for a seller, not an engineer\n`ECONNREFUSED` is not actionable.\n\n*\"Your email provider refused the connection — check the SMTP\ncredential in n8n\"* is.\n\nEvery alert carries a likely cause and a concrete next step. Add your own\npatterns in **🔎 Explain the failure** as you learn your own recurring\nproblems.",
+        "height": 300,
+        "width": 440,
+        "color": 4
+      }
+    },
+    {
+      "id": "3d9f8469-942e-5aa0-b7ed-5bb25fa4f762",
+      "name": "🚨 Any workflow failed",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        160
+      ],
+      "parameters": {},
+      "notes": "Fires when any workflow that names this one as its Error Workflow fails.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ed568632-6e76-58c7-9411-4706f9758e37",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"alertEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"alerts@yourdomain.com\",\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"stormWindowMinutes\": 30,\n  \"alertOnLow\": false,\n  \"criticalTemplates\": [\"instant-digital-delivery\", \"secure-download-endpoint\"],\n  \"highTemplates\": [\"pre-payment-fraud-scoring\", \"chargeback-early-warning\", \"failed-payment-recovery\"],\n  \"historyTtlHours\": 48\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "Set alertEmail and you are done. The template lists control severity ranking.",
+      "notesInFlow": false
+    },
+    {
+      "id": "83694707-93a3-521d-baca-9f3d0f2cd0de",
+      "name": "🎚️ Rank by business impact",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// n8n's error trigger hands us the failing workflow, the node, and the message.\n// Turn that into a business judgement: does this cost a customer right now?\nconst cfg = $('⚙️ Config').first().json.__config;\n\nreturn $input.all().map(item => {\n  const e = item.json;\n\n  const wfName = String(e.workflow?.name ?? e.workflow?.id ?? 'unknown workflow');\n  const nodeName = String(e.execution?.lastNodeExecuted ?? e.node?.name ?? 'unknown node');\n  const message = String(\n    e.execution?.error?.message ?? e.error?.message ?? e.message ?? 'no message supplied'\n  );\n  const stack = String(e.execution?.error?.stack ?? '').slice(0, 400);\n  const executionId = e.execution?.id ?? null;\n  const executionUrl = e.execution?.url ?? null;\n\n  // Match against the slug we stamp into every template name.\n  const haystack = wfName.toLowerCase();\n  const isCritical = (cfg.criticalTemplates || []).some(s => haystack.includes(String(s).toLowerCase()));\n  const isHigh = (cfg.highTemplates || []).some(s => haystack.includes(String(s).toLowerCase()));\n\n  // A delivery or download failure means someone paid and is currently stuck.\n  // That outranks everything, including our own template lists.\n  const touchesCustomerMoney =\n    /deliver|download|payment|order|invoice|refund/i.test(wfName + ' ' + nodeName);\n\n  let severity = 'medium';\n  if (isCritical || (touchesCustomerMoney && /send|deliver|serve/i.test(nodeName))) severity = 'critical';\n  else if (isHigh) severity = 'high';\n  else if (/log|report|analytic|summary|audit/i.test(nodeName)) severity = 'low';\n\n  return { json: {\n    severity,\n    workflowName: wfName,\n    nodeName,\n    message,\n    stack,\n    executionId,\n    executionUrl,\n    failedAt: new Date().toISOString(),\n    // Group identity for storm detection: same workflow + node + error shape.\n    fingerprint: `${wfName}|${nodeName}|${message.slice(0, 80)}`,\n    __config: cfg,\n  }};\n});"
+      },
+      "alwaysOutputData": true,
+      "notes": "Severity reflects what it costs, not what it looks like in a stack trace.",
+      "notesInFlow": false
+    },
+    {
+      "id": "f7648cfe-f885-5aec-91bf-3ffbd0fb2dd6",
+      "name": "🌊 Suppress repeat storms",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// One alert per distinct failure per window. When an upstream API dies the same\n// error arrives hundreds of times; forwarding all of them destroys the value of\n// every alert you will ever send.\nconst store = $getWorkflowStaticData('global');\nstore.errors = store.errors || {};\n\nconst now = Date.now();\n\nreturn $input.all().map(item => {\n  const o = item.json;\n  const cfg = o.__config;\n  const windowMs = Number(cfg.stormWindowMinutes) * 60 * 1000;\n  const ttlMs = Number(cfg.historyTtlHours) * 60 * 60 * 1000;\n\n  for (const [k, r] of Object.entries(store.errors)) {\n    if (now - r.firstAt > ttlMs) delete store.errors[k];\n  }\n\n  const key = o.fingerprint;\n  const rec = store.errors[key];\n\n  if (rec && now - rec.firstAt < windowMs) {\n    rec.count += 1;\n    rec.lastAt = now;\n    store.errors[key] = rec;\n    return { json: { ...o,\n      shouldAlert: false,\n      repeatCount: rec.count,\n      suppressedNote: `Same failure ${rec.count}× in the last ${cfg.stormWindowMinutes} min — alert suppressed.`,\n    }};\n  }\n\n  // First occurrence, or the window expired. Alert — and if this is a fresh\n  // window after a storm, say how many were swallowed so the scale is visible.\n  const previous = rec ? rec.count : 0;\n  store.errors[key] = { firstAt: now, lastAt: now, count: 1 };\n\n  return { json: { ...o,\n    shouldAlert: true,\n    repeatCount: 1,\n    previousBurst: previous > 1 ? previous : null,\n  }};\n});"
+      },
+      "alwaysOutputData": true,
+      "notes": "First occurrence alerts; repeats inside the window are counted silently.",
+      "notesInFlow": false
+    },
+    {
+      "id": "9ade849c-cfa2-5a4b-8425-34a29b2ab10b",
+      "name": "🔎 Explain the failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// Translate the error into something a non-engineer can act on. This list is a\n// starting set covering the failures these templates actually produce — extend\n// it as you learn your own recurring problems.\nconst PATTERNS = [\n  { re: /ECONNREFUSED|ETIMEDOUT|ENOTFOUND|socket hang up/i,\n    cause: 'The service you were calling did not answer.',\n    fix: 'Usually temporary. Check the service\\'s status page. If it persists, verify the host/URL in the failing node.' },\n\n  { re: /invalid.?login|authentication failed|535|EAUTH/i,\n    cause: 'Your email provider rejected the login.',\n    fix: 'Open Credentials → your SMTP account. The password must be the SMTP key from your provider, not your account password.' },\n\n  { re: /wrong version number|SSL routines/i,\n    cause: 'SSL setting does not match the port.',\n    fix: 'Port 587 → turn SSL/TLS OFF. Port 465 → turn SSL/TLS ON. They must agree.' },\n\n  { re: /401|unauthorized|invalid.?api.?key|x-api-key/i,\n    cause: 'An API key was rejected.',\n    fix: 'The key is missing, expired, or lacks permission. Re-add it in Credentials on the failing node.' },\n\n  { re: /429|rate.?limit|too many requests/i,\n    cause: 'You hit the provider\\'s rate limit.',\n    fix: 'The node retries automatically. If it keeps happening, reduce how often the schedule runs, or upgrade your plan with that provider.' },\n\n  { re: /signature verification failed/i,\n    cause: 'A webhook signature did not match.',\n    fix: 'Either the signing secret is wrong, or someone is posting fake requests to your endpoint. Check the secret first — and note this template correctly refused to deliver.' },\n\n  { re: /missing required field/i,\n    cause: 'The incoming payload was missing something essential.',\n    fix: 'The error names the missing field. Check that the sending system includes it — customer email is the usual culprit.' },\n\n  { re: /Unrecognised webhook payload|Unrecognized/i,\n    cause: 'The payment provider was not recognised.',\n    fix: 'Open ⚙️ Config and set \"provider\" explicitly instead of leaving it on \"auto\".' },\n\n  { re: /no buyer email|No customer email|No email on/i,\n    cause: 'The event carried no customer email, so nothing could be sent.',\n    fix: 'Configure your gateway or form to include the customer email in its webhook payload.' },\n\n  { re: /cannot read propert|undefined is not|is not a function/i,\n    cause: 'The data arrived in an unexpected shape.',\n    fix: 'Open the execution, look at the input to the failing node, and compare it with what the template expects. Send this to support if unclear.' },\n];\n\nreturn $input.all().map(item => {\n  const o = item.json;\n  const hit = PATTERNS.find(p => p.re.test(o.message)) || {\n    cause: 'An unexpected error occurred.',\n    fix: 'Open the execution in n8n and inspect the failing node\\'s input and error detail.',\n  };\n\n  const icon = { critical: '🔴', high: '🟠', medium: '🟡', low: '⚪' }[o.severity] || '⚪';\n\n  const impact = {\n    critical: 'A customer may have paid and not received their product. Check this now.',\n    high: 'Money is at risk — fraud screening, a dispute deadline, or a payment recovery did not run.',\n    medium: 'A marketing or support step did not run. Not urgent, but do not leave it.',\n    low: 'Logging or reporting only. No customer impact.',\n  }[o.severity];\n\n  const alertText =\n`${icon} ${String(o.severity).toUpperCase()} — ${o.__config.storeName}\n\n${impact}\n\nWorkflow: ${o.workflowName}\nNode:     ${o.nodeName}\nTime:     ${o.failedAt}\n${o.executionUrl ? `Execution: ${o.executionUrl}` : (o.executionId ? `Execution id: ${o.executionId}` : '')}\n\n── WHAT HAPPENED ───────────────────\n${hit.cause}\n\nRaw error: ${o.message}\n\n── WHAT TO DO ──────────────────────\n${hit.fix}\n${o.previousBurst ? `\\n⚠️ This failure occurred ${o.previousBurst}× in the previous window before this alert.` : ''}`;\n\n  return { json: { ...o, cause: hit.cause, fix: hit.fix, alertText,\n    subject: `${icon} ${o.severity.toUpperCase()} — ${o.workflowName} failed` } };\n});"
+      },
+      "notes": "Plain-language cause and fix. Extend PATTERNS as you learn your own recurring errors.",
+      "notesInFlow": false
+    },
+    {
+      "id": "0518501f-5388-56fb-b441-15ac00bd1f90",
+      "name": "🔔 Alert or just record?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// Low severity is recorded but does not interrupt anyone unless the seller has\n// opted in. Suppressed storm repeats are recorded too.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n  const lowAndQuiet = o.severity === 'low' && cfg.alertOnLow !== true;\n  return { json: { ...o, __alert: o.shouldAlert && !lowAndQuiet } };\n});"
+      },
+      "notes": "Applies the alertOnLow preference on top of storm suppression.",
+      "notesInFlow": false
+    },
+    {
+      "id": "dcd2a376-dc8c-5701-be74-45f5f7b6a885",
+      "name": "📣 Send it?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        160
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "a6f80752-dc7e-5052-88b8-9b5787792afb",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.__alert }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c23b19aa-2cc2-5a79-885c-b724ceafd0be",
+      "name": "📨 Send alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        60
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.alertEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.alertText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "notes": "Attach SMTP. Swap for Slack/Telegram if you prefer — the text is ready either way.",
+      "notesInFlow": false
+    },
+    {
+      "id": "197deb36-95f3-5623-b08f-d44041e93f5a",
+      "name": "📒 Failure log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// Every failure, alerted or not. Reviewed monthly this tells you which template\n// is actually costing you time — and that is what to fix or replace first.\nreturn $input.all().map(i => ({ json: {\n  ts: i.json.failedAt,\n  severity: i.json.severity,\n  workflow: i.json.workflowName,\n  node: i.json.nodeName,\n  cause: i.json.cause,\n  message: String(i.json.message).slice(0, 300),\n  alerted: !!i.json.__alert,\n  repeatCount: i.json.repeatCount ?? 1,\n}}));"
+      },
+      "notes": "Append to Sheets/Airtable. Review monthly — the pattern tells you what to fix.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🚨 Any workflow failed": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🎚️ Rank by business impact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎚️ Rank by business impact": {
+      "main": [
+        [
+          {
+            "node": "🌊 Suppress repeat storms",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌊 Suppress repeat storms": {
+      "main": [
+        [
+          {
+            "node": "🔎 Explain the failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Explain the failure": {
+      "main": [
+        [
+          {
+            "node": "🔔 Alert or just record?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔔 Alert or just record?": {
+      "main": [
+        [
+          {
+            "node": "📣 Send it?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📣 Send it?": {
+      "main": [
+        [
+          {
+            "node": "📨 Send alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📒 Failure log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Send alert": {
+      "main": [
+        [
+          {
+            "node": "📒 Failure log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "system"
+    },
+    {
+      "name": "monitoring"
+    },
+    {
+      "name": "spine"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "central-error-hub",
+    "category": "sys-spine",
+    "version": "1.0.0"
+  }
+}

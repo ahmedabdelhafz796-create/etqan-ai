@@ -75,6 +75,16 @@ CASES = [
         "nodes", [n for n in w["nodes"] if n["type"] != "n8n-nodes-base.webhook"]), True),
 
     ("malformed position", lambda w: w["nodes"][4].update(position=["a", "b"]), True),
+
+    # The error-path rule is checked per node. An earlier version asked only
+    # whether *some* node had a wired error output, which let a file with one
+    # handled node and several unhandled ones pass.
+    ("onError stripped from a network node", lambda w: [
+        n.pop("onError", None) for n in w["nodes"]
+        if n["type"] == "n8n-nodes-base.emailSend"], True),
+
+    ("error output declared but wired to nothing", lambda w:
+        w["connections"].get("📧 Send the product", {}).get("main", [[], []]).__setitem__(1, []), True),
 ]
 
 
