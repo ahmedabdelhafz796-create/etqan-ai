@@ -582,6 +582,65 @@ check('a leaked download link surfaces as an action item', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+section('DCA-B1-02 · AI Lead Qualifier');
+
+const lead = load('b1-ai-agents/ai-lead-qualifier/workflow.json');
+
+const enquiry = (message, o = {}) => ({
+  body: { email: 'buyer@acmecorp.com', name: 'Real Buyer', message, ...o },
+  headers: {},
+});
+
+check('spam is discarded before any model call', () => {
+  const r = execute(lead, { trigger: enquiry('We offer SEO services and backlink packages'), staticData: {} });
+  assert(r.effects.httpCalls.length === 0, 'spam reached the model — wasted spend');
+  const out = r.outputs['📒 Lead log'][0].json;
+  assert(out.action === 'discarded_spam', `spam was routed as "${out.action}"`);
+});
+
+check('discarded spam is still logged for audit', () => {
+  const r = execute(lead, { trigger: enquiry('guest post opportunity'), staticData: {} });
+  const logged = r.outputs['🗑️ Log the spam'][0].json;
+  assert(logged.reason, 'spam was dropped with no recorded reason');
+  assert(logged.messagePreview, 'no message preview kept — a real lead here would be unrecoverable');
+});
+
+check('a genuine enquiry reaches the model', () => {
+  const r = execute(lead, { trigger: enquiry('What is your pricing? We need this urgently for our team.') });
+  assert(r.effects.httpCalls.length === 1, 'a real enquiry did not reach the model');
+});
+
+check('a business email and buying language score well before the model runs', () => {
+  const r = execute(lead, { trigger: enquiry('What does it cost? We have budget and need a demo this week.', { company: 'Acme', phone: '+201234' }) });
+  const pre = r.outputs['🧱 Deterministic pre-score'][0].json;
+  assert(pre.baseScore >= 60, `strong lead pre-scored only ${pre.baseScore}`);
+  assert(pre.baseSignals.some((s) => /Business email/i.test(s.why)), 'business domain was not credited');
+});
+
+check('a model outage does NOT lose the lead', () => {
+  // Simulate the model returning something unparseable.
+  const r = execute(lead, { trigger: enquiry('We want to buy, what is the price? Urgent, we have budget.', { company: 'Acme', phone: '+2012' }) });
+  const combined = r.outputs['🧮 Combine and tier']?.[0]?.json;
+  assert(combined, 'combine node produced nothing');
+  assert(combined.modelUsed === false, 'test expected the mock model response to be unparseable');
+  assert(combined.score > 0, 'lead lost its score when the model failed');
+  assert(combined.tier !== 'spam', 'a model failure downgraded a real lead to spam');
+});
+
+check('a no-budget student enquiry is nurtured, never discarded', () => {
+  const r = execute(lead, { trigger: enquiry('I am a student with no budget, can I get this free for my thesis project?', { email: 'me@gmail.com' }) });
+  const out = r.outputs['📒 Lead log'][0].json;
+  assert(out.tier !== 'spam', 'a genuine low-budget enquiry was treated as spam');
+  assert(['nurture_list', 'follow_up_queue'].includes(out.action),
+    `low-budget lead routed to "${out.action}" instead of nurture`);
+});
+
+check('an enquiry missing its message fails loudly', () => {
+  const r = execute(lead, { trigger: { body: { email: 'a@b.c' }, headers: {} }, staticData: {} });
+  assert(r.effects.errors.length > 0, 'an empty enquiry passed silently');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(64));
 console.log(`${passed} passed · ${failed} failed`);
 if (failures.length) {
