@@ -1,0 +1,209 @@
+<title>عيّنة الشكل — 2D</title>
+<style>
+  :root{ --bg:#0a0714; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #tag{position:fixed;left:0;right:0;bottom:1.1rem;text-align:center;color:#8b7fb0;
+    font-size:.8rem;letter-spacing:.02em;z-index:2;pointer-events:none;
+    text-shadow:0 2px 10px rgba(0,0,0,.9)}
+  #tag b{color:#ffd36b}
+</style>
+
+<canvas id="c"></canvas>
+<div id="tag">حرّك إصبعك أو الماوس — <b>ده الشكل، مش اللعبة</b></div>
+
+<script>
+/* ────────────────────────────────────────────────────────────
+   عيّنة اتجاه فنّي: كل بكسل هنا مرسوم بالكود — لا صور ولا رسّام.
+   الفكرة إن البساطة تبان "مقصودة" مش "ناقصة": ألوان قليلة ومشبعة،
+   توهّج، أثر حركة، وجزيئات كتيرة.
+   ──────────────────────────────────────────────────────────── */
+const c = document.getElementById("c"), x = c.getContext("2d");
+let W, H, DPR;
+function size() {
+  DPR = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  c.width = W * DPR; c.height = H * DPR;
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+size(); addEventListener("resize", size);
+
+const P = {                                   /* لوحة الألوان */
+  bg1: "#0a0714", bg2: "#150e28",
+  hero: "#7ef9ff", heroDim: "#2ba7c9",
+  foe: "#ff4d7d", foe2: "#ff9d4d",
+  gold: "#ffd36b", grid: "rgba(140,110,220,.10)",
+};
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+const hero = { x: innerWidth / 2, y: innerHeight / 2, tx: innerWidth / 2, ty: innerHeight / 2, trail: [] };
+const foes = [], bits = [], pops = [];
+let shake = 0, t = 0, kills = 0, flash = 0;
+
+addEventListener("pointermove", (e) => { hero.tx = e.clientX; hero.ty = e.clientY; });
+addEventListener("touchmove", (e) => {
+  const p = e.touches[0]; hero.tx = p.clientX; hero.ty = p.clientY; e.preventDefault();
+}, { passive: false });
+
+function spawnFoe() {
+  const edge = Math.floor(rand(0, 4));
+  const m = 60;
+  const p = edge === 0 ? { x: rand(0, W), y: -m } : edge === 1 ? { x: W + m, y: rand(0, H) }
+    : edge === 2 ? { x: rand(0, W), y: H + m } : { x: -m, y: rand(0, H) };
+  foes.push({ ...p, r: rand(9, 17), sp: rand(38, 92), a: rand(0, TAU), spin: rand(-3, 3),
+    hue: Math.random() < 0.72 ? P.foe : P.foe2 });
+}
+
+function burst(px, py, color, n, power) {
+  for (let i = 0; i < n; i++) {
+    const a = rand(0, TAU), s = rand(0.3, 1) * power;
+    bits.push({ x: px, y: py, vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+      life: rand(0.35, 0.95), max: 1, color, r: rand(1.4, 4.2) });
+  }
+}
+
+/* نجوم خلفية بطيئة تدّي عمق */
+const stars = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), z: rand(0.25, 1) }));
+
+let last = performance.now();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min((now - last) / 1000, 0.05); last = now; t += dt;
+
+  /* ── تحديث ── */
+  hero.x += (hero.tx - hero.x) * (1 - Math.pow(0.0006, dt));
+  hero.y += (hero.ty - hero.y) * (1 - Math.pow(0.0006, dt));
+  hero.trail.unshift({ x: hero.x, y: hero.y });
+  if (hero.trail.length > 26) hero.trail.pop();
+
+  if (foes.length < 42 && Math.random() < dt * 14) spawnFoe();
+  for (const f of foes) {
+    const dx = hero.x - f.x, dy = hero.y - f.y, d = Math.hypot(dx, dy) || 1;
+    f.x += (dx / d) * f.sp * dt; f.y += (dy / d) * f.sp * dt; f.a += f.spin * dt;
+    if (d < f.r + 16) {
+      f.dead = true; kills++;
+      burst(f.x, f.y, f.hue, 26, rand(120, 320));
+      burst(f.x, f.y, "#ffffff", 8, 220);
+      pops.push({ x: f.x, y: f.y, life: 0.9, v: "+" + Math.round(f.r * 6) });
+      shake = Math.min(shake + 6, 16); flash = 0.5;
+    }
+  }
+  for (let i = foes.length - 1; i >= 0; i--) if (foes[i].dead) foes.splice(i, 1);
+
+  for (const b of bits) {
+    b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt;
+    b.vx *= 1 - 2.6 * dt; b.vy = b.vy * (1 - 2.6 * dt) + 120 * dt;
+  }
+  for (let i = bits.length - 1; i >= 0; i--) if (bits[i].life <= 0) bits.splice(i, 1);
+  for (const p of pops) { p.life -= dt; p.y -= 34 * dt; }
+  for (let i = pops.length - 1; i >= 0; i--) if (pops[i].life <= 0) pops.splice(i, 1);
+
+  shake *= 1 - 6 * dt; flash *= 1 - 7 * dt;
+
+  /* ── رسم ── */
+  x.save();
+  if (shake > 0.2) x.translate(rand(-shake, shake), rand(-shake, shake));
+
+  const g = x.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.75);
+  g.addColorStop(0, P.bg2); g.addColorStop(1, P.bg1);
+  x.fillStyle = g; x.fillRect(-30, -30, W + 60, H + 60);
+
+  x.strokeStyle = P.grid; x.lineWidth = 1;
+  const gs = 64, off = (t * 9) % gs;
+  x.beginPath();
+  for (let i = -gs; i < W + gs; i += gs) { x.moveTo(i + off, 0); x.lineTo(i + off, H); }
+  for (let j = -gs; j < H + gs; j += gs) { x.moveTo(0, j + off); x.lineTo(W, j + off); }
+  x.stroke();
+
+  for (const s of stars) {
+    x.globalAlpha = 0.25 + s.z * 0.5;
+    x.fillStyle = "#bda9ff";
+    x.fillRect(s.x * W, (s.y * H + t * 6 * s.z) % H, 1.6 * s.z, 1.6 * s.z);
+  }
+  x.globalAlpha = 1;
+
+  x.globalCompositeOperation = "lighter";        /* التوهّج كله جمعي */
+
+  for (const b of bits) {
+    const a = Math.max(0, b.life / b.max);
+    x.globalAlpha = a;
+    x.fillStyle = b.color;
+    x.shadowBlur = 14; x.shadowColor = b.color;
+    x.beginPath(); x.arc(b.x, b.y, b.r * a, 0, TAU); x.fill();
+  }
+  x.globalAlpha = 1; x.shadowBlur = 0;
+
+  for (const f of foes) {
+    x.save();
+    x.translate(f.x, f.y); x.rotate(f.a);
+    x.shadowBlur = 22; x.shadowColor = f.hue;
+    x.strokeStyle = f.hue; x.lineWidth = 2.4;
+    x.beginPath();
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * TAU - Math.PI / 2;
+      i ? x.lineTo(Math.cos(a) * f.r, Math.sin(a) * f.r) : x.moveTo(Math.cos(a) * f.r, Math.sin(a) * f.r);
+    }
+    x.closePath(); x.stroke();
+    x.globalAlpha = 0.22; x.fillStyle = f.hue; x.fill();
+    x.restore();
+    x.globalAlpha = 1;
+  }
+
+  x.strokeStyle = P.heroDim; x.lineCap = "round";
+  for (let i = hero.trail.length - 1; i > 0; i--) {
+    const a = i / hero.trail.length;
+    x.globalAlpha = (1 - a) * 0.5;
+    x.lineWidth = (1 - a) * 13;
+    x.beginPath();
+    x.moveTo(hero.trail[i].x, hero.trail[i].y);
+    x.lineTo(hero.trail[i - 1].x, hero.trail[i - 1].y);
+    x.stroke();
+  }
+  x.globalAlpha = 1;
+
+  const pulse = 16 + Math.sin(t * 5) * 1.6;
+  x.shadowBlur = 34; x.shadowColor = P.hero;
+  x.fillStyle = P.hero;
+  x.beginPath(); x.arc(hero.x, hero.y, pulse, 0, TAU); x.fill();
+  x.fillStyle = "#ffffff";
+  x.beginPath(); x.arc(hero.x, hero.y, pulse * 0.45, 0, TAU); x.fill();
+  x.shadowBlur = 0;
+
+  x.globalCompositeOperation = "source-over";
+
+  x.textAlign = "center";
+  for (const p of pops) {
+    x.globalAlpha = Math.max(0, p.life);
+    x.fillStyle = P.gold;
+    x.font = "700 20px system-ui, sans-serif";
+    x.fillText(p.v, p.x, p.y);
+  }
+  x.globalAlpha = 1;
+
+  x.fillStyle = P.gold;
+  x.font = "800 34px system-ui, sans-serif";
+  x.textAlign = "left";
+  x.fillText(String(kills).padStart(4, "0"), 22, 52);
+  x.fillStyle = "rgba(255,211,107,.45)";
+  x.font = "600 11px system-ui, sans-serif";
+  x.fillText("SCORE", 23, 68);
+
+  if (flash > 0.01) {
+    x.globalCompositeOperation = "lighter";
+    x.fillStyle = `rgba(255,255,255,${flash * 0.16})`;
+    x.fillRect(0, 0, W, H);
+    x.globalCompositeOperation = "source-over";
+  }
+
+  const v = x.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.28, W / 2, H / 2, Math.max(W, H) * 0.72);
+  v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.72)");
+  x.fillStyle = v; x.fillRect(0, 0, W, H);
+
+  x.restore();
+}
+requestAnimationFrame(frame);
+</script>
