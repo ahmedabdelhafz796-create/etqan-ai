@@ -494,3 +494,94 @@ export const books: Book[] = [
 export function getBook(id: string): Book | undefined {
   return books.find((b) => b.id === id);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  AUTOMATION CATALOG
+ *
+ *  A second product line under the same brand. Kept structurally
+ *  separate from `books` rather than folded into it, because the two
+ *  differ in every way that matters to the storefront: books are sold
+ *  in-house through NOWPayments, bundles are sold through Lemon
+ *  Squeezy; books carry a founding-price offer, bundles do not; and
+ *  books have a curriculum while bundles have a workflow list.
+ *
+ *  Courses and systems will slot in here the same way.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+export interface AutomationBundle {
+  id: string;
+  /** Displayed name. Deliberately English — the buyer audience is technical. */
+  name: string;
+  /** The sentence the buyer would say about their own situation. */
+  audience: string;
+  price: number | null;
+  workflowCount: number;
+  /** Lemon Squeezy checkout URL. These are hosted externally, not by us. */
+  checkoutUrl: string;
+  highlights: string[];
+  featured?: boolean;
+  free?: boolean;
+}
+
+export const automationBundles: AutomationBundle[] = [
+  {
+    id: "free-secure-downloads",
+    name: "Secure Download Endpoint",
+    audience: "audienceFree",
+    price: null,
+    workflowCount: 1,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/5c55f9b6-fe57-423e-987e-e094d238ebc6",
+    free: true,
+    highlights: ["h1", "h2", "h3", "h4"],
+  },
+  {
+    id: "delivery-essentials",
+    name: "Delivery Essentials",
+    audience: "audienceDelivery",
+    price: 79,
+    workflowCount: 7,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/cf57fddc-65a0-458d-bf2e-2a0debaba964",
+    highlights: ["h1", "h2", "h3", "h4"],
+  },
+  {
+    id: "revenue-protection",
+    name: "Revenue Protection",
+    audience: "audienceRevenue",
+    price: 149,
+    workflowCount: 7,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/b532a73d-0329-4342-8ceb-c9f87d41d750",
+    highlights: ["h1", "h2", "h3", "h4"],
+  },
+  {
+    id: "ai-agents",
+    name: "AI Agents",
+    audience: "audienceAgents",
+    price: 149,
+    workflowCount: 7,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/18a030a4-bf2f-4763-956d-8873e1a9342a",
+    highlights: ["h1", "h2", "h3", "h4"],
+  },
+  {
+    id: "complete-suite",
+    name: "Complete Suite",
+    audience: "audienceComplete",
+    price: 399,
+    workflowCount: 23,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/c15e89ca-8210-409c-8c87-cfead216796e",
+    featured: true,
+    highlights: ["h1", "h2", "h3", "h4"],
+  },
+];
+
+/** Headline numbers for the automation section. Stated, not estimated. */
+export const automationProof = {
+  behaviouralTests: 151,
+  gateProbes: 14,
+  workflows: 23,
+  nodes: 285,
+} as const;

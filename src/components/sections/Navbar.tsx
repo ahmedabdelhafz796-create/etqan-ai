@@ -18,6 +18,7 @@ export function Navbar() {
   const NAV_LINKS = [
     { label: t.nav.links.library, href: "#store" },
     { label: t.nav.links.curriculum, href: "#store" },
+    { label: t.nav.links.automation, href: "#automation" },
     { label: t.nav.links.signals, href: "#telegram" },
     { label: t.nav.links.why, href: "#why" },
     { label: t.nav.links.faq, href: "#faq" },

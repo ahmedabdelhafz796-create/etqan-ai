@@ -4,6 +4,7 @@ import { Hero } from "@/components/sections/Hero";
 import { TickerTape } from "@/components/visuals/TickerTape";
 import { CelebrationBanner } from "@/components/sections/CelebrationBanner";
 import { BookStore } from "@/components/sections/BookStore";
+import { AutomationStore } from "@/components/sections/AutomationStore";
 import { WhyBuy } from "@/components/sections/WhyBuy";
 import { TelegramSection } from "@/components/sections/TelegramSection";
 import { WarningSection } from "@/components/sections/WarningSection";
@@ -51,6 +52,7 @@ export default async function HomePage() {
           <TickerTape />
           <CelebrationBanner />
           <BookStore books={localizedBooks} activeIds={activeIds} />
+          <AutomationStore />
           <WhyBuy />
           <TelegramSection />
           <WarningSection />
