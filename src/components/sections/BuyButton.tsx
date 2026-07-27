@@ -103,9 +103,11 @@ export function BuyButton({
         )}
       </Button>
 
-      <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-soft/45">
-        <Lock className="h-3 w-3" />
-        {state === "unavailable" ? t.buy.unavailable : t.buy.secure}
+      {/* The note wraps to two lines in the narrower card layout. Keeping the
+          icon shrink-0 and aligning to the first line stops it detaching. */}
+      <p className="mt-2 flex items-start justify-center gap-1.5 text-center text-xs text-soft/45">
+        <Lock className="mt-[3px] h-3 w-3 shrink-0" />
+        <span>{state === "unavailable" ? t.buy.unavailable : t.buy.secure}</span>
       </p>
     </div>
   );

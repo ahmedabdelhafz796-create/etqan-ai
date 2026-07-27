@@ -1,16 +1,15 @@
 import { Navbar } from "@/components/sections/Navbar";
 import { ScrollProgress } from "@/components/sections/ScrollProgress";
 import { Hero } from "@/components/sections/Hero";
-import { TickerTape } from "@/components/visuals/TickerTape";
-import { CelebrationBanner } from "@/components/sections/CelebrationBanner";
-import { BookStore } from "@/components/sections/BookStore";
-import { AutomationStore } from "@/components/sections/AutomationStore";
-import { WhyBuy } from "@/components/sections/WhyBuy";
-import { TelegramSection } from "@/components/sections/TelegramSection";
-import { WarningSection } from "@/components/sections/WarningSection";
-import { QuoteSection } from "@/components/sections/QuoteSection";
-import { Testimonials } from "@/components/sections/Testimonials";
+import { Integrations } from "@/components/sections/Integrations";
+import { Catalog } from "@/components/sections/Catalog";
+import { HowItWorks } from "@/components/sections/HowItWorks";
+import { Standards } from "@/components/sections/Standards";
+import { Proof } from "@/components/sections/Proof";
+import { FinalCta } from "@/components/sections/FinalCta";
 import { FAQ } from "@/components/sections/FAQ";
+import { BooksDivider } from "@/components/sections/BooksDivider";
+import { BookStore } from "@/components/sections/BookStore";
 import { Newsletter } from "@/components/sections/Newsletter";
 import { Footer } from "@/components/sections/Footer";
 import { StructuredData } from "@/components/StructuredData";
@@ -22,6 +21,33 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { getLocalizedBooks } from "@/i18n/books";
 import { dirFor } from "@/i18n/config";
 
+/**
+ * Homepage: an AI automation marketplace.
+ *
+ * The running order is the argument a sceptical buyer makes, in the
+ * order they make it:
+ *
+ *   Hero          — here is a working workflow, not a promise
+ *   Integrations  — it runs on the tools you already have
+ *   Catalog       — every product, with what is actually inside each
+ *   HowItWorks    — installing it will not eat your weekend
+ *   Standards     — this is what "production-ready" means here
+ *   Proof         — and here is the evidence, shipped with the files
+ *   FinalCta      — start free
+ *   FAQ           — the remaining objections
+ *   BooksDivider  — a different, secondary product starts below
+ *   BookStore     — the trading library, on its own crypto checkout
+ *
+ * Everything above BooksDivider is the AI line and never mentions
+ * trading. Everything below is the book line and never mentions Lemon
+ * Squeezy. The two share this file and nothing else — separate
+ * components, separate copy, separate payment paths.
+ *
+ * Removed with the trading storefront: the live ticker tape, the
+ * first-edition countdown banner, the Telegram signals section, the
+ * risk-warning band, the trading quote, and a testimonials wall whose
+ * quotes were written rather than collected.
+ */
 export default async function HomePage() {
   const [eff, locale] = await Promise.all([
     getEffectiveConfig(),
@@ -49,19 +75,17 @@ export default async function HomePage() {
 
         <main>
           <Hero />
-          <TickerTape />
-          {/* AI products lead. The store's centre of gravity is systems, tools
-              and templates; the trading library is a secondary collection and
-              now sits below them rather than defining the page. */}
-          <AutomationStore />
-          <CelebrationBanner />
-          <BookStore books={localizedBooks} activeIds={activeIds} />
-          <WhyBuy />
-          <TelegramSection />
-          <WarningSection />
-          <QuoteSection />
-          <Testimonials />
+          <Integrations />
+          <Catalog />
+          <HowItWorks />
+          <Standards />
+          <Proof />
+          <FinalCta />
           <FAQ />
+
+          <BooksDivider />
+          <BookStore books={localizedBooks} activeIds={activeIds} />
+
           <Newsletter />
         </main>
 

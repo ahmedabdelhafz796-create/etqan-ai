@@ -6,10 +6,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night disabled:pointer-events-none disabled:opacity-50 select-none",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-iris/70 focus-visible:ring-offset-2 focus-visible:ring-offset-night disabled:pointer-events-none disabled:opacity-50 select-none",
   {
     variants: {
       variant: {
+        /* AI product line. Gold below stays reserved for the trading library
+           so the two never share a call to action. */
+        iris: "btn-shine bg-gradient-to-r from-iris-mid via-iris to-iris-deep text-white shadow-glow-iris hover:shadow-[0_0_56px_-6px_rgba(99,102,241,0.75)] hover:-translate-y-0.5 active:translate-y-0",
+        "iris-outline":
+          "border border-iris/35 bg-iris/[0.06] text-iris-light backdrop-blur hover:bg-iris/[0.12] hover:border-iris/60",
         gold: "btn-shine bg-gradient-to-r from-gold-light via-gold to-gold-deep text-night-900 shadow-glow hover:shadow-[0_0_50px_-6px_rgba(233,196,106,0.7)] hover:-translate-y-0.5 active:translate-y-0",
         emerald:
           "btn-shine bg-gradient-to-r from-emerald-light via-emerald to-emerald-deep text-night-900 shadow-glow-emerald hover:shadow-[0_0_50px_-6px_rgba(18,185,129,0.7)] hover:-translate-y-0.5 active:translate-y-0",

@@ -7,6 +7,7 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
+        iris: "border-iris/30 bg-iris/10 text-iris-light",
         gold: "border-gold/30 bg-gold/10 text-gold-light",
         emerald: "border-emerald/30 bg-emerald/10 text-emerald-light",
         royal: "border-royal/30 bg-royal/10 text-royal-light",

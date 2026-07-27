@@ -1,9 +1,12 @@
 "use client";
 
-import { CandlestickChart, Instagram, Send, Youtube } from "lucide-react";
+import { Instagram, Workflow, Youtube } from "lucide-react";
 import { siteConfig } from "@/config";
-import { useSiteConfig } from "@/components/providers/SiteConfigProvider";
-import { useT, fill } from "@/components/providers/I18nProvider";
+import {
+  useT,
+  useMarketplace,
+  fill,
+} from "@/components/providers/I18nProvider";
 
 // Simple X (Twitter) glyph — lucide has no brand mark.
 function XIcon({ className }: { className?: string }) {
@@ -14,13 +17,23 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Site footer for the AI marketplace.
+ *
+ * Two things changed with the rest of the homepage. The Telegram link is
+ * gone — it pointed at a trading-signals channel that has nothing to do
+ * with the automation products and everything to do with the old
+ * positioning. And the risk disclaimer is now explicitly labelled as
+ * applying to the trading books, because a blanket "trading carries
+ * substantial risk" notice under a page selling n8n templates is both
+ * confusing and, for the product actually being sold, untrue.
+ */
 export function Footer() {
   const t = useT();
-  const { telegramUrl } = useSiteConfig();
+  const m = useMarketplace();
   const year = new Date().getFullYear();
 
   const socials = [
-    { icon: Send, href: telegramUrl, label: "Telegram" },
     { icon: XIcon, href: siteConfig.social.twitter, label: "X" },
     { icon: Youtube, href: siteConfig.social.youtube, label: "YouTube" },
     { icon: Instagram, href: siteConfig.social.instagram, label: "Instagram" },
@@ -28,20 +41,20 @@ export function Footer() {
 
   const groups = [
     {
-      title: t.footer.groups.library,
+      title: m.footer.groups.products,
       items: [
-        { label: "Triple Analysis", href: "#store" },
-        { label: "Advanced AI Trading", href: "#store" },
-        { label: t.footer.links.whyBuy, href: "#why" },
-        { label: t.footer.links.faq, href: "#faq" },
+        { label: m.footer.links.catalog, href: "#catalog" },
+        { label: m.footer.links.free, href: "#catalog" },
+        { label: m.footer.links.books, href: "#store" },
       ],
     },
     {
-      title: t.footer.groups.community,
+      title: m.footer.groups.resources,
       items: [
-        { label: t.footer.links.telegramSignals, href: "#telegram" },
-        { label: t.footer.links.newsletter, href: "#top" },
-        { label: t.footer.links.testimonials, href: "#top" },
+        { label: m.footer.links.how, href: "#how" },
+        { label: m.footer.links.standard, href: "#standard" },
+        { label: m.footer.links.proof, href: "#proof" },
+        { label: m.footer.links.faq, href: "#faq" },
       ],
     },
   ];
@@ -52,15 +65,15 @@ export function Footer() {
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <a href="#top" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-gold/30 bg-gold/10 text-gold-light">
-                <CandlestickChart className="h-5 w-5" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-iris/35 bg-iris/10 text-iris-light">
+                <Workflow className="h-5 w-5" />
               </span>
               <span className="font-display text-lg font-semibold text-soft">
                 {siteConfig.name}
               </span>
             </a>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-soft/55">
-              {t.footer.tagline}
+              {m.footer.tagline}
             </p>
             <div className="mt-6 flex gap-3">
               {socials.map((s) => (
@@ -70,7 +83,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-soft/70 transition-all hover:-translate-y-0.5 hover:border-gold/30 hover:text-gold-light"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-soft/70 transition-all hover:-translate-y-0.5 hover:border-iris/40 hover:text-iris-light"
                 >
                   <s.icon className="h-4 w-4" />
                 </a>
@@ -88,7 +101,7 @@ export function Footer() {
                   <li key={item.label}>
                     <a
                       href={item.href}
-                      className="text-sm text-soft/65 transition-colors hover:text-gold-light"
+                      className="text-sm text-soft/65 transition-colors hover:text-iris-light"
                     >
                       {item.label}
                     </a>
@@ -101,11 +114,11 @@ export function Footer() {
 
         <div className="my-10 hairline" />
 
-        {/* Disclaimer */}
+        {/* Scoped to the secondary product line, and labelled as such. */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
           <p className="text-xs leading-relaxed text-soft/45">
             <span className="font-medium text-soft/70">
-              {t.footer.disclaimerLabel}
+              {m.footer.disclaimerLabel}
             </span>{" "}
             {fill(t.footer.disclaimer, { name: siteConfig.name })}
           </p>

@@ -5,12 +5,12 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
-import { useT } from "@/components/providers/I18nProvider";
+import { useMarketplace } from "@/components/providers/I18nProvider";
 
 type Status = "idle" | "loading" | "success" | "error";
 
 export function Newsletter() {
-  const t = useT();
+  const m = useMarketplace();
   const [email, setEmail] = React.useState("");
   const [status, setStatus] = React.useState<Status>("idle");
   const [message, setMessage] = React.useState("");
@@ -28,7 +28,7 @@ export function Newsletter() {
       const data = (await res.json()) as { message?: string };
       if (res.ok) {
         setStatus("success");
-        setMessage(data.message || t.newsletter.success);
+        setMessage(data.message || m.newsletter.success);
         setEmail("");
       } else {
         setStatus("error");
@@ -44,19 +44,19 @@ export function Newsletter() {
     <section className="py-16 sm:py-20">
       <div className="container-tight">
         <Reveal>
-          <div className="relative overflow-hidden rounded-3xl border border-gold/20 bg-gradient-to-br from-night-700/70 to-night-900/80 p-8 backdrop-blur-xl sm:p-12">
-            <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-gold/15 blur-3xl" />
+          <div className="relative overflow-hidden rounded-3xl border border-iris/25 bg-gradient-to-br from-night-700/70 to-night-900/80 p-8 backdrop-blur-xl sm:p-12">
+            <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-iris/20 blur-3xl" />
 
             <div className="relative grid items-center gap-8 lg:grid-cols-2">
               <div>
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-gold/25 bg-gold/10 text-gold-light">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-iris/25 bg-iris/10 text-iris-light">
                   <Mail className="h-5 w-5" />
                 </span>
                 <h2 className="mt-5 font-display text-2xl font-semibold text-soft sm:text-3xl">
-                  {t.newsletter.title}
+                  {m.newsletter.title}
                 </h2>
                 <p className="mt-3 max-w-md text-sm leading-relaxed text-soft/60">
-                  {t.newsletter.description}
+                  {m.newsletter.description}
                 </p>
               </div>
 
@@ -78,13 +78,13 @@ export function Newsletter() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder={t.newsletter.placeholder}
-                        className="h-12 w-full flex-1 rounded-full border border-white/15 bg-white/[0.05] px-5 text-sm text-soft placeholder:text-soft/40 outline-none transition-colors focus:border-gold/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-gold/30"
-                        aria-label={t.newsletter.emailLabel}
+                        placeholder={m.newsletter.placeholder}
+                        className="h-12 w-full flex-1 rounded-full border border-white/15 bg-white/[0.05] px-5 text-sm text-soft placeholder:text-soft/40 outline-none transition-colors focus:border-iris/60 focus:bg-white/[0.08] focus:ring-2 focus:ring-iris/30"
+                        aria-label={m.newsletter.emailLabel}
                       />
                       <Button
                         type="submit"
-                        variant="gold"
+                        variant="iris"
                         size="lg"
                         disabled={status === "loading"}
                         className="shrink-0"
@@ -92,10 +92,10 @@ export function Newsletter() {
                         {status === "loading" ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            {t.newsletter.joining}
+                            {m.newsletter.joining}
                           </>
                         ) : (
-                          t.newsletter.subscribe
+                          m.newsletter.subscribe
                         )}
                       </Button>
                     </div>
@@ -103,7 +103,7 @@ export function Newsletter() {
                       <p className="px-2 text-xs text-loss">{message}</p>
                     )}
                     <p className="px-2 text-xs text-soft/40">
-                      {t.newsletter.agree}
+                      {m.newsletter.agree}
                     </p>
                   </form>
                 )}

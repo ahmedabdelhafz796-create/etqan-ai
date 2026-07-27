@@ -21,6 +21,7 @@ export function BookStore({
     <section id="store" className="relative scroll-mt-24 py-24 sm:py-28">
       <div className="container-tight">
         <SectionHeading
+          accent="gold"
           eyebrow={t.store.eyebrow}
           title={
             <>
