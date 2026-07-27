@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ETQAN AI — Production-Hardened n8n Templates for Digital Sellers</title>
+<meta name="description" content="n8n automation templates that hold up when real money moves through them. 151 behavioural tests. Zero embedded credentials. Free template to try first.">
+<meta property="og:title" content="ETQAN AI — Production-Hardened n8n Templates">
+<meta property="og:description" content="~97% of n8n workflows pass a demo then fail on real traffic. These don't. 151 behavioural tests, all passing.">
+<meta property="og:type" content="website">
+<style>
+  :root{
+    --bg:#0a0a0b; --surface:#141416; --surface-2:#1c1c20; --line:#2a2a30;
+    --text:#f2f2f4; --muted:#9a9aa4; --dim:#6e6e78;
+    --accent:#7c5cff; --accent-soft:#a08fff;
+    --ok:#3ddc97; --warn:#ffb020; --bad:#ff5c5c;
+    --radius:14px; --max:1080px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--text);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+  a{color:inherit}
+  h1,h2,h3{line-height:1.2;letter-spacing:-.02em;font-weight:700}
+
+  /* ── hero ─────────────────────────────────────────────── */
+  header{padding:64px 0 48px;border-bottom:1px solid var(--line);position:relative}
+  header::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(124,92,255,.13),transparent 70%);
+  }
+  .brand{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-soft);font-weight:600;margin-bottom:24px}
+  h1{font-size:clamp(30px,6.2vw,52px);margin-bottom:20px;max-width:19ch}
+  .lede{font-size:clamp(16px,2.4vw,19px);color:var(--muted);max-width:60ch;margin-bottom:32px}
+  .lede strong{color:var(--text);font-weight:600}
+
+  .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:36px}
+  .btn{
+    display:inline-block;padding:14px 26px;border-radius:10px;font-weight:600;
+    text-decoration:none;font-size:15px;transition:transform .12s ease,opacity .12s ease;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{opacity:.9}
+  .btn-ghost{border:1px solid var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--dim)}
+
+  /* ── the proof strip — the strongest asset on the page ── */
+  .proof{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 22px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;
+    overflow-x:auto;
+  }
+  .proof .pass{color:var(--ok)}
+  .proof .head{color:var(--dim);margin-bottom:12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-family:inherit}
+  .proof div{white-space:nowrap}
+  .proof .total{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);color:var(--ok);font-weight:600}
+
+  /* ── sections ─────────────────────────────────────────── */
+  section{padding:60px 0;border-bottom:1px solid var(--line)}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-soft);font-weight:600;margin-bottom:14px}
+  h2{font-size:clamp(24px,4.4vw,34px);margin-bottom:16px}
+  .sub{color:var(--muted);max-width:62ch;margin-bottom:36px}
+
+  .grid{display:grid;gap:16px}
+  @media(min-width:760px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .card h3{font-size:17px;margin-bottom:10px}
+  .card p{color:var(--muted);font-size:14.5px}
+  .card .stat{font-size:30px;font-weight:700;color:var(--bad);margin-bottom:6px;letter-spacing:-.03em}
+
+  /* ── pricing ──────────────────────────────────────────── */
+  .tiers{display:grid;gap:18px}
+  @media(min-width:820px){.tiers{grid-template-columns:repeat(2,1fr)}}
+  .tier{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px;display:flex;flex-direction:column;position:relative;
+  }
+  .tier.featured{border-color:var(--accent);background:linear-gradient(180deg,rgba(124,92,255,.09),var(--surface) 60%)}
+  .tier.free{border-style:dashed}
+  .tag{
+    position:absolute;top:-10px;right:20px;background:var(--accent);color:#fff;
+    font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 10px;border-radius:20px;
+  }
+  .tier h3{font-size:19px;margin-bottom:6px}
+  .tier .price{font-size:34px;font-weight:700;letter-spacing:-.03em;margin:10px 0 4px}
+  .tier .price small{font-size:14px;color:var(--dim);font-weight:400;letter-spacing:0}
+  .tier .who{color:var(--accent-soft);font-size:14px;font-style:italic;margin-bottom:16px}
+  .tier ul{list-style:none;margin-bottom:22px;flex:1}
+  .tier li{padding:6px 0 6px 22px;position:relative;color:var(--muted);font-size:14.5px}
+  .tier li::before{content:"→";position:absolute;left:0;color:var(--accent);font-weight:700}
+  .tier .btn{text-align:center;width:100%}
+
+  /* ── standard list ────────────────────────────────────── */
+  .std{display:grid;gap:2px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .std div{background:var(--surface);padding:18px 20px}
+  .std strong{display:block;margin-bottom:4px;font-size:15px}
+  .std span{color:var(--muted);font-size:14px}
+
+  /* ── faq ──────────────────────────────────────────────── */
+  details{border-bottom:1px solid var(--line);padding:18px 0}
+  details:last-of-type{border-bottom:none}
+  summary{cursor:pointer;font-weight:600;font-size:16px;list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--accent);font-size:22px;font-weight:400;flex-shrink:0}
+  details[open] summary::after{content:"−"}
+  details p{color:var(--muted);margin-top:12px;font-size:15px}
+
+  footer{padding:44px 0 60px;color:var(--dim);font-size:14px}
+  footer a{color:var(--accent-soft);text-decoration:none}
+
+  .note{
+    background:var(--surface-2);border-left:3px solid var(--warn);
+    padding:16px 18px;border-radius:0 10px 10px 0;color:var(--muted);font-size:14.5px;margin-top:28px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">ETQAN AI</div>
+    <h1>n8n templates that hold up when real money moves through them.</h1>
+    <p class="lede">
+      Around <strong>97% of n8n workflows</strong> pass a demo and then fail on real
+      traffic — no retries, no replay protection, no error path. Around
+      <strong>70% fail at install</strong>. These don't, and the tests are public.
+    </p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#pricing">See the bundles</a>
+      <a class="btn btn-ghost" href="#free">Try the free one first</a>
+    </div>
+
+    <div class="proof">
+      <div class="head">Behavioural test suite — every workflow actually executed</div>
+      <div><span class="pass">✅</span> a replayed webhook does NOT deliver a second time</div>
+      <div><span class="pass">✅</span> a pending payment delivers nothing</div>
+      <div><span class="pass">✅</span> a forged webhook signature is refused</div>
+      <div><span class="pass">✅</span> changing the product id in a download URL is refused</div>
+      <div><span class="pass">✅</span> a repeat card failure does not re-send the day-one email</div>
+      <div><span class="pass">✅</span> a buyer who checks out is never chased for their cart</div>
+      <div><span class="pass">✅</span> a refund question never reaches the AI model</div>
+      <div><span class="pass">✅</span> a replayed order never consumes a second invoice number</div>
+      <div><span class="pass">✅</span> re-running a payout pays nobody twice</div>
+      <div class="total">151 passed · 0 failed</div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Why most templates break</div>
+    <h2>The failures nobody tests for</h2>
+    <p class="sub">
+      These aren't edge cases. They're what happens in the first month of real traffic,
+      and they're the reason a workflow that demoed perfectly quietly loses you money.
+    </p>
+
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="stat">3 days</div>
+        <h3>Gateways replay webhooks</h3>
+        <p>Stripe resends the same event for up to three days. With no de-duplication,
+           one purchase delivers twice — or one refund is issued twice.</p>
+      </div>
+      <div class="card">
+        <div class="stat">Silent</div>
+        <h3>Failures vanish</h3>
+        <p>The email provider rate-limits, the send fails, and nobody is told. The
+           seller finds out when the customer complains — or never.</p>
+      </div>
+      <div class="card">
+        <div class="stat">70%</div>
+        <h3>Install goes wrong</h3>
+        <p>One missed step produces a confusing failure hours later somewhere
+           unrelated. The buyer can't tell which step, so they give up.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="free">
+  <div class="wrap">
+    <div class="eyebrow">Start here</div>
+    <h2>Try one free. Same standard as the paid ones.</h2>
+    <p class="sub">
+      Secure Download Endpoint — signed, expiring, download-limited links with no
+      database. Every refusal explains itself instead of returning a blank 403,
+      which is what stops the support emails.
+    </p>
+    <a class="btn btn-primary"
+       href="https://etqan-ai.lemonsqueezy.com/checkout/buy/5c55f9b6-fe57-423e-987e-e094d238ebc6">
+       Get it free — 8 minute setup</a>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="eyebrow">Bundles</div>
+    <h2>Priced by the problem you have</h2>
+    <p class="sub">
+      Every paid bundle includes the Setup Checker and Central Error Hub, because
+      those two are what make a set of workflows behave like a system.
+    </p>
+
+    <div class="tiers">
+
+      <div class="tier free">
+        <h3>Secure Download Endpoint</h3>
+        <div class="price">Free</div>
+        <div class="who">"I want to see the standard first"</div>
+        <ul>
+          <li>Signed, expiring, capped download links</li>
+          <li>Refusals that explain themselves</li>
+          <li>Leak signal from IP spread</li>
+          <li>No database required</li>
+        </ul>
+        <a class="btn btn-ghost"
+           href="https://etqan-ai.lemonsqueezy.com/checkout/buy/5c55f9b6-fe57-423e-987e-e094d238ebc6">Download free</a>
+      </div>
+
+      <div class="tier">
+        <h3>Delivery Essentials</h3>
+        <div class="price">$79 <small>· 7 workflows</small></div>
+        <div class="who">"My customers aren't getting their files"</div>
+        <ul>
+          <li>6 payment gateways → one delivery pipeline</li>
+          <li>Automatic re-issue when a buyer can't download</li>
+          <li>Update broadcasts to past buyers</li>
+          <li>Setup Checker + Central Error Hub</li>
+          <li>Test runner — no terminal needed</li>
+        </ul>
+        <a class="btn btn-primary"
+           href="https://etqan-ai.lemonsqueezy.com/checkout/buy/cf57fddc-65a0-458d-bf2e-2a0debaba964">Get Delivery Essentials</a>
+      </div>
+
+      <div class="tier">
+        <h3>Revenue Protection</h3>
+        <div class="price">$149 <small>· 7 workflows</small></div>
+        <div class="who">"I'm losing money I already earned"</div>
+        <ul>
+          <li>Fraud scoring <em>before</em> delivery — no paid API</li>
+          <li>Chargeback early warning + evidence pack</li>
+          <li>Leak detection and buyer watermarking</li>
+          <li>Failed payment recovery</li>
+          <li>Cart abandonment (discounting off by default)</li>
+        </ul>
+        <a class="btn btn-primary"
+           href="https://etqan-ai.lemonsqueezy.com/checkout/buy/b532a73d-0329-4342-8ceb-c9f87d41d750">Get Revenue Protection</a>
+      </div>
+
+      <div class="tier">
+        <h3>AI Agents</h3>
+        <div class="price">$149 <small>· 7 workflows</small></div>
+        <div class="who">"I'm drowning in manual work"</div>
+        <ul>
+          <li>Support agent that refuses rather than invents</li>
+          <li>Lead qualifier — answer the buyers first</li>
+          <li>Translation that protects prices and formatting</li>
+          <li>Sales page writer with a claim scanner</li>
+          <li>CV screening that ranks and never rejects</li>
+        </ul>
+        <a class="btn btn-primary"
+           href="https://etqan-ai.lemonsqueezy.com/checkout/buy/18a030a4-bf2f-4763-956d-8873e1a9342a">Get AI Agents</a>
+      </div>
+
+      <div class="tier featured" style="grid-column:1/-1">
+        <span class="tag">Best value</span>
+        <h3>Complete Suite</h3>
+        <div class="price">$399 <small>· 23 workflows · 285 nodes</small></div>
+        <div class="who">"Give me the whole system"</div>
+        <ul>
+          <li>Everything above — $399 instead of $377 for three separate bundles, with double the templates</li>
+          <li>Plus invoicing with cross-border tax evidence</li>
+          <li>Plus sales anomaly detection — is demand down, or is checkout broken?</li>
+          <li>Plus commission and affiliate payouts</li>
+          <li>Plus CRM pipeline follow-up and post-purchase sequences</li>
+          <li>All three system workflows: Setup Checker, Error Hub, Daily Pulse</li>
+        </ul>
+        <a class="btn btn-primary"
+           href="https://etqan-ai.lemonsqueezy.com/checkout/buy/c15e89ca-8210-409c-8c87-cfead216796e">Get the Complete Suite</a>
+      </div>
+
+    </div>
+
+    <div class="note">
+      <strong>14-day refund, no argument.</strong> If it doesn't work for you, say so
+      and you get your money back. I'd rather refund you than have you stuck with
+      something that doesn't fit.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">The standard</div>
+    <h2>What "production-hardened" actually means here</h2>
+    <p class="sub">
+      Every guarantee below is enforced automatically before release. A template that
+      fails any of them is never published — that's a build gate, not a promise.
+    </p>
+
+    <div class="std">
+      <div><strong>Replay protection</strong><span>Duplicate webhooks cause no duplicate side effects. Event-id dedupe with TTL pruning — and no external database to provision.</span></div>
+      <div><strong>Retry on every network call</strong><span>Three attempts with backoff. Enforced default-deny: any node that isn't known to run locally must retry.</span></div>
+      <div><strong>Failures are routed, never silent</strong><span>Checked per node, not once per file. A declared error output that leads nowhere fails the build.</span></div>
+      <div><strong>One config node</strong><span>Everything you need to edit is in one place at the top of the flow. Secrets live in credentials, never in the file.</span></div>
+      <div><strong>Zero embedded credentials</strong><span>Scanned automatically for live keys and for credential ids pinned from the author's own account.</span></div>
+      <div><strong>Documentation on the canvas</strong><span>Explained next to the node it applies to — not in a PDF you won't read while something is broken.</span></div>
+      <div><strong>Cloud and self-hosted behave identically</strong><span>HMAC goes through the built-in Crypto node, never <code>require('crypto')</code> — which works on Cloud and throws on a default self-hosted install.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Questions</div>
+    <h2>Before you buy</h2>
+
+    <details>
+      <summary>Do I need to be technical?</summary>
+      <p>No. Each template has one node you edit — it's called ⚙️ Config and it's the
+      first thing in the flow. Everything else is documented on the canvas next to the
+      thing it explains. Most take 10–15 minutes, and the Setup Checker tells you if
+      you've missed anything before you go live.</p>
+    </details>
+
+    <details>
+      <summary>What do I need to run these?</summary>
+      <p>An n8n account — Cloud or self-hosted, both work identically. An SMTP account
+      for sending email (a free tier is plenty to start). The AI templates need your
+      own API key from Anthropic or OpenAI; everything else runs without one.</p>
+    </details>
+
+    <details>
+      <summary>Which payment platforms are supported?</summary>
+      <p>Stripe, PayPal, Lemon Squeezy, Gumroad, Paddle and NOWPayments out of the box —
+      all six normalise into one internal format. If your platform can send a webhook
+      when a payment completes, it will almost certainly work.</p>
+    </details>
+
+    <details>
+      <summary>How is this different from the free templates on GitHub?</summary>
+      <p>There are thousands of free n8n workflows and many are good. The difference is
+      what happens when things go wrong: replayed webhooks, temporary API failures,
+      silent send errors. These handle all three, and they're tested behaviourally —
+      the workflows are actually executed against adversarial input rather than
+      eyeballed. Try the free one and judge for yourself.</p>
+    </details>
+
+    <details>
+      <summary>Can I use these for client work?</summary>
+      <p>Yes. Set them up for clients and charge whatever you like. What you can't do is
+      resell or redistribute the workflow files themselves, or include them in a
+      template pack you sell. Full terms ship with every download.</p>
+    </details>
+
+    <details>
+      <summary>What if something doesn't work?</summary>
+      <p>Send your n8n version, the name of the node that failed, and the error text —
+      that usually resolves it in one reply. The Setup Checker's output often contains
+      the answer already. And if it still isn't right for you, the 14-day refund stands.</p>
+    </details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><strong style="color:var(--text)">ETQAN AI</strong> — production-hardened n8n templates.</p>
+    <p style="margin-top:8px">
+      <a href="https://etqan-ai.lemonsqueezy.com">Store</a> ·
+      <a href="#free">Free template</a> ·
+      <a href="#pricing">Bundles</a>
+    </p>
+    <p style="margin-top:16px;font-size:13px;color:var(--dim)">
+      Templates are provided as-is and run against services outside our control.
+      Test in your own environment before using them with real customers — the
+      included Setup Checker exists to make that straightforward.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
