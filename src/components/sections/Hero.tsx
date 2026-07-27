@@ -10,17 +10,17 @@ import { Particles } from "@/components/visuals/Particles";
 import { BookCover } from "@/components/visuals/BookCover";
 import { useMouseParallax } from "@/hooks/useMouseParallax";
 import { useT } from "@/components/providers/I18nProvider";
-import { books, offerConfig } from "@/config";
+import { books, offerConfig, automationProof, automationBundles } from "@/config";
 
 export function Hero() {
   const t = useT();
   const { x, y, bind } = useMouseParallax(90, 16);
 
   const stats = [
-    { value: "26", label: t.hero.stats.modules },
-    { value: "100+", label: t.hero.stats.chapters },
-    { value: "240+", label: t.hero.stats.examples },
-    { value: "2", label: t.hero.stats.books },
+    { value: String(automationProof.workflows), label: t.hero.stats.modules },
+    { value: String(automationProof.behaviouralTests), label: t.hero.stats.chapters },
+    { value: String(automationProof.nodes), label: t.hero.stats.examples },
+    { value: String(automationBundles.length), label: t.hero.stats.books },
   ];
 
   const headlineParts = [
@@ -130,7 +130,7 @@ export function Hero() {
             >
               <Magnetic>
                 <Button asChild variant="gold" size="xl" className="w-full sm:w-auto">
-                  <a href="#store">
+                  <a href="#automation">
                     {t.hero.ctaPrimary}
                     <ArrowRight className="h-5 w-5 rtl:rotate-180" />
                   </a>
@@ -138,7 +138,7 @@ export function Hero() {
               </Magnetic>
               <Magnetic strength={10}>
                 <Button asChild variant="glass" size="xl" className="w-full sm:w-auto">
-                  <a href="#telegram">{t.hero.ctaSecondary}</a>
+                  <a href="#automation">{t.hero.ctaSecondary}</a>
                 </Button>
               </Magnetic>
             </motion.div>

@@ -50,9 +50,12 @@ export default async function HomePage() {
         <main>
           <Hero />
           <TickerTape />
+          {/* AI products lead. The store's centre of gravity is systems, tools
+              and templates; the trading library is a secondary collection and
+              now sits below them rather than defining the page. */}
+          <AutomationStore />
           <CelebrationBanner />
           <BookStore books={localizedBooks} activeIds={activeIds} />
-          <AutomationStore />
           <WhyBuy />
           <TelegramSection />
           <WarningSection />

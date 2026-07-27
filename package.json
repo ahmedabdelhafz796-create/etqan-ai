@@ -1,8 +1,8 @@
 {
-  "name": "etqan-ai-trading-bookstore",
+  "name": "etqan-ai",
   "version": "1.0.0",
   "private": true,
-  "description": "Premium digital bookstore for professional trading books",
+  "description": "Marketplace for production-hardened AI automation systems, tools and templates.",
   "scripts": {
     "dev": "next dev",
     "prebuild": "node scripts/prepare-downloads.mjs",

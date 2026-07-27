@@ -15,25 +15,25 @@
 
 export const siteConfig = {
   name: "ETQAN AI",
-  brand: "Etqan • Trading Library",
-  tagline: "Institutional-grade trading education, engineered for serious traders.",
+  brand: "Etqan • AI Systems",
+  tagline: "Production-hardened AI systems, tools and templates for people who ship.",
   description:
-    "A premium digital library of professional trading books — market structure, liquidity, order flow, SMC/ICT, Wyckoff and AI-driven institutional analysis. Learn the way funds actually trade.",
+    "A marketplace for AI automation systems, tools and templates — built to survive real traffic, not just a demo. Every workflow is behaviourally tested against replayed webhooks, forged signatures and silent failures. Trading library included as a secondary collection.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://etqan-ai.example.com",
   locale: "en_US",
   keywords: [
+    "AI automation templates",
+    "n8n templates",
+    "AI systems",
+    "AI tools",
+    "workflow automation",
+    "digital product automation",
+    "fraud detection automation",
+    "AI agents",
+    "production-hardened workflows",
     "trading books",
     "smart money concepts",
-    "ICT",
-    "order flow",
-    "market structure",
-    "liquidity",
-    "Wyckoff",
-    "supply and demand",
-    "AI trading",
     "institutional trading",
-    "price action",
-    "risk management",
   ],
   social: {
     telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "TELEGRAM_URL_PLACEHOLDER",
@@ -508,8 +508,14 @@ export function getBook(id: string): Book | undefined {
  *  Courses and systems will slot in here the same way.
  * ═══════════════════════════════════════════════════════════════════ */
 
+export type AutomationKind = "tool" | "system" | "suite";
+
 export interface AutomationBundle {
   id: string;
+  /** Drives the badge and the glyph. A tool does one job; a system coordinates several. */
+  kind: AutomationKind;
+  /** Node count across the bundle — the honest measure of how much is actually here. */
+  nodes: number;
   /** Displayed name. Deliberately English — the buyer audience is technical. */
   name: string;
   /** The sentence the buyer would say about their own situation. */
@@ -526,6 +532,8 @@ export interface AutomationBundle {
 export const automationBundles: AutomationBundle[] = [
   {
     id: "free-secure-downloads",
+    kind: "tool",
+    nodes: 11,
     name: "Secure Download Endpoint",
     audience: "audienceFree",
     price: null,
@@ -537,6 +545,8 @@ export const automationBundles: AutomationBundle[] = [
   },
   {
     id: "delivery-essentials",
+    kind: "system",
+    nodes: 89,
     name: "Delivery Essentials",
     audience: "audienceDelivery",
     price: 79,
@@ -547,6 +557,8 @@ export const automationBundles: AutomationBundle[] = [
   },
   {
     id: "revenue-protection",
+    kind: "system",
+    nodes: 82,
     name: "Revenue Protection",
     audience: "audienceRevenue",
     price: 149,
@@ -557,6 +569,8 @@ export const automationBundles: AutomationBundle[] = [
   },
   {
     id: "ai-agents",
+    kind: "system",
+    nodes: 80,
     name: "AI Agents",
     audience: "audienceAgents",
     price: 149,
@@ -567,6 +581,8 @@ export const automationBundles: AutomationBundle[] = [
   },
   {
     id: "complete-suite",
+    kind: "suite",
+    nodes: 285,
     name: "Complete Suite",
     audience: "audienceComplete",
     price: 399,
