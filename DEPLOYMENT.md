@@ -1,8 +1,10 @@
 # Deployment Guide
 
-Production-ready **Next.js (App Router)** trading bookstore with crypto
-checkout (NOWPayments), secure downloads, a database-backed admin dashboard,
-and trilingual (EN / AR / TR) UI with RTL.
+Production-ready **Next.js (App Router)** AI automation marketplace:
+five Lemon Squeezy bundles built from 23 n8n workflows, plus a secondary
+trading library on in-house crypto checkout (NOWPayments) with secure
+downloads, a database-backed admin dashboard, and a trilingual
+(EN / AR / TR) UI with RTL.
 
 - **Repository:** https://github.com/ahmedabdelhafz796-create/etqan-ai
 - **Finished branch / default:** `main`

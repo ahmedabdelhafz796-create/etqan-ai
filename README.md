@@ -10,12 +10,18 @@ Radix UI · Lucide**.
 
 | Line | Sold through | Where |
 | --- | --- | --- |
-| AI systems, tools, templates | **Lemon Squeezy** (external) | `#automation` |
+| AI systems, tools, templates | **Lemon Squeezy** (external) | `#catalog` |
 | Trading library | **NOWPayments** (in-house crypto) | `#store` |
 
-These never mix. The automation cards link out to Lemon Squeezy; the book
-cards use the site's own payment route. Keeping them separate is deliberate —
-see `src/components/sections/AutomationStore.tsx`.
+These never mix. The catalogue cards link out to Lemon Squeezy; the book
+cards use the site's own payment route. They share no component and no code
+path — see `src/components/sections/Catalog.tsx` for the first and
+`src/components/sections/BuyButton.tsx` for the second.
+
+The homepage is the AI marketplace end to end: hero, catalogue, how it
+installs, the six build rules, the test report, then the FAQ. The trading
+library is one section below a labelled divider, and it is the only place
+gold appears — the AI line runs on iris/aqua so the two are never confused.
 
 ## The automation catalogue
 
