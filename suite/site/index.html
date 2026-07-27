@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ETQAN AI — Production-Hardened n8n Templates for Digital Sellers</title>
-<meta name="description" content="n8n automation templates that hold up when real money moves through them. 151 behavioural tests. Zero embedded credentials. Free template to try first.">
-<meta property="og:title" content="ETQAN AI — Production-Hardened n8n Templates">
-<meta property="og:description" content="~97% of n8n workflows pass a demo then fail on real traffic. These don't. 151 behavioural tests, all passing.">
+<title>ETQAN AI — n8n Automation Templates &amp; Institutional Trading Books</title>
+<meta name="description" content="Production-hardened n8n templates for digital sellers — 151 behavioural tests, all passing. Plus institutional trading books in Arabic.">
+<meta property="og:title" content="ETQAN AI">
+<meta property="og:description" content="~97% of n8n workflows pass a demo then fail on real traffic. These don't. Plus institutional trading books.">
 <meta property="og:type" content="website">
 <style>
   :root{
     --bg:#0a0a0b; --surface:#141416; --surface-2:#1c1c20; --line:#2a2a30;
     --text:#f2f2f4; --muted:#9a9aa4; --dim:#6e6e78;
     --accent:#7c5cff; --accent-soft:#a08fff;
-    --ok:#3ddc97; --warn:#ffb020; --bad:#ff5c5c;
+    --gold:#e8b96a; --gold-soft:#f5d9a8;
+    --ok:#3ddc97; --bad:#ff5c5c;
     --radius:14px; --max:1080px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -27,83 +28,91 @@
   a{color:inherit}
   h1,h2,h3{line-height:1.2;letter-spacing:-.02em;font-weight:700}
 
+  /* ── top nav — the fix for "too many links" ───────────── */
+  nav{
+    position:sticky;top:0;z-index:50;background:rgba(10,10,11,.88);
+    backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+  }
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;padding-bottom:14px}
+  .logo{font-weight:700;font-size:16px;letter-spacing:-.01em;text-decoration:none;flex-shrink:0}
+  .logo span{color:var(--accent-soft)}
+  .navlinks{display:flex;gap:6px;font-size:13.5px}
+  .navlinks a{
+    text-decoration:none;color:var(--muted);padding:7px 12px;border-radius:8px;
+    transition:color .12s,background .12s;white-space:nowrap;
+  }
+  .navlinks a:hover{color:var(--text);background:var(--surface-2)}
+  .navlinks a.books:hover{color:var(--gold)}
+
   /* ── hero ─────────────────────────────────────────────── */
-  header{padding:64px 0 48px;border-bottom:1px solid var(--line);position:relative}
+  header{padding:56px 0 48px;border-bottom:1px solid var(--line);position:relative}
   header::before{
     content:"";position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(124,92,255,.13),transparent 70%);
   }
-  .brand{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-soft);font-weight:600;margin-bottom:24px}
-  h1{font-size:clamp(30px,6.2vw,52px);margin-bottom:20px;max-width:19ch}
-  .lede{font-size:clamp(16px,2.4vw,19px);color:var(--muted);max-width:60ch;margin-bottom:32px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-soft);font-weight:600;margin-bottom:14px}
+  h1{font-size:clamp(29px,6vw,50px);margin-bottom:20px;max-width:19ch}
+  .lede{font-size:clamp(16px,2.4vw,19px);color:var(--muted);max-width:60ch;margin-bottom:30px}
   .lede strong{color:var(--text);font-weight:600}
 
-  .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:36px}
+  .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:34px}
   .btn{
     display:inline-block;padding:14px 26px;border-radius:10px;font-weight:600;
-    text-decoration:none;font-size:15px;transition:transform .12s ease,opacity .12s ease;
+    text-decoration:none;font-size:15px;transition:transform .12s,opacity .12s,border-color .12s;
   }
   .btn:active{transform:translateY(1px)}
   .btn-primary{background:var(--accent);color:#fff}
   .btn-primary:hover{opacity:.9}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#d4a355);color:#1a1206}
+  .btn-gold:hover{opacity:.92}
   .btn-ghost{border:1px solid var(--line);color:var(--text)}
   .btn-ghost:hover{border-color:var(--dim)}
 
-  /* ── the proof strip — the strongest asset on the page ── */
+  /* ── the proof block ──────────────────────────────────── */
   .proof{
     background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
     padding:20px 22px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;
     overflow-x:auto;
   }
-  .proof .pass{color:var(--ok)}
   .proof .head{color:var(--dim);margin-bottom:12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-family:inherit}
   .proof div{white-space:nowrap}
+  .proof .pass{color:var(--ok)}
   .proof .total{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);color:var(--ok);font-weight:600}
 
-  /* ── sections ─────────────────────────────────────────── */
   section{padding:60px 0;border-bottom:1px solid var(--line)}
-  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-soft);font-weight:600;margin-bottom:14px}
   h2{font-size:clamp(24px,4.4vw,34px);margin-bottom:16px}
-  .sub{color:var(--muted);max-width:62ch;margin-bottom:36px}
+  .sub{color:var(--muted);max-width:62ch;margin-bottom:34px}
 
   .grid{display:grid;gap:16px}
   @media(min-width:760px){.grid-3{grid-template-columns:repeat(3,1fr)}}
-
   .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
   .card h3{font-size:17px;margin-bottom:10px}
   .card p{color:var(--muted);font-size:14.5px}
   .card .stat{font-size:30px;font-weight:700;color:var(--bad);margin-bottom:6px;letter-spacing:-.03em}
 
-  /* ── pricing ──────────────────────────────────────────── */
+  /* ── pricing tiers ────────────────────────────────────── */
   .tiers{display:grid;gap:18px}
   @media(min-width:820px){.tiers{grid-template-columns:repeat(2,1fr)}}
-  .tier{
-    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-    padding:26px;display:flex;flex-direction:column;position:relative;
-  }
+  .tier{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px;display:flex;flex-direction:column;position:relative}
   .tier.featured{border-color:var(--accent);background:linear-gradient(180deg,rgba(124,92,255,.09),var(--surface) 60%)}
   .tier.free{border-style:dashed}
-  .tag{
-    position:absolute;top:-10px;right:20px;background:var(--accent);color:#fff;
-    font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-    padding:4px 10px;border-radius:20px;
-  }
+  .tag{position:absolute;top:-10px;right:20px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px}
+  .tag.gold{background:var(--gold);color:#1a1206}
   .tier h3{font-size:19px;margin-bottom:6px}
   .tier .price{font-size:34px;font-weight:700;letter-spacing:-.03em;margin:10px 0 4px}
   .tier .price small{font-size:14px;color:var(--dim);font-weight:400;letter-spacing:0}
+  .tier .price del{font-size:19px;color:var(--dim);font-weight:400;margin-right:8px}
   .tier .who{color:var(--accent-soft);font-size:14px;font-style:italic;margin-bottom:16px}
   .tier ul{list-style:none;margin-bottom:22px;flex:1}
   .tier li{padding:6px 0 6px 22px;position:relative;color:var(--muted);font-size:14.5px}
   .tier li::before{content:"→";position:absolute;left:0;color:var(--accent);font-weight:700}
   .tier .btn{text-align:center;width:100%}
 
-  /* ── standard list ────────────────────────────────────── */
   .std{display:grid;gap:2px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
   .std div{background:var(--surface);padding:18px 20px}
   .std strong{display:block;margin-bottom:4px;font-size:15px}
   .std span{color:var(--muted);font-size:14px}
 
-  /* ── faq ──────────────────────────────────────────────── */
   details{border-bottom:1px solid var(--line);padding:18px 0}
   details:last-of-type{border-bottom:none}
   summary{cursor:pointer;font-weight:600;font-size:16px;list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:center}
@@ -112,21 +121,55 @@
   details[open] summary::after{content:"−"}
   details p{color:var(--muted);margin-top:12px;font-size:15px}
 
+  .note{background:var(--surface-2);border-left:3px solid var(--gold);padding:16px 18px;border-radius:0 10px 10px 0;color:var(--muted);font-size:14.5px;margin-top:28px}
+
+  /* ══ BOOKS SECTION — Arabic, RTL, gold ══════════════════ */
+  #books{
+    direction:rtl;text-align:right;
+    background:linear-gradient(180deg,#0d0b07,#0a0a0b 70%);
+    border-top:1px solid rgba(232,185,106,.22);
+  }
+  #books .eyebrow{color:var(--gold)}
+  #books h2{font-size:clamp(25px,5vw,36px)}
+  #books h2 em{color:var(--gold);font-style:normal}
+  #books .sub{margin-right:0;margin-left:auto}
+  #books .tier{border-color:rgba(232,185,106,.28);background:linear-gradient(180deg,rgba(232,185,106,.055),var(--surface) 55%)}
+  #books .tier li{padding:6px 22px 6px 0}
+  #books .tier li::before{content:"←";left:auto;right:0;color:var(--gold)}
+  #books .tier .who{color:var(--gold-soft)}
+  #books .tag{right:auto;left:20px}
+  #books details summary::after{color:var(--gold)}
+  .offer{
+    display:inline-flex;align-items:center;gap:9px;
+    border:1px solid rgba(232,185,106,.4);color:var(--gold-soft);
+    padding:8px 16px;border-radius:999px;font-size:13.5px;margin-bottom:22px;
+  }
+  .offer i{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
   footer{padding:44px 0 60px;color:var(--dim);font-size:14px}
   footer a{color:var(--accent-soft);text-decoration:none}
-
-  .note{
-    background:var(--surface-2);border-left:3px solid var(--warn);
-    padding:16px 18px;border-radius:0 10px 10px 0;color:var(--muted);font-size:14.5px;margin-top:28px;
-  }
+  footer .cols{display:flex;flex-wrap:wrap;gap:36px;margin-bottom:26px}
+  footer h4{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--text);margin-bottom:10px;font-weight:600}
+  footer li{list-style:none;padding:3px 0}
 </style>
 </head>
 <body>
 
-<header>
+<nav>
   <div class="wrap">
-    <div class="brand">ETQAN AI</div>
-    <h1>n8n templates that hold up when real money moves through them.</h1>
+    <a class="logo" href="#top">ETQAN<span>.AI</span></a>
+    <div class="navlinks">
+      <a href="#pricing">Templates</a>
+      <a href="#free">Free</a>
+      <a class="books" href="#books">الكتب</a>
+    </div>
+  </div>
+</nav>
+
+<header id="top">
+  <div class="wrap">
+    <div class="eyebrow">n8n Automation</div>
+    <h1>Templates that hold up when real money moves through them.</h1>
     <p class="lede">
       Around <strong>97% of n8n workflows</strong> pass a demo and then fail on real
       traffic — no retries, no replay protection, no error path. Around
@@ -135,7 +178,7 @@
 
     <div class="cta-row">
       <a class="btn btn-primary" href="#pricing">See the bundles</a>
-      <a class="btn btn-ghost" href="#free">Try the free one first</a>
+      <a class="btn btn-ghost" href="#free">Try the free one</a>
     </div>
 
     <div class="proof">
@@ -160,9 +203,8 @@
     <h2>The failures nobody tests for</h2>
     <p class="sub">
       These aren't edge cases. They're what happens in the first month of real traffic,
-      and they're the reason a workflow that demoed perfectly quietly loses you money.
+      and they're why a workflow that demoed perfectly quietly loses you money.
     </p>
-
     <div class="grid grid-3">
       <div class="card">
         <div class="stat">3 days</div>
@@ -173,8 +215,8 @@
       <div class="card">
         <div class="stat">Silent</div>
         <h3>Failures vanish</h3>
-        <p>The email provider rate-limits, the send fails, and nobody is told. The
-           seller finds out when the customer complains — or never.</p>
+        <p>The email provider rate-limits, the send fails, and nobody is told. You find
+           out when the customer complains — or never.</p>
       </div>
       <div class="card">
         <div class="stat">70%</div>
@@ -192,8 +234,8 @@
     <h2>Try one free. Same standard as the paid ones.</h2>
     <p class="sub">
       Secure Download Endpoint — signed, expiring, download-limited links with no
-      database. Every refusal explains itself instead of returning a blank 403,
-      which is what stops the support emails.
+      database. Every refusal explains itself instead of returning a blank 403, which
+      is what stops the support emails.
     </p>
     <a class="btn btn-primary"
        href="https://etqan-ai.lemonsqueezy.com/checkout/buy/5c55f9b6-fe57-423e-987e-e094d238ebc6">
@@ -206,12 +248,11 @@
     <div class="eyebrow">Bundles</div>
     <h2>Priced by the problem you have</h2>
     <p class="sub">
-      Every paid bundle includes the Setup Checker and Central Error Hub, because
-      those two are what make a set of workflows behave like a system.
+      Every paid bundle includes the Setup Checker and Central Error Hub — those two
+      are what make a set of workflows behave like a system.
     </p>
 
     <div class="tiers">
-
       <div class="tier free">
         <h3>Secure Download Endpoint</h3>
         <div class="price">Free</div>
@@ -287,13 +328,11 @@
         <a class="btn btn-primary"
            href="https://etqan-ai.lemonsqueezy.com/checkout/buy/c15e89ca-8210-409c-8c87-cfead216796e">Get the Complete Suite</a>
       </div>
-
     </div>
 
     <div class="note">
-      <strong>14-day refund, no argument.</strong> If it doesn't work for you, say so
-      and you get your money back. I'd rather refund you than have you stuck with
-      something that doesn't fit.
+      <strong style="color:var(--text)">14-day refund, no argument.</strong> If it
+      doesn't work for you, say so and you get your money back.
     </div>
   </div>
 </section>
@@ -301,17 +340,16 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">The standard</div>
-    <h2>What "production-hardened" actually means here</h2>
+    <h2>What "production-hardened" actually means</h2>
     <p class="sub">
       Every guarantee below is enforced automatically before release. A template that
       fails any of them is never published — that's a build gate, not a promise.
     </p>
-
     <div class="std">
-      <div><strong>Replay protection</strong><span>Duplicate webhooks cause no duplicate side effects. Event-id dedupe with TTL pruning — and no external database to provision.</span></div>
-      <div><strong>Retry on every network call</strong><span>Three attempts with backoff. Enforced default-deny: any node that isn't known to run locally must retry.</span></div>
+      <div><strong>Replay protection</strong><span>Duplicate webhooks cause no duplicate side effects. Event-id dedupe with TTL pruning, and no external database to provision.</span></div>
+      <div><strong>Retry on every network call</strong><span>Three attempts with backoff. Enforced default-deny: any node not known to run locally must retry.</span></div>
       <div><strong>Failures are routed, never silent</strong><span>Checked per node, not once per file. A declared error output that leads nowhere fails the build.</span></div>
-      <div><strong>One config node</strong><span>Everything you need to edit is in one place at the top of the flow. Secrets live in credentials, never in the file.</span></div>
+      <div><strong>One config node</strong><span>Everything you edit is in one place at the top of the flow. Secrets live in credentials, never in the file.</span></div>
       <div><strong>Zero embedded credentials</strong><span>Scanned automatically for live keys and for credential ids pinned from the author's own account.</span></div>
       <div><strong>Documentation on the canvas</strong><span>Explained next to the node it applies to — not in a PDF you won't read while something is broken.</span></div>
       <div><strong>Cloud and self-hosted behave identically</strong><span>HMAC goes through the built-in Crypto node, never <code>require('crypto')</code> — which works on Cloud and throws on a default self-hosted install.</span></div>
@@ -326,17 +364,17 @@
 
     <details>
       <summary>Do I need to be technical?</summary>
-      <p>No. Each template has one node you edit — it's called ⚙️ Config and it's the
-      first thing in the flow. Everything else is documented on the canvas next to the
-      thing it explains. Most take 10–15 minutes, and the Setup Checker tells you if
-      you've missed anything before you go live.</p>
+      <p>No. Each template has one node you edit — ⚙️ Config, the first thing in the
+      flow. Everything else is documented on the canvas next to the thing it explains.
+      Most take 10–15 minutes, and the Setup Checker tells you if you've missed
+      anything before you go live.</p>
     </details>
 
     <details>
       <summary>What do I need to run these?</summary>
       <p>An n8n account — Cloud or self-hosted, both work identically. An SMTP account
-      for sending email (a free tier is plenty to start). The AI templates need your
-      own API key from Anthropic or OpenAI; everything else runs without one.</p>
+      for email (a free tier is plenty). The AI templates need your own API key from
+      Anthropic or OpenAI; everything else runs without one.</p>
     </details>
 
     <details>
@@ -357,7 +395,7 @@
 
     <details>
       <summary>Can I use these for client work?</summary>
-      <p>Yes. Set them up for clients and charge whatever you like. What you can't do is
+      <p>Yes. Set them up for clients and charge what you like. What you can't do is
       resell or redistribute the workflow files themselves, or include them in a
       template pack you sell. Full terms ship with every download.</p>
     </details>
@@ -366,24 +404,90 @@
       <summary>What if something doesn't work?</summary>
       <p>Send your n8n version, the name of the node that failed, and the error text —
       that usually resolves it in one reply. The Setup Checker's output often contains
-      the answer already. And if it still isn't right for you, the 14-day refund stands.</p>
+      the answer already. And the 14-day refund stands regardless.</p>
     </details>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     BOOKS — Arabic, RTL. Different audience, so it gets its own
+     language and its own visual identity rather than being
+     flattened into the templates section above.
+     ══════════════════════════════════════════════════════════ -->
+<section id="books">
+  <div class="wrap">
+    <div class="eyebrow">مكتبة إتقان</div>
+    <h2>تداول بطريقة <em>المؤسسات الحقيقية</em>.</h2>
+    <p class="sub">
+      كتب تداول احترافية — هيكل السوق، السيولة، تدفق الأوامر، مفاهيم SMC و ICT ووايكوف.
+      بلا مبالغة، بلا مؤشرات. فقط المنطق الحقيقي الذي يحرّك السعر.
+    </p>
+
+    <div class="offer"><i></i> احتفال الإصدار الأول · الأسعار التأسيسية حتى 30 يوليو 2026</div>
+
+    <div class="tiers">
+      <div class="tier">
+        <h3>Triple Analysis</h3>
+        <div class="price"><del>$80</del>$65</div>
+        <div class="who">الإطار المؤسسي لقراءة أي سوق</div>
+        <ul>
+          <li>هيكل السوق من الأساس — كيف يتحرك السعر فعلاً</li>
+          <li>هندسة السيولة ورسم خرائطها قبل الحركة</li>
+          <li>تدفق الأوامر ومفاهيم السمارت موني</li>
+          <li>وايكوف والعرض والطلب</li>
+          <li>نماذج الدخول والخروج + دراسات حالة</li>
+        </ul>
+        <a class="btn btn-gold" href="BOOK_1_CHECKOUT_LINK">احصل على الكتاب — $65</a>
+      </div>
+
+      <div class="tier">
+        <span class="tag gold">الأكثر تقدماً</span>
+        <h3>Advanced AI Trading</h3>
+        <div class="price"><del>$120</del>$90</div>
+        <div class="who">التحليل المؤسسي والأتمتة وأنظمة التداول الاحترافية</div>
+        <ul>
+          <li>التحليل المؤسسي المدعوم بالذكاء الاصطناعي</li>
+          <li>أتمتة أنظمة التداول</li>
+          <li>بناء نظام تداول احترافي كامل</li>
+          <li>إدارة المخاطر وعلم النفس</li>
+          <li>تطبيق عملي على السوق الحقيقي</li>
+        </ul>
+        <a class="btn btn-gold" href="BOOK_2_CHECKOUT_LINK">احصل على الكتاب — $90</a>
+      </div>
+    </div>
+
+    <div class="note" style="border-right:3px solid var(--gold);border-left:none;border-radius:10px 0 0 10px">
+      <strong style="color:var(--text)">تنبيه:</strong> المحتوى تعليمي فقط. التداول
+      ينطوي على مخاطر كبيرة وقد تخسر رأس مالك. لا شيء هنا نصيحة استثمارية.
+    </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <p><strong style="color:var(--text)">ETQAN AI</strong> — production-hardened n8n templates.</p>
-    <p style="margin-top:8px">
-      <a href="https://etqan-ai.lemonsqueezy.com">Store</a> ·
-      <a href="#free">Free template</a> ·
-      <a href="#pricing">Bundles</a>
+    <div class="cols">
+      <div>
+        <h4>Automation</h4>
+        <ul>
+          <li><a href="#free">Free template</a></li>
+          <li><a href="#pricing">Bundles</a></li>
+          <li><a href="https://etqan-ai.lemonsqueezy.com">Store</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Books</h4>
+        <ul>
+          <li><a href="#books">مكتبة التداول</a></li>
+        </ul>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--dim);max-width:62ch">
+      Templates are provided as-is and run against services outside our control. Test
+      in your own environment before using them with real customers — the included
+      Setup Checker exists to make that straightforward. Book content is educational
+      only; trading involves substantial risk.
     </p>
-    <p style="margin-top:16px;font-size:13px;color:var(--dim)">
-      Templates are provided as-is and run against services outside our control.
-      Test in your own environment before using them with real customers — the
-      included Setup Checker exists to make that straightforward.
-    </p>
+    <p style="margin-top:14px"><strong style="color:var(--text)">ETQAN AI</strong></p>
   </div>
 </footer>
 
