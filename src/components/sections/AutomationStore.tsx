@@ -80,12 +80,19 @@ export function AutomationStore() {
             const isWide = !!b.featured;
 
             return (
-              <Reveal key={b.id} delay={i * 0.05}>
+              <Reveal
+                key={b.id}
+                delay={i * 0.05}
+                // The grid child is this wrapper, not the article inside it —
+                // the column span has to live here or the featured card
+                // silently renders at half width with dead space beside it.
+                className={b.featured ? "lg:col-span-2" : undefined}
+              >
                 <article
                   className={[
                     "group relative flex h-full flex-col overflow-hidden rounded-3xl border p-7 transition-all duration-300 sm:p-8",
                     b.featured
-                      ? "border-gold/40 bg-gradient-to-b from-gold/[0.08] via-white/[0.02] to-transparent lg:col-span-2"
+                      ? "border-gold/40 bg-gradient-to-b from-gold/[0.08] via-white/[0.02] to-transparent"
                       : b.free
                         ? "border-dashed border-white/[0.14] bg-white/[0.015] hover:border-white/25"
                         : "border-white/[0.08] bg-white/[0.02] hover:-translate-y-0.5 hover:border-gold/30",

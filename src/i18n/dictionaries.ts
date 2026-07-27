@@ -8,14 +8,14 @@ import type { Locale } from "@/i18n/config";
 const en = {
   nav: {
     links: {
-      library: "Library",
-      automation: "Automation",
+      library: "Trading Books",
+      automation: "AI Systems",
       curriculum: "Curriculum",
       signals: "Signals",
       why: "Why Us",
       faq: "FAQ",
     },
-    cta: "Get the Books",
+    cta: "Browse AI Systems",
     menu: "Toggle menu",
     language: "Language",
   },
@@ -259,14 +259,14 @@ export type Dictionary = typeof en;
 const ar: Dictionary = {
   nav: {
     links: {
-      library: "المكتبة",
-      automation: "الأتمتة",
+      library: "كتب التداول",
+      automation: "أنظمة الذكاء",
       curriculum: "المنهج",
       signals: "التوصيات",
       why: "لماذا نحن",
       faq: "الأسئلة الشائعة",
     },
-    cta: "احصل على الكتب",
+    cta: "تصفّح الأنظمة",
     menu: "فتح القائمة",
     language: "اللغة",
   },
@@ -503,14 +503,14 @@ const ar: Dictionary = {
 const tr: Dictionary = {
   nav: {
     links: {
-      library: "Kütüphane",
-      automation: "Otomasyon",
+      library: "Trading Kitapları",
+      automation: "AI Sistemleri",
       curriculum: "Müfredat",
       signals: "Sinyaller",
       why: "Neden Biz",
       faq: "SSS",
     },
-    cta: "Kitapları Al",
+    cta: "AI Sistemlerine Göz At",
     menu: "Menüyü aç",
     language: "Dil",
   },

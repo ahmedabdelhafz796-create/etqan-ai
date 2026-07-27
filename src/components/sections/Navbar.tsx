@@ -15,10 +15,15 @@ export function Navbar() {
   const [open, setOpen] = React.useState(false);
   const t = useT();
 
+  // AI systems lead; the trading library follows. The order here is the
+  // fastest signal a first-time visitor gets about which product line the
+  // site is actually about.
   const NAV_LINKS = [
-    { label: t.nav.links.library, href: "#store" },
-    { label: t.nav.links.curriculum, href: "#store" },
     { label: t.nav.links.automation, href: "#automation" },
+    // "Curriculum" used to sit here pointing at #store as well — two labels
+    // scrolling to the same section, and one of them named after a book's
+    // inner accordion. Dropped rather than duplicated.
+    { label: t.nav.links.library, href: "#store" },
     { label: t.nav.links.signals, href: "#telegram" },
     { label: t.nav.links.why, href: "#why" },
     { label: t.nav.links.faq, href: "#faq" },
@@ -69,7 +74,7 @@ export function Navbar() {
           <LanguageSwitcher />
           <Magnetic strength={8}>
             <Button asChild variant="gold" size="sm">
-              <a href="#store">{t.nav.cta}</a>
+              <a href="#automation">{t.nav.cta}</a>
             </Button>
           </Magnetic>
         </div>
@@ -113,7 +118,7 @@ export function Navbar() {
                 size="md"
                 className="mt-2 w-full"
               >
-                <a href="#store" onClick={() => setOpen(false)}>
+                <a href="#automation" onClick={() => setOpen(false)}>
                   {t.nav.cta}
                 </a>
               </Button>
