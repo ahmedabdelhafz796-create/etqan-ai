@@ -361,7 +361,3 @@ function runNode(node, items, env) {
   // integration does not break existing tests.
   return { produced: items, outputIndex: 0 };
 }
-
-export function loadWorkflow(path) {
-  return JSON.parse(require('node:fs').readFileSync(path, 'utf8'));
-}
