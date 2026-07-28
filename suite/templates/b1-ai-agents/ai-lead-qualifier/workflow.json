@@ -1,0 +1,590 @@
+{
+  "name": "DCA-B1-02 · AI Lead Qualifier & Router (answer the buyers first)",
+  "nodes": [
+    {
+      "id": "4e73d53b-3e44-54c0-9ac9-0ae4d3c94be1",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -520
+      ],
+      "parameters": {
+        "content": "## 🎯 AI Lead Qualifier & Router\n**Enquiry arrives → scored for intent and fit → routed with a reason.**\n\n### Setup (about 18 minutes)\n1. **⚙️ Config** → describe `whatYouSell`, `idealCustomer`, `priceRange`.\n   The agent judges fit against **your** definition, not a generic one.\n2. Set `aiEndpoint` / `aiModel`, add your API key as **Header Auth** on\n   **🧠 Assess the lead**.\n3. Attach SMTP to **🔥 Alert on hot lead**.\n4. Point your contact form / DM inbox at the Production URL.\n5. Activate.\n\n### Why response time is the whole game\nAnswering in arrival order means your best lead waits behind four people\nwho were never going to buy. This is what fixes that.",
+        "height": 540,
+        "width": 580,
+        "color": 6
+      }
+    },
+    {
+      "id": "6727e438-c6ab-5ce9-8eaa-80f63b8fbcba",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        -520
+      ],
+      "parameters": {
+        "content": "### ⚖️ Why this scores differently from fraud\n**Fraud scoring is defensive** — a false positive blocks a paying\ncustomer, so it refuses to guess.\n\n**Lead scoring is the opposite shape.** A false positive costs a few\nwasted minutes. A false negative is a **lost deal**.\n\nSo this errs toward *including*. The lowest tier still goes to nurture,\nnever to the bin. Only spam is discarded — and even that is logged so you\ncan audit what was thrown away.",
+        "height": 380,
+        "width": 480,
+        "color": 4
+      }
+    },
+    {
+      "id": "f4dfeb54-8119-5ec1-b0f8-1be846191946",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -520
+      ],
+      "parameters": {
+        "content": "### 🚦 Routing\n| Tier | Means | Goes to |\n| --- | --- | --- |\n| 🔥 **hot** | budget + intent + fit | alert you **now** |\n| 🌤️ **warm** | real interest, unclear budget | follow-up queue |\n| 🌱 **nurture** | early, or poor fit today | nurture list |\n| 🗑️ **spam** | bot / irrelevant | logged, discarded |\n\nEdit the thresholds in **⚙️ Config**. Watch the hot queue for a week\nbefore trusting it.",
+        "height": 380,
+        "width": 460,
+        "color": 7
+      }
+    },
+    {
+      "id": "8458587c-88ba-5b3d-8278-e71c632f4abc",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        420
+      ],
+      "parameters": {
+        "content": "### 🧱 Deterministic layer runs FIRST\nBudget mentions, business email domains and explicit buying language are\nread with plain code **before** any model call.\n\nCheaper — and more importantly, an obviously-qualified lead is never lost\nto a model outage or a malformed response.\n\n**The model refines the score. It does not own it.**",
+        "height": 300,
+        "width": 460,
+        "color": 5
+      }
+    },
+    {
+      "id": "201c30b9-a8d6-5cdf-b0e9-e19a16bee433",
+      "name": "📥 New enquiry",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -680,
+        180
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST {email, message, name?, company?, phone?, source?}.",
+      "notesInFlow": false
+    },
+    {
+      "id": "bd684d3c-9fa0-535d-be81-0d0216705538",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"businessName\": \"YOUR_BUSINESS_NAME\",\n  \"alertEmail\": \"sales@yourdomain.com\",\n  \"fromEmail\": \"leads@yourdomain.com\",\n  \"whatYouSell\": \"REPLACE: what you actually sell, in one or two sentences.\",\n  \"idealCustomer\": \"REPLACE: who gets the most value from it \\u2014 size, role, situation.\",\n  \"priceRange\": \"REPLACE: e.g. $49 templates up to $1,500 done-for-you setup.\",\n  \"aiEndpoint\": \"https://api.anthropic.com/v1/messages\",\n  \"aiModel\": \"claude-sonnet-5\",\n  \"maxTokens\": 500,\n  \"hotAt\": 70,\n  \"warmAt\": 40,\n  \"freeMailDomains\": [\"gmail.com\", \"yahoo.com\", \"hotmail.com\", \"outlook.com\", \"icloud.com\"],\n  \"spamPhrases\": [\"seo services\", \"guest post\", \"backlink\", \"crypto investment\", \"make money fast\", \"increase your traffic\"]\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "whatYouSell / idealCustomer / priceRange drive the fit judgement. Vague answers here give vague scoring.",
+      "notesInFlow": false
+    },
+    {
+      "id": "edacb1a1-1efb-522b-85bd-ef88d0486049",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 12 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.email ?? '') + '|' + String(j.body?.message ?? '').slice(0, 60) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "12094d5a-04b2-505f-a931-b6404f87a4e1",
+      "name": "🧱 Deterministic pre-score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Signals readable without a model. Cheap, and immune to the model being down —\n// an obviously-qualified lead must never be lost to an API outage.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n\n  const email = String(b.email ?? '').trim().toLowerCase();\n  const message = String(b.message ?? b.enquiry ?? b.text ?? '').trim();\n  const name = String(b.name ?? '').trim();\n  const company = String(b.company ?? '').trim();\n  const phone = String(b.phone ?? '').trim();\n\n  if (!email || !message) {\n    throw new Error('Lead needs at least an email and a message. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  const text = (message + ' ' + company).toLowerCase();\n  const domain = email.split('@')[1] || '';\n\n  let base = 0;\n  const signals = [];\n  const add = (pts, why) => { base += pts; signals.push({ pts, why }); };\n\n  // Obvious inbound spam. The only category that gets discarded.\n  const spamHit = (cfg.spamPhrases || []).find(p => text.includes(String(p).toLowerCase()));\n  const looksSpam = !!spamHit || /https?:\\/\\/\\S+\\s+https?:\\/\\/\\S+/.test(message);\n\n  // A business domain is the single strongest cheap fit signal.\n  if (domain && !(cfg.freeMailDomains || []).includes(domain)) {\n    add(20, `Business email domain (${domain})`);\n  }\n  if (company) add(10, 'Named their company');\n  if (phone) add(10, 'Left a phone number — expects to be contacted');\n\n  // Explicit buying language.\n  if (/\\b(price|pricing|quote|cost|how much|budget|invoice|purchase|buy)\\b/i.test(message)) {\n    add(20, 'Asked about price or purchasing');\n  }\n  if (/\\b(urgent|asap|this week|deadline|immediately|right away)\\b/i.test(message)) {\n    add(15, 'Signalled urgency');\n  }\n  if (/\\b(demo|trial|call|meeting|onboard|get started|sign up)\\b/i.test(message)) {\n    add(15, 'Asked for a next step');\n  }\n  // A specific question implies they have actually looked at what you sell.\n  if (message.length > 200) add(10, 'Wrote a detailed enquiry');\n  else if (message.length < 30) add(-10, 'Very short enquiry — low effort');\n\n  // People asking for free help are not bad people, just not buyers today.\n  if (/\\b(free|student|thesis|homework|for my project|no budget)\\b/i.test(message)) {\n    add(-20, 'Indicated no budget');\n  }\n\n  out.push({ json: {\n    email, name, company, phone, message,\n    source: String(b.source ?? 'web'),\n    baseScore: Math.max(0, Math.min(100, base)),\n    baseSignals: signals,\n    looksSpam,\n    spamReason: spamHit ? `matched spam phrase \"${spamHit}\"` : (looksSpam ? 'multiple links, no context' : null),\n    __config: cfg,\n  }});\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Runs before any model call. An obviously-qualified lead survives a model outage.",
+      "notesInFlow": false
+    },
+    {
+      "id": "91327234-0df5-5315-bcbc-ce7371be8184",
+      "name": "🗑️ Obvious spam?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        180
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "86dacedc-6c11-5fc3-80cc-39b0cfb65e1c",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.looksSpam }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c0002eac-d55d-5968-80ae-10bff078dc59",
+      "name": "🧠 Assess the lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        60
+      ],
+      "parameters": {
+        "url": "={{ $json.__config.aiEndpoint }}",
+        "method": "POST",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: $json.__config.aiModel,\n  max_tokens: $json.__config.maxTokens,\n  system: 'You qualify inbound sales enquiries for ' + $json.__config.businessName + '.\\n\\n'\n    + 'WHAT WE SELL: ' + $json.__config.whatYouSell + '\\n'\n    + 'IDEAL CUSTOMER: ' + $json.__config.idealCustomer + '\\n'\n    + 'PRICE RANGE: ' + $json.__config.priceRange + '\\n\\n'\n    + 'Judge two things separately: INTENT (how ready are they to buy) and FIT (are they the kind of '\n    + 'customer described above). A perfect-fit company that is just browsing is not hot. Someone '\n    + 'desperate to buy something we do not sell is not hot either.\\n\\n'\n    + 'Err toward INCLUDING rather than excluding: missing a real buyer costs far more than a few '\n    + 'wasted minutes on a weak lead.\\n\\n'\n    + 'Reply with STRICT JSON only, no markdown fence:\\n'\n    + '{\"intent\": <0..50>, \"fit\": <0..50>, \"reasoning\": \"<one sentence for the salesperson>\", \"suggestedReply\": \"<short opening line they could send>\"}',\n  messages: [ { role: 'user', content: 'From: ' + $json.name + ' <' + $json.email + '>' + ($json.company ? ' at ' + $json.company : '') + '\\n\\n' + $json.message } ]\n}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "notes": "Add your API key as a Header Auth credential. The model refines the score; it does not own it.",
+      "notesInFlow": false
+    },
+    {
+      "id": "544306c5-72e5-56c3-9047-1fd5d44f822e",
+      "name": "🧮 Combine and tier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        60
+      ],
+      "parameters": {
+        "jsCode": "// Blend the deterministic base with the model's judgement. If the model failed\n// or returned nonsense we fall back to the base score alone rather than\n// discarding the lead — losing a real buyer to an API hiccup is the one outcome\n// this template exists to prevent.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst src = $('🧱 Deterministic pre-score').first().json;\n\nfunction extract(p) {\n  return p?.content?.[0]?.text ?? p?.choices?.[0]?.message?.content ?? '';\n}\n\nreturn $input.all().map(item => {\n  const raw = String(extract(item.json) || '').trim();\n\n  let ai = null;\n  try {\n    ai = JSON.parse(raw.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim());\n  } catch {\n    const m = raw.match(/\\{[\\s\\S]*\\}/);\n    if (m) { try { ai = JSON.parse(m[0]); } catch { /* fall through */ } }\n  }\n\n  const intent = Number(ai?.intent);\n  const fit = Number(ai?.fit);\n  const modelOk = Number.isFinite(intent) && Number.isFinite(fit);\n\n  // Model contributes up to 100; average it with the deterministic base so\n  // neither can single-handedly dominate the decision.\n  const score = modelOk\n    ? Math.round((src.baseScore + intent + fit) / 2)\n    : src.baseScore;\n\n  let tier = 'nurture';\n  if (score >= Number(cfg.hotAt)) tier = 'hot';\n  else if (score >= Number(cfg.warmAt)) tier = 'warm';\n\n  return { json: {\n    ...src,\n    score: Math.max(0, Math.min(100, score)),\n    intent: modelOk ? intent : null,\n    fit: modelOk ? fit : null,\n    tier,\n    reasoning: modelOk\n      ? String(ai.reasoning || '').trim()\n      : 'Model unavailable — scored on deterministic signals only. Review manually.',\n    suggestedReply: modelOk ? String(ai.suggestedReply || '').trim() : '',\n    modelUsed: modelOk,\n  }};\n});"
+      },
+      "notes": "A model failure downgrades to base scoring — it never discards the lead.",
+      "notesInFlow": false
+    },
+    {
+      "id": "8718bdac-e7bb-51fa-a6b0-3b98beb3ffb7",
+      "name": "🔥 Hot lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        60
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c27fd2cd-52de-5ab8-b164-285e201d9bdc",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.tier }}",
+              "rightValue": "hot"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "af8a1b79-e3bc-567b-99ea-6613d3f407fb",
+      "name": "✍️ Write the hot-lead alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -40
+      ],
+      "parameters": {
+        "jsCode": "// The salesperson should be able to act straight from this message without\n// opening a CRM. Everything needed to reply is in the body.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const bullets = o.baseSignals.map(s => `  ${s.pts > 0 ? '+' : ''}${s.pts}  ${s.why}`).join('\\n');\n\n  return { json: { ...o,\n    subject: `🔥 Hot lead — ${o.name || o.email}${o.company ? ' (' + o.company + ')' : ''}`,\n    alertText:\n`🔥 HOT LEAD — score ${o.score}/100\n\n${o.name || '(no name)'} <${o.email}>\n${o.company ? 'Company: ' + o.company + '\\n' : ''}${o.phone ? 'Phone:   ' + o.phone + '\\n' : ''}Source:  ${o.source}\n\n── WHY IT SCORED HIGH ──────────────\n${o.reasoning}\n${o.intent != null ? `\\nIntent: ${o.intent}/50 · Fit: ${o.fit}/50` : ''}\n\nSignals:\n${bullets}\n\n── THEIR MESSAGE ───────────────────\n${o.message}\n\n── SUGGESTED OPENING ───────────────\n${o.suggestedReply || '(no draft — model unavailable, write your own)'}\n\n⏱️ Reply fast. Response time is the strongest predictor of whether this closes.`,\n  }};\n});"
+      },
+      "notes": "Everything needed to reply, in one message. No CRM lookup required.",
+      "notesInFlow": false
+    },
+    {
+      "id": "478efd79-ee31-59f0-945a-727f26120658",
+      "name": "🔥 Alert on hot lead",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        -40
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.alertEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.alertText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "notes": "Attach SMTP. Swap for Slack/Telegram for faster response.",
+      "notesInFlow": false
+    },
+    {
+      "id": "beb91c66-2109-5736-b861-5be291f229ff",
+      "name": "📋 Queue warm / nurture",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Not hot today. Deliberately not deleted — a 'nurture' lead is someone who was\n// early, not someone who was wrong, and they convert later if you keep in touch.\nreturn $input.all().map(i => {\n  const o = i.json;\n  return { json: {\n    action: o.tier === 'warm' ? 'follow_up_queue' : 'nurture_list',\n    tier: o.tier,\n    score: o.score,\n    email: o.email,\n    name: o.name,\n    company: o.company,\n    reasoning: o.reasoning,\n    message: o.message,\n    note: o.tier === 'warm'\n      ? 'Real interest, budget unclear. Worth a short personal follow-up this week.'\n      : 'Early or poor fit today. Add to the nurture sequence — not a rejection.',\n  }};\n});"
+      },
+      "notes": "Warm and nurture both stay in the pipeline. Nothing here is discarded.",
+      "notesInFlow": false
+    },
+    {
+      "id": "842cef74-f36c-55f3-99c6-d459e91fb9ec",
+      "name": "🗑️ Log the spam",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        380
+      ],
+      "parameters": {
+        "jsCode": "// Discarded, but recorded. If a real lead ever lands here you need to be able\n// to find it and fix the spam phrases — an unauditable filter is one you cannot\n// trust.\nreturn $input.all().map(i => ({ json: {\n  action: 'discarded_spam',\n  email: i.json.email,\n  reason: i.json.spamReason,\n  messagePreview: String(i.json.message).slice(0, 200),\n  ts: new Date().toISOString(),\n  note: 'Review occasionally. If a real lead appears here, edit spamPhrases in Config.',\n}}));"
+      },
+      "notes": "Spam is logged, not silently dropped. Audit it occasionally.",
+      "notesInFlow": false
+    },
+    {
+      "id": "295cbecf-24ab-5af9-8e8d-24061be3173c",
+      "name": "📒 Lead log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// One row per lead. The tier distribution over a month tells you whether your\n// thresholds are right: all-nurture means hotAt is too high, all-hot means it is\n// too low and the alert has stopped meaning anything.\nreturn $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  email: i.json.email ?? null,\n  company: i.json.company ?? null,\n  tier: i.json.tier ?? 'spam',\n  score: i.json.score ?? null,\n  action: i.json.action ?? 'alerted_hot',\n  modelUsed: i.json.modelUsed ?? null,\n}}));"
+      },
+      "notes": "Watch the tier mix monthly — it tells you whether hotAt/warmAt are tuned right.",
+      "notesInFlow": false
+    },
+    {
+      "id": "3acdca54-0651-55a5-9aa9-8554ed40f57f",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"lead-qualifier\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"ai-lead-qualifier\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "2186b3b0-ef79-544f-9d62-83f96fe0a1d5",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1920,
+        180
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "📥 New enquiry": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "🧱 Deterministic pre-score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧱 Deterministic pre-score": {
+      "main": [
+        [
+          {
+            "node": "🗑️ Obvious spam?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🗑️ Obvious spam?": {
+      "main": [
+        [
+          {
+            "node": "🧠 Assess the lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🗑️ Log the spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Assess the lead": {
+      "main": [
+        [
+          {
+            "node": "🧮 Combine and tier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧮 Combine and tier": {
+      "main": [
+        [
+          {
+            "node": "🔥 Hot lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔥 Hot lead?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Write the hot-lead alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📋 Queue warm / nurture",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Write the hot-lead alert": {
+      "main": [
+        [
+          {
+            "node": "🔥 Alert on hot lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔥 Alert on hot lead": {
+      "main": [
+        [
+          {
+            "node": "📒 Lead log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Queue warm / nurture": {
+      "main": [
+        [
+          {
+            "node": "📒 Lead log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🗑️ Log the spam": {
+      "main": [
+        [
+          {
+            "node": "📒 Lead log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "📒 Lead log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Lead log": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "ai-agent"
+    },
+    {
+      "name": "sales"
+    },
+    {
+      "name": "crm"
+    },
+    {
+      "name": "lead-scoring"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "ai-lead-qualifier",
+    "category": "b1-ai-agents",
+    "version": "1.0.0"
+  }
+}

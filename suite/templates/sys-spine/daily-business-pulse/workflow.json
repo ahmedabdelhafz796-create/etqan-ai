@@ -1,0 +1,344 @@
+{
+  "name": "DCA-SYS-01 · Daily Business Pulse (one message: what your automation did today)",
+  "nodes": [
+    {
+      "id": "40ccba7f-5ff9-572f-b371-999eac9d7065",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -460
+      ],
+      "parameters": {
+        "content": "## 📊 Daily Business Pulse — the second spine piece\n**One message a day: what your automation actually did.**\n\n### Setup (about 6 minutes)\n1. **⚙️ Config** → set `reportEmail` and your local `sendHour` (UTC).\n2. Attach SMTP to **📨 Send the pulse**.\n3. Activate. That is all — it reads data the other templates already write.\n\n### Why this matters more than it looks\nAutomation that works is **invisible**. A delivery that succeeds sends you\nnothing — correct, and also why sellers quietly stop trusting their own\nsystem and drift back to checking manually.\n\nAt that point the automation has failed at its real job even though every\nworkflow is green. One daily message is what prevents that.",
+        "height": 520,
+        "width": 580,
+        "color": 6
+      }
+    },
+    {
+      "id": "8281494f-7323-5f5b-bb82-c98935d90c34",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -460
+      ],
+      "parameters": {
+        "content": "### 🚩 Action items come FIRST\nA dashboard that leads with good news is decoration.\n\nThe order is deliberate:\n1. **Needs you today** — held orders, dispute deadlines, failures\n2. **Money recovered** — what the system earned back\n3. **Ran normally** — the quiet confirmation\n\nYou should be able to read line 1 and close the email.",
+        "height": 340,
+        "width": 460,
+        "color": 5
+      }
+    },
+    {
+      "id": "d3b9572e-58b8-52ca-be25-996956d6df36",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -460
+      ],
+      "parameters": {
+        "content": "### 🚫 It never invents numbers\nAnything not installed reports **\"not installed\"**, never `0`.\n\nA zero meaning *no data* and a zero meaning *nothing happened* lead to\nopposite decisions — one says install it, the other says relax.\n\nConflating them is how dashboards start lying.",
+        "height": 300,
+        "width": 440,
+        "color": 4
+      }
+    },
+    {
+      "id": "4cf01942-0406-5b5c-9405-bb8e75bb6480",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        200
+      ],
+      "parameters": {
+        "content": "### 🔌 Where the data comes from\nEverything is read from the static data the other templates already\nwrite — no database, no extra setup:\n\n`cases` → dunning · `carts` → abandonment\n`chargebacks` → disputes · `downloads` → download endpoint\n`orders` → fraud screening · `errors` → error hub\n\n⚠️ Static data is **per workflow**. For a true cross-workflow rollup, wire\neach template's log node to a shared Sheet and read that here instead —\nsee the note in **📥 Gather**.",
+        "height": 340,
+        "width": 480,
+        "color": 7
+      }
+    },
+    {
+      "id": "5e8e3193-d335-5435-8d77-92f91823d38f",
+      "name": "🕗 Once a day",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -660,
+        180
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "5429d5b3-cea0-5158-be48-5f8df5e10ee1",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"reportEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"reports@yourdomain.com\",\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"currency\": \"USD\",\n  \"sendHour\": 8,\n  \"quietIfNothingHappened\": false\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "quietIfNothingHappened: set true once you trust it, to skip empty days.",
+      "notesInFlow": false
+    },
+    {
+      "id": "bda3465f-845c-5c77-80aa-1cdd7e6480a8",
+      "name": "📥 Gather what the system did",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Read the counters the other templates already maintain.\n//\n// IMPORTANT LIMITATION, stated rather than hidden: n8n static data is scoped to\n// a single workflow, so this only sees keys written by templates running in the\n// SAME workflow, or seeded here. For a genuine cross-workflow rollup, point each\n// template's log node at a shared Google Sheet / Airtable / database table and\n// replace this node with a read from that source. The shape below is what the\n// rest of this workflow expects, so only this node needs changing.\nconst cfg = $input.first().json.__config;\nconst store = $getWorkflowStaticData('global');\n\nconst now = Date.now();\nconst DAY = 24 * 60 * 60 * 1000;\nconst since = now - DAY;\n\n// `null` means \"this template is not installed / no data reaching us\".\n// `0` means \"installed, and nothing happened\". They are not the same.\nconst present = (key) => Object.prototype.hasOwnProperty.call(store, key);\n\n// ── Dunning ──────────────────────────────────────────────────────\nlet dunning = null;\nif (present('cases')) {\n  const cases = Object.values(store.cases || {});\n  dunning = {\n    open: cases.filter(c => !c.recovered).length,\n    recoveredToday: cases.filter(c => c.recovered && (c.recoveredAt || 0) > since).length,\n    recoveredValueToday: Math.round(\n      cases.filter(c => c.recovered && (c.recoveredAt || 0) > since)\n           .reduce((s, c) => s + (Number(c.amount) || 0), 0) * 100) / 100,\n  };\n}\n\n// ── Carts ────────────────────────────────────────────────────────\nlet carts = null;\nif (present('carts')) {\n  const list = Object.values(store.carts || {});\n  carts = {\n    open: list.length,\n    openValue: Math.round(list.reduce((s, c) => s + (Number(c.total) || 0), 0) * 100) / 100,\n    newToday: list.filter(c => (c.abandonedAt || 0) > since).length,\n  };\n}\n\n// ── Disputes ─────────────────────────────────────────────────────\nlet disputes = null;\nif (present('chargebacks')) {\n  const cb = store.chargebacks || [];\n  const last30 = cb.filter(c => now - c.t < 30 * DAY);\n  disputes = {\n    newToday: cb.filter(c => c.t > since).length,\n    last30: last30.length,\n    value30: Math.round(last30.reduce((s, c) => s + (Number(c.amount) || 0), 0) * 100) / 100,\n  };\n}\n\n// ── Downloads ────────────────────────────────────────────────────\nlet downloads = null;\nif (present('downloads')) {\n  const recs = Object.values(store.downloads || {});\n  downloads = {\n    activeLinks: recs.length,\n    totalDownloads: recs.reduce((s, r) => s + (r.count || 0), 0),\n    // A single order collected from many IPs is the cheapest leak signal there is.\n    suspectedLeaks: recs.filter(r => (r.ips || []).length >= 8).length,\n  };\n}\n\n// ── Fraud screening ──────────────────────────────────────────────\nlet fraud = null;\nif (present('orders')) {\n  const orders = store.orders || [];\n  fraud = { screenedToday: orders.filter(o => o.t > since).length };\n}\n\n// ── Failures ─────────────────────────────────────────────────────\nlet errors = null;\nif (present('errors')) {\n  const errs = Object.values(store.errors || {});\n  errors = {\n    distinctToday: errs.filter(e => e.lastAt > since).length,\n    totalOccurrences: errs.filter(e => e.lastAt > since).reduce((s, e) => s + (e.count || 0), 0),\n  };\n}\n\nreturn [{ json: { dunning, carts, disputes, downloads, fraud, errors,\n                  windowHours: 24, generatedAt: new Date().toISOString(), __config: cfg } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "Reads existing counters. null = not installed, 0 = installed but quiet. Replace this node to read a shared Sheet for a true cross-workflow rollup.",
+      "notesInFlow": false
+    },
+    {
+      "id": "d42f013f-d0e0-50ab-bb04-b478879ad87e",
+      "name": "✍️ Write the pulse",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Action items first. The seller should be able to read the top block and close\n// the message if it is empty.\nconst d = $input.first().json;\nconst cfg = d.__config;\nconst cur = cfg.currency;\n\nconst actions = [];\nconst recovered = [];\nconst normal = [];\nconst notInstalled = [];\n\n// ── 1. Needs you today ───────────────────────────────────────────\nif (d.errors === null) notInstalled.push('Error Hub (SYS-00)');\nelse if (d.errors.distinctToday > 0) {\n  actions.push(`🔴 ${d.errors.distinctToday} distinct failure(s) today (${d.errors.totalOccurrences} occurrences) — check the Error Hub alerts.`);\n}\n\nif (d.disputes === null) notInstalled.push('Chargeback Early Warning (A3-02)');\nelse if (d.disputes.newToday > 0) {\n  actions.push(`🟠 ${d.disputes.newToday} new dispute(s) today, ${d.disputes.value30} ${cur} disputed in 30 days — respond before the deadlines.`);\n}\n\nif (d.downloads?.suspectedLeaks > 0) {\n  actions.push(`🟡 ${d.downloads.suspectedLeaks} download link(s) used from 8+ different IPs — likely shared publicly.`);\n}\n\n// ── 2. Money recovered ───────────────────────────────────────────\nif (d.dunning === null) notInstalled.push('Failed Payment Recovery (B4-02)');\nelse {\n  if (d.dunning.recoveredToday > 0) {\n    recovered.push(`💰 ${d.dunning.recoveredToday} subscription(s) recovered — ${d.dunning.recoveredValueToday} ${cur} saved.`);\n  }\n  if (d.dunning.open > 0) {\n    normal.push(`${d.dunning.open} payment(s) still in recovery.`);\n  }\n}\n\nif (d.carts === null) notInstalled.push('Cart Abandonment (A5-01)');\nelse {\n  if (d.carts.open > 0) {\n    normal.push(`${d.carts.open} cart(s) open, worth ${d.carts.openValue} ${cur} — reminders running.`);\n  }\n  if (d.carts.newToday > 0) normal.push(`${d.carts.newToday} cart(s) abandoned today.`);\n}\n\n// ── 3. Ran normally ──────────────────────────────────────────────\nif (d.fraud === null) notInstalled.push('Fraud Scoring (A3-01)');\nelse if (d.fraud.screenedToday > 0) normal.push(`${d.fraud.screenedToday} order(s) screened for fraud.`);\n\nif (d.downloads === null) notInstalled.push('Secure Download Endpoint (A1-02)');\nelse if (d.downloads.totalDownloads > 0) {\n  normal.push(`${d.downloads.totalDownloads} download(s) served across ${d.downloads.activeLinks} active link(s).`);\n}\n\nconst nothingHappened = actions.length === 0 && recovered.length === 0 && normal.length === 0;\n\nconst date = new Date().toISOString().slice(0, 10);\nconst lines = [];\nlines.push(`📊 ${cfg.storeName} — daily pulse, ${date}`);\nlines.push('');\n\nif (actions.length) {\n  lines.push('━━ NEEDS YOU TODAY ━━━━━━━━━━━━━━');\n  actions.forEach(a => lines.push(a));\n  lines.push('');\n} else {\n  lines.push('✅ Nothing needs your attention today.');\n  lines.push('');\n}\n\nif (recovered.length) {\n  lines.push('━━ MONEY RECOVERED ━━━━━━━━━━━━━━');\n  recovered.forEach(r => lines.push(r));\n  lines.push('');\n}\n\nif (normal.length) {\n  lines.push('━━ RAN NORMALLY ━━━━━━━━━━━━━━━━━');\n  normal.forEach(n => lines.push(`· ${n}`));\n  lines.push('');\n}\n\nif (notInstalled.length) {\n  lines.push('━━ NOT INSTALLED ━━━━━━━━━━━━━━━━');\n  lines.push('No data reaching this report from:');\n  notInstalled.forEach(n => lines.push(`· ${n}`));\n  lines.push('(This is not zero activity — it means nothing is reporting.)');\n  lines.push('');\n}\n\nif (nothingHappened && !notInstalled.length) {\n  lines.push('Everything is installed and quiet. Nothing happened in the last 24h.');\n  lines.push('');\n}\n\nlines.push('─────────────────────────────────');\nlines.push('Generated by your automation suite. If this stops arriving, the');\nlines.push('schedule is off — which is itself worth knowing.');\n\nreturn [{ json: {\n  pulseText: lines.join('\\n'),\n  subject: actions.length\n    ? `📊 ${cfg.storeName} — ${actions.length} item(s) need you`\n    : `📊 ${cfg.storeName} — all clear, ${date}`,\n  actionCount: actions.length,\n  nothingHappened,\n  __config: cfg,\n}}];"
+      },
+      "notes": "Action items first, then recovery, then normal. 'Not installed' is reported explicitly.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7513d765-ee62-5a71-8b35-668bfece2518",
+      "name": "📤 Worth sending today?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        180
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "92285848-8c4b-5de1-9e2b-7b9f55da5741",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.actionCount > 0 || $json.__config.quietIfNothingHappened !== true || !$json.nothingHappened }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4208ddd3-b5e6-509e-a7dd-b3a55114c474",
+      "name": "📨 Send the pulse",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        80
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.reportEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.pulseText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput",
+      "notes": "Attach SMTP. Swap for Slack/Telegram — the text is plain and works anywhere.",
+      "notesInFlow": false
+    },
+    {
+      "id": "636a76da-b658-5e4e-aa65-c99de3e677cb",
+      "name": "🤫 Quiet day, nothing sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// quietIfNothingHappened is on and there was genuinely nothing to say.\nreturn [{ json: { sent: false, reason: 'quiet day — nothing to report', at: new Date().toISOString() } }];"
+      },
+      "notes": "Only reached when you have opted into quiet days.",
+      "notesInFlow": false
+    },
+    {
+      "id": "03e55504-7ffe-5a59-8c33-45504cb90c44",
+      "name": "📒 Pulse archive",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Keeping the daily pulses gives you a trend nobody else has: how much the\n// system recovered month over month. That number is what justifies the whole\n// suite when you review it later.\nreturn $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  sent: i.json.sent !== false,\n  actionCount: i.json.actionCount ?? 0,\n  text: i.json.pulseText ?? null,\n}}));"
+      },
+      "notes": "Append to a Sheet. Month-over-month recovery is the number that proves the suite's value.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🕗 Once a day": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "📥 Gather what the system did",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Gather what the system did": {
+      "main": [
+        [
+          {
+            "node": "✍️ Write the pulse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Write the pulse": {
+      "main": [
+        [
+          {
+            "node": "📤 Worth sending today?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📤 Worth sending today?": {
+      "main": [
+        [
+          {
+            "node": "📨 Send the pulse",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🤫 Quiet day, nothing sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Send the pulse": {
+      "main": [
+        [
+          {
+            "node": "📒 Pulse archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤫 Quiet day, nothing sent": {
+      "main": [
+        [
+          {
+            "node": "📒 Pulse archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "system"
+    },
+    {
+      "name": "reporting"
+    },
+    {
+      "name": "spine"
+    },
+    {
+      "name": "analytics"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "daily-business-pulse",
+    "category": "sys-spine",
+    "version": "1.0.0"
+  }
+}

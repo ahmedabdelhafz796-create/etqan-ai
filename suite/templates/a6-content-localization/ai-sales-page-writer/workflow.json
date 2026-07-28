@@ -1,0 +1,403 @@
+{
+  "name": "DCA-A6-02 · AI Sales Page & Listing Writer (writes from your facts, flags unsupported claims)",
+  "nodes": [
+    {
+      "id": "fe8791a3-4f5b-5dcc-b536-9e97cfc455e1",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -540
+      ],
+      "parameters": {
+        "content": "## ✍️ AI Sales Page & Listing Writer\n**Your facts → a structured listing → unsupported claims flagged.**\n\n### Setup (about 12 minutes)\n1. **⚙️ Config** → set `aiEndpoint`, `aiModel`, and your `bannedClaims`.\n2. Add your API key as **Header Auth** on **🧠 Write the listing**.\n3. POST the product's facts:\n   ```json\n   { \"productName\": \"...\", \"whatItIs\": \"...\",\n     \"problemItSolves\": \"...\", \"whatsIncluded\": [...],\n     \"price\": \"$49\", \"proof\": \"...\", \"limits\": \"...\" }\n   ```\n4. Read the output. **Publish nothing that is flagged.**\n\n### Use it on your own listings\nThis is the template you will use to write the sales pages for every\nother template in this suite.",
+        "height": 560,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "40aba83f-eb0a-562f-81cc-94f3188d746a",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -540
+      ],
+      "parameters": {
+        "content": "### 🚫 Why it refuses to write marketing prose\nAsk a model for a sales page and you get *\"trusted by thousands\"*,\n*\"guaranteed results\"*, *\"the industry standard\"*.\n\nTwo problems:\n1. **It converts badly.** Readers have learned to discount that language.\n2. **It creates obligations.** A refund policy invented in a sales page\n   is one a customer will hold you to.\n\nThe model here writes **only** from the facts you supply. Anything it\ncannot support is omitted, not softened.",
+        "height": 420,
+        "width": 500,
+        "color": 5
+      }
+    },
+    {
+      "id": "95368470-b919-50d2-b158-3844cea1c418",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -540
+      ],
+      "parameters": {
+        "content": "### 📐 The structure that converts\n| # | Section | Job |\n| --- | --- | --- |\n| 1 | The problem | make them feel it is about them |\n| 2 | Proof | earn the right to be believed |\n| 3 | What you get | outcomes, not features |\n| 4 | How it works | remove installation fear |\n| 5 | **Honest limits** | the section that builds trust |\n| 6 | Price and next step | one clear action |\n\nSection 5 is not optional. It separates a listing readers trust from one\nthey skim — and it cuts refunds by setting expectations **before** the\nsale.",
+        "height": 440,
+        "width": 480,
+        "color": 7
+      }
+    },
+    {
+      "id": "97c909ad-13ff-555e-9219-f83f29651ce5",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        420
+      ],
+      "parameters": {
+        "content": "### 🔍 The claim scanner\nAfter the model writes, a deterministic pass scans for superlatives and\nguarantees that no supplied fact supports.\n\nEach hit is reported with the sentence it appeared in, so you can delete\nor substantiate it.\n\n**A flagged listing is not blocked** — you may have proof the workflow\ncannot see. It is flagged so the decision is yours and conscious.",
+        "height": 340,
+        "width": 460,
+        "color": 4
+      }
+    },
+    {
+      "id": "77cc90c3-5f9d-53d2-86b3-79ad8eae9b81",
+      "name": "📋 Product facts",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -680,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/write-listing",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST the product's facts. The more specific they are, the better the listing.",
+      "notesInFlow": false
+    },
+    {
+      "id": "d3b82639-adba-57f4-a84e-3d969dd38452",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"aiEndpoint\": \"https://api.anthropic.com/v1/messages\",\n  \"aiModel\": \"claude-sonnet-5\",\n  \"maxTokens\": 2500,\n  \"targetAudience\": \"REPLACE: who this is for, in one sentence\",\n  \"toneNotes\": \"direct, concrete, no hype; short sentences\",\n  \"bannedClaims\": [\"guaranteed\", \"guarantee\", \"best in the world\", \"industry standard\", \"trusted by thousands\", \"everyone\", \"never fails\", \"100%\", \"revolutionary\", \"game-chang\", \"cutting-edge\", \"world-class\", \"instantly doubles\", \"risk-free\", \"unlimited earnings\"],\n  \"requireLimitsSection\": true\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "bannedClaims drives the scanner. Add anything your market is tired of hearing.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ac5c136f-2d88-5627-bdbe-600f372c1e53",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 1 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.productName ?? '') + '|' + String(j.body?.whatItIs ?? '').slice(0, 40) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "3c979ca2-d926-56bc-9b0b-b81cf145df93",
+      "name": "📥 Collect the facts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Gather what the seller actually knows. Missing facts are reported rather than\n// filled in — an absent fact should produce a shorter listing, never an invented\n// sentence.\nconst cfg = $('⚙️ Config').first().json.__config;\n\nreturn $input.all().map(item => {\n  const b = item.json.body ?? item.json;\n\n  const productName = String(b.productName ?? b.name ?? '').trim();\n  const whatItIs = String(b.whatItIs ?? b.description ?? '').trim();\n\n  if (!productName || !whatItIs) {\n    throw new Error('Need at least productName and whatItIs. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  const asList = (v) => Array.isArray(v)\n    ? v.map(x => String(x).trim()).filter(Boolean)\n    : String(v ?? '').split('\\n').map(x => x.trim()).filter(Boolean);\n\n  const facts = {\n    productName,\n    whatItIs,\n    problemItSolves: String(b.problemItSolves ?? b.problem ?? '').trim(),\n    whatsIncluded: asList(b.whatsIncluded ?? b.included ?? b.features),\n    price: String(b.price ?? '').trim(),\n    proof: String(b.proof ?? b.evidence ?? '').trim(),\n    limits: String(b.limits ?? b.notFor ?? '').trim(),\n    setupTime: String(b.setupTime ?? '').trim(),\n    requirements: asList(b.requirements),\n  };\n\n  // Tell the seller what is missing. A thin listing is a symptom of thin facts,\n  // and that is worth knowing before blaming the copy.\n  const missing = [];\n  if (!facts.problemItSolves) missing.push('problemItSolves — the listing will have a weak opening');\n  if (!facts.whatsIncluded.length) missing.push('whatsIncluded — no concrete deliverables to list');\n  if (!facts.proof) missing.push('proof — nothing to substantiate claims with');\n  if (!facts.limits) missing.push('limits — the trust-building section will be generic');\n  if (!facts.price) missing.push('price — no clear call to action');\n\n  return { json: { ...facts, missingFacts: missing, __config: cfg } };\n});"
+      },
+      "notes": "Missing facts are reported, never invented. Thin facts produce a thin listing by design.",
+      "notesInFlow": false
+    },
+    {
+      "id": "77bb6089-49c9-5f89-bbfe-460177a51ccb",
+      "name": "🧠 Write the listing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        200
+      ],
+      "parameters": {
+        "url": "={{ $json.__config.aiEndpoint }}",
+        "method": "POST",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: $json.__config.aiModel,\n  max_tokens: $json.__config.maxTokens,\n  system: 'You write product listings for ' + $json.__config.storeName + '.\\n\\n'\n    + 'AUDIENCE: ' + $json.__config.targetAudience + '\\n'\n    + 'TONE: ' + $json.__config.toneNotes + '\\n\\n'\n    + 'ABSOLUTE RULE: write ONLY from the facts given. If a fact is missing, omit that '\n    + 'section rather than inventing content. Never claim numbers, testimonials, guarantees, '\n    + 'user counts or results that were not supplied. An invented refund policy is one the '\n    + 'seller will be held to.\\n\\n'\n    + 'Banned language: ' + ($json.__config.bannedClaims || []).join(', ') + '\\n\\n'\n    + 'Write these sections in this order:\\n'\n    + '1. headline — one line naming the problem, not the product\\n'\n    + '2. problem — 2-3 sentences the reader recognises as their situation\\n'\n    + '3. proof — only what the supplied facts support; empty string if none\\n'\n    + '4. whatYouGet — array of outcomes, not features. \"You stop losing sales to X\", not \"has X\"\\n'\n    + '5. howItWorks — numbered steps, concrete, removes fear of setup\\n'\n    + '6. limits — what this does NOT do. Be specific and honest. This section builds trust\\n'\n    + '7. callToAction — one clear next step including the price if supplied\\n'\n    + '8. metaDescription — under 160 characters for search results\\n\\n'\n    + 'Reply with STRICT JSON only, no markdown fence, with exactly those 8 keys.',\n  messages: [ { role: 'user', content: JSON.stringify({\n    productName: $json.productName, whatItIs: $json.whatItIs,\n    problemItSolves: $json.problemItSolves, whatsIncluded: $json.whatsIncluded,\n    price: $json.price, proof: $json.proof, limits: $json.limits,\n    setupTime: $json.setupTime, requirements: $json.requirements\n  }, null, 2) } ]\n}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "notes": "Add your API key as a Header Auth credential.",
+      "notesInFlow": false
+    },
+    {
+      "id": "c49ea80e-518c-5c2d-9ac3-7ace7330ac82",
+      "name": "📖 Parse the listing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Defensive parse. An unreadable response must not be published as an empty\n// page, so it returns a clear failure instead.\nconst src = $('📥 Collect the facts').first().json;\n\nfunction extract(p) {\n  return p?.content?.[0]?.text ?? p?.choices?.[0]?.message?.content ?? '';\n}\n\nreturn $input.all().map(item => {\n  const raw = String(extract(item.json) || '').trim();\n\n  let l = null;\n  try {\n    l = JSON.parse(raw.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim());\n  } catch {\n    const m = raw.match(/\\{[\\s\\S]*\\}/);\n    if (m) { try { l = JSON.parse(m[0]); } catch { /* fall through */ } }\n  }\n\n  if (!l || typeof l.headline !== 'string') {\n    return { json: { ...src, ok: false,\n      problems: ['model returned an unreadable response — nothing was written'],\n      listing: null } };\n  }\n\n  const str = (v) => String(v ?? '').trim();\n  const arr = (v) => Array.isArray(v) ? v.map(x => str(x)).filter(Boolean) : [];\n\n  return { json: { ...src, ok: true, listing: {\n    headline: str(l.headline),\n    problem: str(l.problem),\n    proof: str(l.proof),\n    whatYouGet: arr(l.whatYouGet),\n    howItWorks: arr(l.howItWorks),\n    limits: str(l.limits),\n    callToAction: str(l.callToAction),\n    metaDescription: str(l.metaDescription).slice(0, 160),\n  }}};\n});"
+      },
+      "notes": "An unreadable response fails clearly rather than publishing an empty page.",
+      "notesInFlow": false
+    },
+    {
+      "id": "611d2303-e5bc-5c87-be97-b27e44246a11",
+      "name": "🔍 Scan for unsupported claims",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Deterministic second pass. Models drift toward marketing language even when\n// told not to, so the instruction alone is not a control — this is.\n//\n// Deliberately advisory, not blocking: the seller may hold proof this workflow\n// cannot see. The point is that the decision becomes conscious.\nconst out = [];\n\nfor (const item of $input.all()) {\n  const o = item.json;\n\n  if (!o.ok || !o.listing) {\n    out.push({ json: { ...o, flags: [], safeToPublish: false } });\n    continue;\n  }\n\n  const cfg = o.__config;\n  const l = o.listing;\n\n  // Every piece of prose the model produced, with its section name.\n  const sections = [\n    ['headline', l.headline], ['problem', l.problem], ['proof', l.proof],\n    ['limits', l.limits], ['callToAction', l.callToAction],\n    ['metaDescription', l.metaDescription],\n    ...l.whatYouGet.map((t, i) => [`whatYouGet[${i}]`, t]),\n    ...l.howItWorks.map((t, i) => [`howItWorks[${i}]`, t]),\n  ];\n\n  const flags = [];\n\n  // ── Banned language ──────────────────────────────────────────\n  for (const [where, text] of sections) {\n    if (!text) continue;\n    for (const claim of (cfg.bannedClaims || [])) {\n      const c = String(claim).toLowerCase();\n      if (!c) continue;\n      const idx = text.toLowerCase().indexOf(c);\n      if (idx >= 0) {\n        // Show the sentence it appeared in, so the fix is obvious.\n        const sentence = text.slice(Math.max(0, idx - 60), idx + c.length + 60).trim();\n        flags.push({ type: 'banned_claim', where, claim, context: `…${sentence}…` });\n      }\n    }\n  }\n\n  // ── Numbers with no supporting fact ──────────────────────────\n  // A statistic the seller never supplied was invented.\n  const supplied = (o.proof + ' ' + o.whatItIs + ' ' + o.problemItSolves + ' ' + o.price).toLowerCase();\n  for (const [where, text] of sections) {\n    if (!text) continue;\n    const stats = text.match(/\\b\\d{1,3}(?:[.,]\\d+)?\\s?(?:%|percent|x\\b|times)\\b/gi) || [];\n    for (const s of stats) {\n      if (!supplied.includes(s.toLowerCase().replace(/\\s+/g, ' ').trim())) {\n        flags.push({ type: 'unsupported_statistic', where, claim: s,\n                     context: 'This figure does not appear in the facts you supplied.' });\n      }\n    }\n  }\n\n  // ── Proof claimed without evidence supplied ──────────────────\n  if (l.proof && !o.proof) {\n    flags.push({ type: 'invented_proof', where: 'proof',\n                 claim: l.proof.slice(0, 120),\n                 context: 'You supplied no proof, but the listing has a proof section.' });\n  }\n\n  // ── Missing limits section ───────────────────────────────────\n  if (cfg.requireLimitsSection && !l.limits) {\n    flags.push({ type: 'missing_limits', where: 'limits', claim: '(empty)',\n                 context: 'The honest-limits section is empty. It is the section that builds trust and reduces refunds.' });\n  }\n\n  out.push({ json: { ...o, flags, safeToPublish: flags.length === 0 } });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Deterministic check on the model's output. Advisory, not blocking — but the decision becomes conscious.",
+      "notesInFlow": false
+    },
+    {
+      "id": "95f0a997-8821-5596-9a37-fb3dee55cc41",
+      "name": "📄 Render the listing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Emit the listing three ways so it can be pasted wherever it is needed:\n// markdown for marketplaces, HTML for a site, and the raw object for a CMS.\nreturn $input.all().map(item => {\n  const o = item.json;\n\n  if (!o.ok || !o.listing) {\n    return { json: { ok: false, problems: o.problems, markdown: null, html: null } };\n  }\n\n  const l = o.listing;\n\n  const md = [\n    `# ${l.headline}`, '',\n    l.problem, '',\n    l.proof ? `## Why you can believe this\\n\\n${l.proof}\\n` : '',\n    l.whatYouGet.length ? `## What you get\\n\\n${l.whatYouGet.map(x => `- ${x}`).join('\\n')}\\n` : '',\n    l.howItWorks.length ? `## How it works\\n\\n${l.howItWorks.map((x, i) => `${i + 1}. ${x}`).join('\\n')}\\n` : '',\n    l.limits ? `## What this does not do\\n\\n${l.limits}\\n` : '',\n    l.callToAction ? `---\\n\\n**${l.callToAction}**` : '',\n  ].filter(Boolean).join('\\n');\n\n  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\n  const html =\n`<article style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:680px;margin:0 auto;line-height:1.65;color:#111\">\n  <h1 style=\"font-size:30px;line-height:1.25;margin:0 0 18px\">${esc(l.headline)}</h1>\n  <p style=\"font-size:17px;color:#444\">${esc(l.problem)}</p>\n  ${l.proof ? `<h2 style=\"font-size:19px;margin:34px 0 10px\">Why you can believe this</h2><p style=\"color:#444\">${esc(l.proof)}</p>` : ''}\n  ${l.whatYouGet.length ? `<h2 style=\"font-size:19px;margin:34px 0 10px\">What you get</h2><ul style=\"color:#444;padding-left:20px\">${l.whatYouGet.map(x => `<li style=\"margin-bottom:7px\">${esc(x)}</li>`).join('')}</ul>` : ''}\n  ${l.howItWorks.length ? `<h2 style=\"font-size:19px;margin:34px 0 10px\">How it works</h2><ol style=\"color:#444;padding-left:20px\">${l.howItWorks.map(x => `<li style=\"margin-bottom:7px\">${esc(x)}</li>`).join('')}</ol>` : ''}\n  ${l.limits ? `<h2 style=\"font-size:19px;margin:34px 0 10px\">What this does not do</h2><p style=\"color:#444\">${esc(l.limits)}</p>` : ''}\n  ${l.callToAction ? `<p style=\"margin:34px 0 0\"><strong style=\"font-size:17px\">${esc(l.callToAction)}</strong></p>` : ''}\n</article>`;\n\n  const flagReport = o.flags.length\n    ? `⚠️ ${o.flags.length} claim(s) need your attention before publishing:\\n\\n` +\n      o.flags.map(f => `[${f.type}] in ${f.where}\\n  \"${f.claim}\"\\n  ${f.context}`).join('\\n\\n')\n    : '✅ No unsupported claims detected. Still read it once before publishing.';\n\n  return { json: {\n    ok: true,\n    productName: o.productName,\n    safeToPublish: o.safeToPublish,\n    flags: o.flags,\n    flagReport,\n    missingFacts: o.missingFacts,\n    metaDescription: l.metaDescription,\n    markdown: md,\n    html,\n    listing: l,\n  }};\n});"
+      },
+      "notes": "Markdown for marketplaces, HTML for your site, raw object for a CMS.",
+      "notesInFlow": false
+    },
+    {
+      "id": "5842536e-44bb-5212-aba2-6e7b5727f088",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        420
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"listing-writer\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"ai-sales-page-writer\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "2a8f7970-7d74-5512-b280-a224ae469a7e",
+      "name": "↩️ Return the listing",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: $json.ok, safeToPublish: $json.safeToPublish ?? false, flags: $json.flags ?? [], markdown: $json.markdown }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "📋 Product facts": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📥 Collect the facts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Collect the facts": {
+      "main": [
+        [
+          {
+            "node": "🧠 Write the listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Write the listing": {
+      "main": [
+        [
+          {
+            "node": "📖 Parse the listing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📖 Parse the listing": {
+      "main": [
+        [
+          {
+            "node": "🔍 Scan for unsupported claims",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Scan for unsupported claims": {
+      "main": [
+        [
+          {
+            "node": "📄 Render the listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 Render the listing": {
+      "main": [
+        [
+          {
+            "node": "↩️ Return the listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "📄 Render the listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "ai-agent"
+    },
+    {
+      "name": "marketing"
+    },
+    {
+      "name": "copywriting"
+    },
+    {
+      "name": "seo"
+    },
+    {
+      "name": "content"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "ai-sales-page-writer",
+    "category": "a6-content-localization",
+    "version": "1.0.0"
+  }
+}

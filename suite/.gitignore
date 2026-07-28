@@ -1,0 +1,4 @@
+# Generated sellable bundles — rebuilt from templates/ with factory/package.py.
+# The zips are build artefacts, not source; committing them would put binary
+# blobs in every diff and let the packaged copy drift from the built one.
+dist/

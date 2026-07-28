@@ -15,25 +15,25 @@
 
 export const siteConfig = {
   name: "ETQAN AI",
-  brand: "Etqan • Trading Library",
-  tagline: "Institutional-grade trading education, engineered for serious traders.",
+  brand: "Etqan • AI Systems",
+  tagline: "Production-hardened AI systems, tools and templates for people who ship.",
   description:
-    "A premium digital library of professional trading books — market structure, liquidity, order flow, SMC/ICT, Wyckoff and AI-driven institutional analysis. Learn the way funds actually trade.",
+    "A marketplace for AI automation systems, tools and templates — built to survive real traffic, not just a demo. Every workflow is behaviourally tested against replayed webhooks, forged signatures and silent failures. Trading library included as a secondary collection.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://etqan-ai.example.com",
   locale: "en_US",
   keywords: [
+    "AI automation templates",
+    "n8n templates",
+    "AI systems",
+    "AI tools",
+    "workflow automation",
+    "digital product automation",
+    "fraud detection automation",
+    "AI agents",
+    "production-hardened workflows",
     "trading books",
     "smart money concepts",
-    "ICT",
-    "order flow",
-    "market structure",
-    "liquidity",
-    "Wyckoff",
-    "supply and demand",
-    "AI trading",
     "institutional trading",
-    "price action",
-    "risk management",
   ],
   social: {
     telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "TELEGRAM_URL_PLACEHOLDER",
@@ -494,3 +494,188 @@ export const books: Book[] = [
 export function getBook(id: string): Book | undefined {
   return books.find((b) => b.id === id);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  AUTOMATION CATALOG
+ *
+ *  A second product line under the same brand. Kept structurally
+ *  separate from `books` rather than folded into it, because the two
+ *  differ in every way that matters to the storefront: books are sold
+ *  in-house through NOWPayments, bundles are sold through Lemon
+ *  Squeezy; books carry a founding-price offer, bundles do not; and
+ *  books have a curriculum while bundles have a workflow list.
+ *
+ *  Courses and systems will slot in here the same way.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+export type AutomationKind = "tool" | "system" | "suite";
+
+/** A bundle as authored. Node and workflow counts are not written here —
+ *  see `automationBundles` below, which derives them. */
+export interface BundleDef {
+  id: string;
+  /** Drives the badge and the glyph. A tool does one job; a system coordinates several. */
+  kind: AutomationKind;
+  /** Displayed name. Deliberately English — the buyer audience is technical. */
+  name: string;
+  price: number | null;
+  /** Lemon Squeezy checkout URL. These are hosted externally, not by us. */
+  checkoutUrl: string;
+  featured?: boolean;
+  free?: boolean;
+  /** Slugs of the workflows actually shipped in this bundle, in the order
+   *  a buyer would install them. These are read straight off `suite/dist`
+   *  — the storefront lists what the ZIP contains, never a wish list. */
+  workflows: string[];
+}
+
+/** One shipped workflow. Node counts are measured, not estimated. */
+export interface WorkflowSpec {
+  slug: string;
+  nodes: number;
+  /** Drives the icon and the accent on the workflow card. */
+  category:
+    | "delivery"
+    | "protection"
+    | "agent"
+    | "growth"
+    | "finance"
+    | "ops";
+  /** Fires on an inbound call, on a timer, or by hand. */
+  trigger: "webhook" | "schedule" | "manual" | "error";
+}
+
+/** The full shipped inventory — 23 workflows, 285 nodes. */
+export const workflowSpecs: WorkflowSpec[] = [
+  { slug: "instant-digital-delivery", nodes: 15, category: "delivery", trigger: "webhook" },
+  { slug: "secure-download-endpoint", nodes: 11, category: "delivery", trigger: "webhook" },
+  { slug: "product-update-broadcast", nodes: 12, category: "delivery", trigger: "webhook" },
+  { slug: "download-problem-self-service", nodes: 13, category: "delivery", trigger: "webhook" },
+  { slug: "delivery-test-runner", nodes: 8, category: "ops", trigger: "manual" },
+  { slug: "setup-checker", nodes: 11, category: "ops", trigger: "manual" },
+  { slug: "central-error-hub", nodes: 9, category: "ops", trigger: "error" },
+  { slug: "pre-payment-fraud-scoring", nodes: 11, category: "protection", trigger: "webhook" },
+  { slug: "chargeback-early-warning", nodes: 11, category: "protection", trigger: "webhook" },
+  { slug: "leak-detection-watermarking", nodes: 16, category: "protection", trigger: "webhook" },
+  { slug: "cart-abandonment-recovery", nodes: 13, category: "growth", trigger: "webhook" },
+  { slug: "failed-payment-recovery", nodes: 18, category: "growth", trigger: "webhook" },
+  { slug: "post-purchase-sequence", nodes: 14, category: "growth", trigger: "webhook" },
+  { slug: "ai-customer-support-agent", nodes: 13, category: "agent", trigger: "webhook" },
+  { slug: "ai-lead-qualifier", nodes: 15, category: "agent", trigger: "webhook" },
+  { slug: "ai-product-translation", nodes: 12, category: "agent", trigger: "webhook" },
+  { slug: "ai-sales-page-writer", nodes: 10, category: "agent", trigger: "webhook" },
+  { slug: "cv-screening-triage", nodes: 16, category: "agent", trigger: "webhook" },
+  { slug: "automatic-invoice-vat", nodes: 10, category: "finance", trigger: "webhook" },
+  { slug: "commission-affiliate-payouts", nodes: 13, category: "finance", trigger: "webhook" },
+  { slug: "sales-anomaly-detection", nodes: 13, category: "ops", trigger: "schedule" },
+  { slug: "sales-pipeline-followup", nodes: 13, category: "growth", trigger: "schedule" },
+  { slug: "daily-business-pulse", nodes: 8, category: "ops", trigger: "schedule" },
+];
+
+export const workflowBySlug = Object.fromEntries(
+  workflowSpecs.map((w) => [w.slug, w])
+) as Record<string, WorkflowSpec>;
+
+const bundleDefs: BundleDef[] = [
+  {
+    id: "free-secure-downloads",
+    kind: "tool",
+    name: "Secure Download Endpoint",
+    price: null,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/5c55f9b6-fe57-423e-987e-e094d238ebc6",
+    free: true,
+    workflows: ["secure-download-endpoint"],
+  },
+  {
+    id: "delivery-essentials",
+    kind: "system",
+    name: "Delivery Essentials",
+    price: 79,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/cf57fddc-65a0-458d-bf2e-2a0debaba964",
+    workflows: [
+      "instant-digital-delivery",
+      "secure-download-endpoint",
+      "product-update-broadcast",
+      "download-problem-self-service",
+      "delivery-test-runner",
+      "setup-checker",
+      "central-error-hub",
+    ],
+  },
+  {
+    id: "revenue-protection",
+    kind: "system",
+    name: "Revenue Protection",
+    price: 149,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/b532a73d-0329-4342-8ceb-c9f87d41d750",
+    workflows: [
+      "pre-payment-fraud-scoring",
+      "chargeback-early-warning",
+      "leak-detection-watermarking",
+      "cart-abandonment-recovery",
+      "failed-payment-recovery",
+      "setup-checker",
+      "central-error-hub",
+    ],
+  },
+  {
+    id: "ai-agents",
+    kind: "system",
+    name: "AI Agents",
+    price: 149,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/18a030a4-bf2f-4763-956d-8873e1a9342a",
+    workflows: [
+      "ai-customer-support-agent",
+      "ai-lead-qualifier",
+      "ai-product-translation",
+      "ai-sales-page-writer",
+      "cv-screening-triage",
+      "setup-checker",
+      "central-error-hub",
+    ],
+  },
+  {
+    id: "complete-suite",
+    kind: "suite",
+    name: "Complete Suite",
+    price: 399,
+    checkoutUrl:
+      "https://etqan-ai.lemonsqueezy.com/checkout/buy/c15e89ca-8210-409c-8c87-cfead216796e",
+    featured: true,
+    workflows: workflowSpecs.map((w) => w.slug),
+  },
+];
+
+/**
+ * The catalogue as the storefront sees it, with `nodes` and
+ * `workflowCount` computed from each bundle's workflow list.
+ *
+ * These were hand-written fields until a check against `suite/dist`
+ * caught three of the five disagreeing with the shipped ZIPs — Delivery
+ * Essentials advertised 89 nodes and ships 79, which is the kind of
+ * overstatement that is indistinguishable from lying to a buyer who
+ * counts. Deriving them means the page cannot claim a number the files
+ * do not contain.
+ */
+export interface AutomationBundle extends BundleDef {
+  nodes: number;
+  workflowCount: number;
+}
+
+export const automationBundles: AutomationBundle[] = bundleDefs.map((b) => ({
+  ...b,
+  workflowCount: b.workflows.length,
+  nodes: b.workflows.reduce((sum, slug) => sum + workflowBySlug[slug].nodes, 0),
+}));
+
+/** Headline numbers for the automation section. Stated, not estimated. */
+export const automationProof = {
+  behaviouralTests: 151,
+  gateProbes: 14,
+  workflows: 23,
+  nodes: 285,
+} as const;

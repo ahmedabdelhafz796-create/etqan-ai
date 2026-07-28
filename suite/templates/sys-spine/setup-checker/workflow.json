@@ -1,0 +1,410 @@
+{
+  "name": "DCA-SYS-02 · Setup Checker & Install Guide (run this first)",
+  "nodes": [
+    {
+      "id": "4b232e35-b041-58d7-9d34-74aaf3a10332",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -520
+      ],
+      "parameters": {
+        "content": "## 🧰 Setup Checker — run this FIRST\n**One run → everything still wrong, with the fix for each.**\n\n### How to use it\n1. Import every template you plan to use.\n2. Fill in their **⚙️ Config** nodes.\n3. Come back here, open **⚙️ Config**, and enter the same values you used\n   in the others.\n4. Press **Execute**. Read **📋 Setup report**.\n5. Fix what it lists, run again until it is clean.\n\n### Why this exists\nRoughly **70% of templates fail at install** — not because the workflow is\nwrong, but because one small step was missed and the failure shows up\nhours later somewhere unrelated.\n\nThis is the closest thing to someone looking over your shoulder.",
+        "height": 540,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "0fe77473-0899-52cb-91c4-2568e1341e11",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        -520
+      ],
+      "parameters": {
+        "content": "### 🔑 The check that matters most\n**Four templates share one link-signing secret:**\n`A1-01` mints · `A1-02` verifies · `A4-01` reissues · `A1-04` broadcasts.\n\nIf any two disagree, **every download fails** with an \"invalid signature\"\nerror that looks like tampering rather than a typo.\n\nThat is brutal to diagnose from the inside. So this actually **computes a\nsignature with each secret and compares them** — it does not trust that\nyou pasted the same string four times.",
+        "height": 400,
+        "width": 500,
+        "color": 5
+      }
+    },
+    {
+      "id": "5a9854fc-cfc1-5d42-a565-a14663ff0bc6",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        -520
+      ],
+      "parameters": {
+        "content": "### 📊 Severity order\n| Level | Meaning |\n| --- | --- |\n| 🔴 **blocker** | customers will hit this today |\n| 🟠 **important** | works now, will bite you |\n| 🟡 **advisable** | best practice, not urgent |\n| ✅ **passed** | confirmed working |\n\nFix every 🔴 before pointing real traffic at anything.",
+        "height": 340,
+        "width": 440,
+        "color": 7
+      }
+    },
+    {
+      "id": "3da11f80-ce79-5b37-a528-86bfba734a9a",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        340
+      ],
+      "parameters": {
+        "content": "### 🔁 Run it again after any change\nRotated a secret · added a template · changed a Config value · moved from\ntest to live.\n\nIt takes three seconds and catches the mistake before a customer does.",
+        "height": 260,
+        "width": 420,
+        "color": 4
+      }
+    },
+    {
+      "id": "9b163d28-4055-5162-9674-3095a98fe2f2",
+      "name": "▶️ Run the setup check",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        180
+      ],
+      "parameters": {},
+      "notes": "Use this to dry-run the workflow before you point real traffic at it.",
+      "notesInFlow": false
+    },
+    {
+      "id": "f2429825-cce1-555c-8e07-2d096e6c5c77",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"linkSecret_A1_01\": \"PASTE_THE_SECRET_FROM_A1-01_SIGN_DOWNLOAD_LINK\",\n  \"linkSecret_A1_02\": \"PASTE_THE_SECRET_FROM_A1-02_RECOMPUTE_SIGNATURE\",\n  \"linkSecret_A4_01\": \"PASTE_THE_SECRET_FROM_A4-01_SIGN_THE_NEW_LINK\",\n  \"linkSecret_A1_04\": \"PASTE_THE_SECRET_FROM_A1-04_SIGN_FRESH_LINKS\",\n  \"downloadBaseUrl\": \"https://yourdomain.com/download\",\n  \"fromEmail\": \"orders@yourdomain.com\",\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"webhookSigningSecret\": \"PASTE_YOUR_GATEWAY_WEBHOOK_SECRET\",\n  \"testModeStillOn\": true,\n  \"errorWorkflowConfigured\": false,\n  \"templatesActivated\": [],\n  \"aiApiKeyConfigured\": false,\n  \"orderLogWired\": false,\n  \"reportEmail\": \"you@yourdomain.com\"\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "Copy the real values from your other templates' Config nodes. Be honest about the booleans — this only helps if it reflects reality.",
+      "notesInFlow": false
+    },
+    {
+      "id": "cbc921b7-de6a-5267-b9a3-445fe30670d4",
+      "name": "🔬 Build the signature probe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Prepare one identical payload to sign with every configured secret. Signing\n// the same input with each and comparing the results is the only reliable way\n// to prove four separately-pasted strings are actually the same — string\n// comparison would work too, but this also catches invisible whitespace and\n// smart-quote substitution that a visual check misses entirely.\nconst cfg = $input.first().json.__config;\nreturn [{ json: { ...cfg, __probePayload: 'dca-setup-probe|fixed-input|v1', __config: cfg } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "One fixed payload, signed with each configured secret.",
+      "notesInFlow": false
+    },
+    {
+      "id": "445d880e-4d85-5680-9b4d-46e7dfa64656",
+      "name": "🔏 Sign with A1-01 secret",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        0,
+        60
+      ],
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.__probePayload }}",
+        "dataPropertyName": "sigA101",
+        "secret": "={{ $json.linkSecret_A1_01 }}",
+        "encoding": "hex"
+      },
+      "notes": "Signs the probe with the secret you pasted from A1-01.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7c413335-73b4-52d7-a67a-84752c6e4256",
+      "name": "🔏 Sign with A1-02 secret",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        220,
+        60
+      ],
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.__probePayload }}",
+        "dataPropertyName": "sigA102",
+        "secret": "={{ $json.linkSecret_A1_02 }}",
+        "encoding": "hex"
+      },
+      "notes": "Signs the same probe with A1-02's secret. These two must match.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a6357097-b4f1-511a-af44-297da529a86d",
+      "name": "🔏 Sign with A4-01 secret",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        440,
+        60
+      ],
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.__probePayload }}",
+        "dataPropertyName": "sigA401",
+        "secret": "={{ $json.linkSecret_A4_01 }}",
+        "encoding": "hex"
+      },
+      "notes": "A4-01 reissues links, so its secret must match too.",
+      "notesInFlow": false
+    },
+    {
+      "id": "472bc8aa-3334-5eb6-b2a8-9fcc99e83b57",
+      "name": "🔏 Sign with A1-04 secret",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        660,
+        60
+      ],
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.__probePayload }}",
+        "dataPropertyName": "sigA104",
+        "secret": "={{ $json.linkSecret_A1_04 }}",
+        "encoding": "hex"
+      },
+      "notes": "A1-04 broadcasts fresh links, so its secret must match as well.",
+      "notesInFlow": false
+    },
+    {
+      "id": "c8116bd8-153a-5821-bc70-d92861e6b0cc",
+      "name": "🔎 Run every check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// Every check states what is wrong, why it matters, and the exact fix.\n// \"Configuration invalid\" helps nobody — the buyer needs to know which\n// node to open and what to type in it.\n// ═══════════════════════════════════════════════════════════════════\nconst d = $input.first().json;\nconst cfg = d.__config;\n\nconst findings = [];\nconst add = (severity, title, why, fix) => findings.push({ severity, title, why, fix });\n\nconst isPlaceholder = (v) =>\n  !v || /^(PASTE_|YOUR_|REPLACE|CHANGE_THIS|<)/i.test(String(v).trim()) ||\n  String(v).includes('yourdomain.com') || String(v).includes('example.com');\n\n// ── 1. Link-signing secrets must agree ───────────────────────\n// Compare computed signatures, not the strings themselves — this also catches\n// trailing whitespace and smart quotes, which look identical on screen.\nconst sigs = {\n  'A1-01 (mints links)': d.sigA101,\n  'A1-02 (verifies links)': d.sigA102,\n  'A4-01 (reissues links)': d.sigA401,\n  'A1-04 (broadcasts links)': d.sigA104,\n};\n\nconst placeheld = Object.entries(sigs).filter(([name]) => {\n  const key = { 'A1-01 (mints links)': 'linkSecret_A1_01', 'A1-02 (verifies links)': 'linkSecret_A1_02',\n                'A4-01 (reissues links)': 'linkSecret_A4_01', 'A1-04 (broadcasts links)': 'linkSecret_A1_04' }[name];\n  return isPlaceholder(cfg[key]);\n}).map(([name]) => name);\n\nif (placeheld.length === 4) {\n  add('blocker', 'No link-signing secret has been set',\n    'Every download link is signed with this secret. Without it nothing can be delivered or verified.',\n    'Invent one long random string (e.g. run `openssl rand -hex 32`). Paste the SAME value into the Crypto node of A1-01, A1-02, A4-01 and A1-04 — then into this workflow\\'s Config to re-check.');\n} else {\n  if (placeheld.length) {\n    add('blocker', `Link secret missing in: ${placeheld.join(', ')}`,\n      'These templates cannot sign or verify links without it.',\n      'Paste the same secret you used in the other templates into each one listed.');\n  }\n\n  const values = Object.entries(sigs).filter(([name]) => !placeheld.includes(name));\n  const distinct = new Set(values.map(([, s]) => String(s)));\n\n  if (values.length >= 2 && distinct.size > 1) {\n    // Group by signature so the report names which templates disagree.\n    const groups = {};\n    for (const [name, s] of values) (groups[s] = groups[s] || []).push(name);\n    const detail = Object.values(groups).map(g => `{ ${g.join(', ')} }`).join(' ≠ ');\n\n    add('blocker', 'Link-signing secrets DO NOT MATCH',\n      `These templates are using different secrets: ${detail}. Every download will fail with an \"invalid signature\" error that looks like tampering but is actually a typo.`,\n      'Pick ONE secret. Open the Crypto node in each of A1-01, A1-02, A4-01 and A1-04 and paste exactly the same value. Watch for trailing spaces and for quotes that a text editor turned into smart quotes.');\n  } else if (values.length >= 2) {\n    add('passed', `Link-signing secrets match across ${values.length} template(s)`,\n      'Links minted by one template will verify in the others.', null);\n  }\n}\n\n// ── 2. Placeholder values left in Config ─────────────────────\nconst placeholders = [];\nif (isPlaceholder(cfg.downloadBaseUrl)) placeholders.push('downloadBaseUrl');\nif (isPlaceholder(cfg.fromEmail)) placeholders.push('fromEmail');\nif (isPlaceholder(cfg.storeName)) placeholders.push('storeName');\n\nif (placeholders.length) {\n  add('blocker', `Placeholder values still in Config: ${placeholders.join(', ')}`,\n    'Emails will be sent from a non-existent address, or download links will point at a domain you do not own. Both fail visibly for the customer.',\n    'Open each template\\'s ⚙️ Config node and replace these with your real values.');\n} else {\n  add('passed', 'Config values look real', 'No obvious placeholders remain.', null);\n}\n\n// ── 3. Webhook signature verification ────────────────────────\nif (isPlaceholder(cfg.webhookSigningSecret)) {\n  add('blocker', 'Webhook signing secret is not set',\n    'Your delivery endpoint cannot verify that requests genuinely come from your payment provider. Anyone who discovers the URL could mint free orders.',\n    'Copy the signing secret from your gateway (Stripe: whsec_…, Lemon Squeezy: your signing secret) into the \"Verify signature\" Crypto node in A1-01.');\n} else {\n  add('passed', 'Webhook signing secret is set', 'Forged payment webhooks will be rejected.', null);\n}\n\n// ── 4. Test mode ─────────────────────────────────────────────\nif (cfg.testModeStillOn === true) {\n  add('blocker', 'testMode is still ON',\n    'Signature verification is bypassed while testMode is true. That is correct for setup and dangerous in production — the endpoint will accept forged orders.',\n    'Set testMode: false in A1-01\\'s ⚙️ Config once you have confirmed delivery works.');\n} else {\n  add('passed', 'testMode is off', 'Signature verification is enforced.', null);\n}\n\n// ── 5. Error Workflow ────────────────────────────────────────\nif (cfg.errorWorkflowConfigured !== true) {\n  add('important', 'Error Workflow is not configured',\n    'When something fails you will not be told. It will sit in an execution log nobody reads, which is exactly the silent-failure problem this suite exists to remove.',\n    'Import DCA-SYS-00 (Central Error Hub) and activate it. Then in EVERY other template: Settings → Error Workflow → select it.');\n} else {\n  add('passed', 'Error Workflow is configured', 'Failures will reach you in one place.', null);\n}\n\n// ── 6. Activation ────────────────────────────────────────────\nconst active = Array.isArray(cfg.templatesActivated) ? cfg.templatesActivated : [];\nif (!active.length) {\n  add('blocker', 'No templates are marked as activated',\n    'An imported workflow does nothing until it is Activated. Webhook URLs return 404 while inactive, so your payment provider will report delivery failures.',\n    'Toggle Active on each template you intend to use, then list them in this Config to clear this check.');\n} else {\n  add('passed', `${active.length} template(s) activated`, active.join(', '), null);\n}\n\n// ── 7. Order log ─────────────────────────────────────────────\nif (cfg.orderLogWired !== true) {\n  add('important', 'Order log is not wired to durable storage',\n    'Order records currently exist only inside n8n. You need them for chargeback evidence and for A4-01 to verify who bought what — and n8n static data is not a permanent record.',\n    'Wire the \"Record the order\" node in A1-01 to a Google Sheet, Airtable base or database table.');\n} else {\n  add('passed', 'Order log is wired to storage', 'Chargeback evidence and entitlement lookups will work.', null);\n}\n\n// ── 8. AI key ────────────────────────────────────────────────\nif (cfg.aiApiKeyConfigured !== true) {\n  add('advisable', 'No AI provider key configured',\n    'The AI templates (B1-01 support agent, B1-02 lead qualifier, A6-01 translation, A6-02 listing writer) cannot run without one. Everything else works fine without it.',\n    'Add your provider key as a Header Auth credential on the HTTP node in each AI template. Skip this if you are not using them.');\n} else {\n  add('passed', 'AI provider key configured', 'The AI templates can run.', null);\n}\n\n// ── Summary ──────────────────────────────────────────────────\nconst order = { blocker: 0, important: 1, advisable: 2, passed: 3 };\nfindings.sort((a, b) => order[a.severity] - order[b.severity]);\n\nconst counts = findings.reduce((acc, f) => { acc[f.severity] = (acc[f.severity] || 0) + 1; return acc; }, {});\n\nreturn [{ json: {\n  findings,\n  blockers: counts.blocker || 0,\n  important: counts.important || 0,\n  advisable: counts.advisable || 0,\n  passed: counts.passed || 0,\n  readyForCustomers: (counts.blocker || 0) === 0,\n  checkedAt: new Date().toISOString(),\n  __config: cfg,\n}}];"
+      },
+      "alwaysOutputData": true,
+      "notes": "Every finding names the node to open and what to type. Ordered by severity.",
+      "notesInFlow": false
+    },
+    {
+      "id": "b07960fd-389b-5770-8c97-53c9e8094771",
+      "name": "📋 Setup report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// The report the buyer reads. Written so the top line answers the only question\n// they actually have: can I turn this on yet?\nconst o = $input.first().json;\nconst cfg = o.__config;\n\nconst icon = { blocker: '🔴', important: '🟠', advisable: '🟡', passed: '✅' };\n\nconst block = (sev, heading) => {\n  const items = o.findings.filter(f => f.severity === sev);\n  if (!items.length) return '';\n  return `\\n${heading}\\n${'─'.repeat(52)}\\n` + items.map(f =>\n    `${icon[sev]} ${f.title}\\n   Why it matters: ${f.why}${f.fix ? `\\n   FIX: ${f.fix}` : ''}`\n  ).join('\\n\\n') + '\\n';\n};\n\nconst verdict = o.readyForCustomers\n  ? `✅ READY — no blockers found.${o.important ? `\\n   ${o.important} important item(s) below are worth fixing soon.` : ''}`\n  : `🔴 NOT READY — ${o.blockers} blocker(s) must be fixed first.\\n   Customers will hit these today.`;\n\nconst text =\n`🧰 SETUP CHECK — ${cfg.storeName}\n${o.checkedAt.slice(0, 16).replace('T', ' ')}\n\n${verdict}\n\nBlockers: ${o.blockers}  ·  Important: ${o.important}  ·  Advisable: ${o.advisable}  ·  Passed: ${o.passed}\n${block('blocker', 'MUST FIX BEFORE GOING LIVE')}${block('important', 'FIX SOON')}${block('advisable', 'WORTH DOING')}${block('passed', 'CONFIRMED WORKING')}\n─────────────────────────────────────\nRun this again after any change — a rotated secret, a new template, or\nswitching from test to live. It takes three seconds and catches the\nmistake before a customer does.`;\n\nreturn [{ json: {\n  ready: o.readyForCustomers,\n  blockers: o.blockers,\n  important: o.important,\n  report: text,\n  findings: o.findings,\n  subject: o.readyForCustomers\n    ? `✅ Setup check passed — ${cfg.storeName}`\n    : `🔴 Setup check — ${o.blockers} blocker(s) to fix`,\n  __config: cfg,\n}}];"
+      },
+      "notes": "Open this node's output and read it. The top line tells you whether you can go live.",
+      "notesInFlow": false
+    },
+    {
+      "id": "8f69a022-62d1-5211-89f3-bf38c30a6e98",
+      "name": "📨 Email the report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1360,
+        180
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.reportEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.report }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "notes": "Optional — the report is readable in the previous node's output. Attach SMTP if you want it emailed.",
+      "notesInFlow": false
+    },
+    {
+      "id": "47464cac-1e68-5027-9516-1d11d728d365",
+      "name": "📒 Check outcome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Terminal record. The email is optional — the report is readable in the\n// previous node either way — so if sending fails this still captures the\n// result rather than letting the run end on a silent failure.\nreturn $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  ready: i.json.ready ?? null,\n  blockers: i.json.blockers ?? null,\n  important: i.json.important ?? null,\n  emailSent: !i.json.error,\n  emailError: i.json.error?.message ?? null,\n  note: i.json.error\n    ? 'The report could not be emailed, but the check itself ran. Read it in the \"Setup report\" node.'\n    : null,\n}}));"
+      },
+      "notes": "Captures the result even if the optional email fails.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "▶️ Run the setup check": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🔬 Build the signature probe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔬 Build the signature probe": {
+      "main": [
+        [
+          {
+            "node": "🔏 Sign with A1-01 secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔏 Sign with A1-01 secret": {
+      "main": [
+        [
+          {
+            "node": "🔏 Sign with A1-02 secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔏 Sign with A1-02 secret": {
+      "main": [
+        [
+          {
+            "node": "🔏 Sign with A4-01 secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔏 Sign with A4-01 secret": {
+      "main": [
+        [
+          {
+            "node": "🔏 Sign with A1-04 secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔏 Sign with A1-04 secret": {
+      "main": [
+        [
+          {
+            "node": "🔎 Run every check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Run every check": {
+      "main": [
+        [
+          {
+            "node": "📋 Setup report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Setup report": {
+      "main": [
+        [
+          {
+            "node": "📨 Email the report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Email the report": {
+      "main": [
+        [
+          {
+            "node": "📒 Check outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "system"
+    },
+    {
+      "name": "setup"
+    },
+    {
+      "name": "spine"
+    },
+    {
+      "name": "onboarding"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "setup-checker",
+    "category": "sys-spine",
+    "version": "1.0.0"
+  }
+}

@@ -34,7 +34,7 @@
   }
 
   ::selection {
-    @apply bg-gold/30 text-soft;
+    @apply bg-iris/35 text-soft;
   }
 
   /* Visible keyboard focus for all interactive elements */
@@ -44,7 +44,7 @@
   textarea:focus-visible,
   [role="button"]:focus-visible,
   [tabindex]:focus-visible {
-    outline: 2px solid rgba(233, 196, 106, 0.7);
+    outline: 2px solid rgba(129, 140, 248, 0.8);
     outline-offset: 2px;
     border-radius: 6px;
   }
@@ -186,6 +186,39 @@
   }
   .spotlight:hover::before {
     opacity: 1;
+  }
+
+  /* ── AI marketplace surface language ─────────────────────────────────
+     The trading library keeps the gold treatments above. Everything in
+     the AI product line uses these instead, so the two never blend. */
+
+  .text-gradient-iris {
+    @apply bg-gradient-to-r from-iris-light via-iris-mid to-aqua bg-clip-text text-transparent;
+  }
+
+  /* Panel used for product cards and workflow surfaces. Flat, high
+     contrast, a single hairline — closer to a developer console than to
+     the glassy gold cards used for books. */
+  .panel {
+    @apply rounded-2xl border border-white/[0.08] bg-white/[0.02];
+  }
+  .panel-raised {
+    @apply rounded-2xl border border-white/[0.09] bg-night-800/70 backdrop-blur-xl;
+  }
+
+  /* Dotted canvas behind workflow diagrams — the n8n/Make editor cue. */
+  .canvas-dots {
+    background-image: radial-gradient(
+      rgba(255, 255, 255, 0.09) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+
+  /* A connector that animates a packet along its path. */
+  .flow-dash {
+    stroke-dasharray: 5 7;
+    animation: flow-dash 1.4s linear infinite;
   }
 }
 

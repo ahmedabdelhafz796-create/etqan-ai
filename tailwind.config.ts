@@ -15,6 +15,22 @@ const config: Config = {
     },
     extend: {
       colors: {
+        /* ── AI marketplace accent ──────────────────────────────────────
+           The primary product line reads as developer tooling, so it runs
+           on iris/violet rather than the gold used by the trading library.
+           Two accents, strictly scoped: iris = AI systems, gold = books. */
+        iris: {
+          DEFAULT: "#6366F1",
+          light: "#A5B4FC",
+          mid: "#818CF8",
+          deep: "#4338CA",
+          ink: "#312E81",
+        },
+        aqua: {
+          DEFAULT: "#22D3EE",
+          light: "#67E8F9",
+          deep: "#0E7490",
+        },
         // Dark luxury financial palette
         night: {
           DEFAULT: "#05070C",
@@ -58,8 +74,11 @@ const config: Config = {
           "radial-gradient(circle at 50% 0%, rgba(233,196,106,0.18), transparent 60%)",
         "emerald-radial":
           "radial-gradient(circle at 80% 20%, rgba(18,185,129,0.14), transparent 55%)",
+        "iris-radial":
+          "radial-gradient(circle at 50% 0%, rgba(99,102,241,0.22), transparent 62%)",
       },
       boxShadow: {
+        "glow-iris": "0 0 48px -10px rgba(99,102,241,0.55)",
         glow: "0 0 40px -8px rgba(233,196,106,0.45)",
         "glow-emerald": "0 0 40px -8px rgba(18,185,129,0.45)",
         card: "0 24px 60px -20px rgba(0,0,0,0.7)",
@@ -117,6 +136,10 @@ const config: Config = {
         "border-flow": {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
+        },
+        /* Packets travelling along a workflow connector. */
+        "flow-dash": {
+          to: { strokeDashoffset: "-24" },
         },
       },
       animation: {

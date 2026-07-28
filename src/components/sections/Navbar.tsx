@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CandlestickChart, Menu, X } from "lucide-react";
+import { Menu, Workflow, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Magnetic } from "@/components/ui/magnetic";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -15,12 +15,14 @@ export function Navbar() {
   const [open, setOpen] = React.useState(false);
   const t = useT();
 
+  // The AI marketplace owns the navigation. The trading library gets one
+  // entry at the end, which is exactly its weight on the page.
   const NAV_LINKS = [
-    { label: t.nav.links.library, href: "#store" },
-    { label: t.nav.links.curriculum, href: "#store" },
-    { label: t.nav.links.signals, href: "#telegram" },
-    { label: t.nav.links.why, href: "#why" },
+    { label: t.nav.links.automation, href: "#catalog" },
+    { label: t.nav.links.how, href: "#how" },
+    { label: t.nav.links.standard, href: "#standard" },
     { label: t.nav.links.faq, href: "#faq" },
+    { label: t.nav.links.library, href: "#store" },
   ];
 
   React.useEffect(() => {
@@ -44,8 +46,10 @@ export function Navbar() {
     >
       <nav className="container-tight flex h-16 items-center justify-between md:h-18">
         <a href="#top" className="group flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-gold/30 bg-gold/10 text-gold-light shadow-glow">
-            <CandlestickChart className="h-5 w-5" />
+          {/* Was a candlestick chart. The mark now shows a workflow, which
+              is what the site sells. */}
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-iris/35 bg-iris/10 text-iris-light shadow-glow-iris">
+            <Workflow className="h-5 w-5" />
           </span>
           <span className="font-display text-lg font-semibold tracking-tight text-soft">
             {siteConfig.name}
@@ -67,8 +71,8 @@ export function Navbar() {
         <div className="hidden items-center gap-3 md:flex">
           <LanguageSwitcher />
           <Magnetic strength={8}>
-            <Button asChild variant="gold" size="sm">
-              <a href="#store">{t.nav.cta}</a>
+            <Button asChild variant="iris" size="sm">
+              <a href="#catalog">{t.nav.cta}</a>
             </Button>
           </Magnetic>
         </div>
@@ -108,11 +112,11 @@ export function Navbar() {
               ))}
               <Button
                 asChild
-                variant="gold"
+                variant="iris"
                 size="md"
                 className="mt-2 w-full"
               >
-                <a href="#store" onClick={() => setOpen(false)}>
+                <a href="#catalog" onClick={() => setOpen(false)}>
                   {t.nav.cta}
                 </a>
               </Button>

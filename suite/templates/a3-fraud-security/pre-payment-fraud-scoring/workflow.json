@@ -1,0 +1,479 @@
+{
+  "name": "DCA-A3-01 · Pre-Payment Fraud Scoring (no external API required)",
+  "nodes": [
+    {
+      "id": "ef2c4c4a-22f0-5711-84f9-66f630e76d77",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -460
+      ],
+      "parameters": {
+        "content": "## 🕵️ Pre-Payment Fraud Scoring\n**Score the order → allow, review, or block — before you hand over the file.**\n\n### Why this is different\nEvery other fraud workflow on the market reacts *after* a dispute opens.\nThis one runs *before* delivery, and it needs **no paid fraud API** —\nall signals are computed from the order itself plus a rolling local history.\n\n### Setup (about 10 minutes)\n1. Open **⚙️ Config** and set `reviewAt` / `blockAt` thresholds.\n2. Point your checkout or payment webhook at this workflow's Production URL.\n3. Wire the three outcome branches to whatever you use (delivery workflow,\n   Slack channel, refund queue).\n4. Run for a week in `shadowMode: true` — it scores and reports but never\n   blocks — then read the numbers and tune before enforcing.\n\n⚠️ **Start in shadow mode.** Thresholds that are right for one store are\nwrong for another. Tune on your own traffic, not on someone else's defaults.",
+        "height": 600,
+        "width": 580,
+        "color": 6
+      }
+    },
+    {
+      "id": "c25b4a5b-4ccb-5e90-bcf5-04a873075aea",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        -460
+      ],
+      "parameters": {
+        "content": "### 📊 The signals\n| Signal | Points | Catches |\n| --- | --- | --- |\n| Disposable email domain | 35 | throwaway-account abuse |\n| Brand-new random-looking local part | 15 | scripted signups |\n| Billing vs IP country mismatch | 25 | stolen card use |\n| High-risk / sanctioned geo | 20 | known-bad regions |\n| Email velocity (same buyer, short window) | 30 | card testing |\n| IP velocity (many buyers, one IP) | 30 | bulk fraud runs |\n| Amount far above your norm | 20 | maximising a stolen card |\n| Multiple distinct cards, one email | 25 | card testing |\n| Name/email mismatch | 10 | weak signal, tune-able |\n\nEvery point is reported with its reason. Nothing is hidden.",
+        "height": 480,
+        "width": 500,
+        "color": 4
+      }
+    },
+    {
+      "id": "2f58b43e-6a91-5190-a692-aeaaa9f0b02c",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -460
+      ],
+      "parameters": {
+        "content": "### 🎯 Tuning honestly\nFraud scoring trades false positives against losses. Blocking a real\ncustomer costs a sale **and** goodwill; letting fraud through costs the\nproduct plus a dispute fee.\n\nDefaults here are deliberately conservative — `blockAt: 80` blocks only\norders carrying several strong signals at once. Most stores should raise\n`reviewAt` rather than lower `blockAt`.\n\n**No scoring system is perfect.** Review the `review` queue daily; that is\nwhere the value actually is.",
+        "height": 400,
+        "width": 460,
+        "color": 7
+      }
+    },
+    {
+      "id": "9c4e60bf-7e96-5cc3-8be8-73401cc94768",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        300
+      ],
+      "parameters": {
+        "content": "### 🚨 Outcomes\n**allow** → continue to delivery.\n**review** → hold, alert a human, deliver after approval.\n**block** → do not deliver; refund or let the payment fail.\n\nIn `shadowMode` all three report but always resolve to *allow*, so you can\nmeasure before you enforce.",
+        "height": 280,
+        "width": 440,
+        "color": 5
+      }
+    },
+    {
+      "id": "7480168f-ba77-5f48-aa0b-b255d4b8cd0d",
+      "name": "🛒 Order created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -640,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/fraud-check",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Point your checkout / payment-intent webhook here. Runs before delivery.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a49581b5-2b99-5976-b404-f11ee9de4894",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"reviewAt\": 45,\n  \"blockAt\": 80,\n  \"shadowMode\": true,\n  \"velocityWindowMinutes\": 60,\n  \"maxOrdersPerEmail\": 3,\n  \"maxOrdersPerIp\": 5,\n  \"typicalOrderAmount\": 49,\n  \"amountAnomalyMultiplier\": 4,\n  \"highRiskCountries\": [],\n  \"trustedEmails\": [],\n  \"trustedDomains\": [],\n  \"historyTtlHours\": 24\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "Start with shadowMode:true. Tune reviewAt/blockAt on a week of your own traffic before enforcing.",
+      "notesInFlow": false
+    },
+    {
+      "id": "92c89cda-6fb0-57d4-b30f-99dac149c7e6",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 24 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String(j.body?.orderId ?? j.body?.order_id ?? j.body?.id ?? (j.body?.email + '|' + Date.now()) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ee48735a-91ec-58ef-9d64-55052aa66525",
+      "name": "📥 Extract order signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Pull the fields we score from whatever shape the checkout sent. Being\n// permissive here matters: sellers wire this to Stripe, to a custom checkout,\n// or to a form, and the template should not care which.\nconst cfg = $('⚙️ Config').first().json.__config;\n\nreturn $input.all().map(item => {\n  const b = item.json.body ?? item.json;\n  const h = item.json.headers ?? {};\n\n  const email = String(b.email ?? b.customer_email ?? b.customer?.email ?? '').trim().toLowerCase();\n\n  // Prefer the proxy-forwarded client IP; fall back to the socket address.\n  const ip = String(\n    (h['x-forwarded-for'] || '').split(',')[0].trim() ||\n    h['cf-connecting-ip'] || h['x-real-ip'] || b.ip || b.customer_ip || ''\n  );\n\n  return {\n    json: {\n      orderId:        b.orderId ?? b.order_id ?? b.id ?? null,\n      email,\n      name:           String(b.name ?? b.customer_name ?? b.customer?.name ?? '').trim(),\n      amount:         Number(b.amount ?? b.total ?? b.price ?? 0),\n      currency:       String(b.currency ?? 'USD').toUpperCase(),\n      ip,\n      ipCountry:      String(h['cf-ipcountry'] ?? b.ipCountry ?? b.ip_country ?? '').toUpperCase(),\n      billingCountry: String(b.country ?? b.billingCountry ?? b.billing_country ?? b.customer?.country ?? '').toUpperCase(),\n      cardFingerprint: String(b.cardFingerprint ?? b.card_fingerprint ?? b.payment_method ?? ''),\n      userAgent:      String(h['user-agent'] ?? ''),\n      __config:       cfg,\n    }\n  };\n});"
+      },
+      "notes": "Normalises checkout payloads. Missing fields simply score as unknown rather than crashing.",
+      "notesInFlow": false
+    },
+    {
+      "id": "52ec4ae2-9683-5f17-a057-d04a83b2f90d",
+      "name": "🧮 Score the risk",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// Transparent, local-only fraud scoring.\n//\n// Design rule: every point added must come with a human-readable reason.\n// A seller who cannot see why an order was blocked cannot tune the system,\n// and an untunable system gets switched off within a week.\n// ═══════════════════════════════════════════════════════════════════\n\n// A representative sample of throwaway-mail providers. This is intentionally a\n// starter list, not an exhaustive one — exhaustive lists go stale within weeks.\n// Add the domains you actually see in your own review queue.\nconst DISPOSABLE = new Set([\n  'mailinator.com','guerrillamail.com','10minutemail.com','tempmail.com','temp-mail.org',\n  'throwawaymail.com','yopmail.com','trashmail.com','sharklasers.com','getnada.com',\n  'maildrop.cc','dispostable.com','fakeinbox.com','mailnesia.com','mytemp.email',\n  'moakt.com','emailondeck.com','tempr.email','mohmal.com','spamgourmet.com',\n  'grr.la','guerrillamailblock.com','pokemail.net','spam4.me','tempmailo.com',\n  'burnermail.io','anonaddy.me','mailsac.com','inboxkitten.com','harakirimail.com',\n]);\n\nconst FREE_MAIL = new Set([\n  'gmail.com','yahoo.com','hotmail.com','outlook.com','icloud.com','aol.com',\n  'proton.me','protonmail.com','gmx.com','mail.com','yandex.com','zoho.com',\n]);\n\nconst store = $getWorkflowStaticData('global');\nstore.orders = store.orders || [];\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const o = item.json;\n  const cfg = o.__config;\n  const now = Date.now();\n  const windowMs = Number(cfg.velocityWindowMinutes) * 60 * 1000;\n  const ttlMs = Number(cfg.historyTtlHours) * 60 * 60 * 1000;\n\n  // Keep history bounded — both by age and by absolute count, so a traffic\n  // spike cannot grow static data without limit.\n  store.orders = store.orders.filter(r => now - r.t < ttlMs).slice(-2000);\n\n  let score = 0;\n  const reasons = [];\n  const add = (points, reason) => { score += points; reasons.push({ points, reason }); };\n\n  const domain = o.email.split('@')[1] || '';\n\n  // ── Allow-list short-circuit ────────────────────────────────────\n  const trusted =\n    (cfg.trustedEmails || []).includes(o.email) ||\n    (cfg.trustedDomains || []).includes(domain);\n\n  if (trusted) {\n    out.push({ json: { ...o, riskScore: 0, riskReasons: [{ points: 0, reason: 'Allow-listed buyer' }], decision: 'allow', shadowMode: cfg.shadowMode } });\n    store.orders.push({ t: now, email: o.email, ip: o.ip, card: o.cardFingerprint, amount: o.amount });\n    continue;\n  }\n\n  // ── Email signals ───────────────────────────────────────────────\n  if (!o.email || !o.email.includes('@')) {\n    add(40, 'No usable email address on the order');\n  } else if (DISPOSABLE.has(domain)) {\n    add(35, `Disposable email domain (${domain})`);\n  }\n\n  const local = o.email.split('@')[0] || '';\n  // Long, high-entropy local parts with no separators are a scripted-signup tell.\n  if (local.length >= 12 && /^[a-z0-9]+$/.test(local) && !/[._-]/.test(local)) {\n    const digits = (local.match(/\\d/g) || []).length;\n    if (digits >= 4) add(15, 'Email local part looks machine-generated');\n  }\n\n  // ── Geography ───────────────────────────────────────────────────\n  if (o.ipCountry && o.billingCountry && o.ipCountry !== o.billingCountry) {\n    add(25, `Billing country (${o.billingCountry}) does not match IP country (${o.ipCountry})`);\n  }\n  if (o.ipCountry && (cfg.highRiskCountries || []).includes(o.ipCountry)) {\n    add(20, `Order originates from a country on your high-risk list (${o.ipCountry})`);\n  }\n\n  // ── Velocity ────────────────────────────────────────────────────\n  const recent = store.orders.filter(r => now - r.t < windowMs);\n\n  const sameEmail = recent.filter(r => r.email === o.email).length;\n  if (sameEmail >= Number(cfg.maxOrdersPerEmail)) {\n    add(30, `${sameEmail + 1} orders from this email within ${cfg.velocityWindowMinutes} minutes`);\n  }\n\n  if (o.ip) {\n    const sameIp = recent.filter(r => r.ip === o.ip).length;\n    if (sameIp >= Number(cfg.maxOrdersPerIp)) {\n      add(30, `${sameIp + 1} orders from IP ${o.ip} within ${cfg.velocityWindowMinutes} minutes`);\n    }\n  }\n\n  // Several different cards behind one email is the classic card-testing shape.\n  if (o.cardFingerprint) {\n    const cards = new Set(\n      recent.filter(r => r.email === o.email && r.card).map(r => r.card)\n    );\n    cards.add(o.cardFingerprint);\n    if (cards.size >= 3) {\n      add(25, `${cards.size} different payment methods used by this email — card testing pattern`);\n    }\n  }\n\n  // ── Amount anomaly ──────────────────────────────────────────────\n  const typical = Number(cfg.typicalOrderAmount) || 0;\n  if (typical > 0 && o.amount > typical * Number(cfg.amountAnomalyMultiplier)) {\n    add(20, `Order value ${o.amount} is more than ${cfg.amountAnomalyMultiplier}× your typical ${typical}`);\n  }\n\n  // ── Weak corroborating signals ──────────────────────────────────\n  // Deliberately low-weight: plenty of legitimate people buy with a name that\n  // does not appear in their email address.\n  if (o.name && o.email) {\n    const first = o.name.toLowerCase().split(/\\s+/)[0] || '';\n    if (first.length >= 3 && !local.includes(first)) {\n      add(10, 'Buyer name does not appear in the email address');\n    }\n  }\n  if (!o.userAgent) {\n    add(10, 'No browser user-agent — request did not come from a normal checkout page');\n  }\n\n  // ── Decision ────────────────────────────────────────────────────\n  let decision = 'allow';\n  if (score >= Number(cfg.blockAt)) decision = 'block';\n  else if (score >= Number(cfg.reviewAt)) decision = 'review';\n\n  // Shadow mode measures without enforcing, so a seller can see what the rules\n  // *would* have done before letting them touch live revenue.\n  const enforced = cfg.shadowMode ? 'allow' : decision;\n\n  store.orders.push({ t: now, email: o.email, ip: o.ip, card: o.cardFingerprint, amount: o.amount });\n\n  out.push({\n    json: {\n      ...o,\n      riskScore: score,\n      riskReasons: reasons,\n      decision: enforced,\n      wouldHaveBeen: decision,\n      shadowMode: !!cfg.shadowMode,\n      scoredAt: new Date().toISOString(),\n    }\n  });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "All scoring happens here, locally. Every point carries its reason so you can tune it.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a462e595-2ff5-591c-8f53-1ddca8b3619f",
+      "name": "🔀 Route the decision",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        480,
+        200
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "loose"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-allow",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "allow"
+                  }
+                ]
+              },
+              "outputKey": "allow"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "loose"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "review"
+                  }
+                ]
+              },
+              "outputKey": "review"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "loose"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-block",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "block"
+                  }
+                ]
+              },
+              "outputKey": "block"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 0
+        }
+      },
+      "notes": "Output 0 = allow · 1 = review · 2 = block. Unknown decisions fall back to allow.",
+      "notesInFlow": false
+    },
+    {
+      "id": "bc77e1a9-45b8-5d45-be74-d3ce3fa84b53",
+      "name": "✅ Allow → deliver",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        40
+      ],
+      "parameters": {
+        "jsCode": "// Clean order. Hand off to DCA-A1-01 (Instant Digital Delivery) or whatever\n// fulfilment you already run.\nreturn $input.all().map(i => ({\n  json: {\n    action: 'deliver',\n    orderId: i.json.orderId,\n    email: i.json.email,\n    amount: i.json.amount,\n    currency: i.json.currency,\n    riskScore: i.json.riskScore,\n    checkedAt: i.json.scoredAt,\n  }\n}));"
+      },
+      "notes": "Wire to your delivery workflow.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ebb09c34-b7c7-5fd7-8842-ebb1f5a3bc9f",
+      "name": "🔍 Review → alert a human",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        220
+      ],
+      "parameters": {
+        "jsCode": "// Held for a person to look at. The alert has to contain enough context to\n// decide in seconds, otherwise the queue gets ignored and the whole control\n// stops being real.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const bullets = o.riskReasons.map(r => `• +${r.points} — ${r.reason}`).join('\\n');\n  return {\n    json: {\n      action: 'hold_for_review',\n      orderId: o.orderId,\n      email: o.email,\n      amount: `${o.amount} ${o.currency}`,\n      ip: o.ip,\n      riskScore: o.riskScore,\n      shadowMode: o.shadowMode,\n      alertText:\n        `⚠️ Order held for review\\n` +\n        `Order: ${o.orderId}\\nBuyer: ${o.email}\\nAmount: ${o.amount} ${o.currency}\\n` +\n        `Risk score: ${o.riskScore}\\n\\nWhy:\\n${bullets}\\n\\n` +\n        (o.shadowMode ? '(shadow mode — this order was NOT actually held)' : 'Approve to deliver, or refund.'),\n    }\n  };\n});"
+      },
+      "notes": "Send alertText to Slack/Telegram/email. Review this queue daily — it is where the value is.",
+      "notesInFlow": false
+    },
+    {
+      "id": "45a100a1-86d8-5e5f-aaf3-11fdcbe04832",
+      "name": "⛔ Block → do not deliver",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        400
+      ],
+      "parameters": {
+        "jsCode": "// High confidence of fraud. Nothing is delivered. Keep the full reason set:\n// if the buyer turns out to be legitimate and complains, you need to be able to\n// explain the decision and add them to trustedEmails.\nreturn $input.all().map(i => {\n  const o = i.json;\n  return {\n    json: {\n      action: 'block',\n      orderId: o.orderId,\n      email: o.email,\n      amount: `${o.amount} ${o.currency}`,\n      riskScore: o.riskScore,\n      reasons: o.riskReasons,\n      shadowMode: o.shadowMode,\n      note: o.shadowMode\n        ? 'Shadow mode — order was allowed through. This is what would have happened.'\n        : 'Blocked before delivery. Refund the payment or let it fail.',\n    }\n  };\n});"
+      },
+      "notes": "Nothing is delivered on this branch. Add false positives to trustedEmails in Config.",
+      "notesInFlow": false
+    },
+    {
+      "id": "66713132-2b50-55a4-b33c-4814584f3cc0",
+      "name": "📒 Audit log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        220
+      ],
+      "parameters": {
+        "jsCode": "// One row per scored order. This log is what lets you answer \"is the scoring\n// actually working?\" after a month — and it is the evidence trail if a payment\n// provider ever asks how you screen orders.\nreturn $input.all().map(i => ({\n  json: {\n    ts: new Date().toISOString(),\n    orderId: i.json.orderId,\n    email: i.json.email,\n    action: i.json.action,\n    riskScore: i.json.riskScore ?? null,\n    shadowMode: i.json.shadowMode ?? null,\n  }\n}));"
+      },
+      "notes": "Append to Sheets/Airtable/DB. Review weekly and re-tune thresholds.",
+      "notesInFlow": false
+    },
+    {
+      "id": "63484b75-d276-5884-8d56-7580b3ee15e3",
+      "name": "↩️ Return decision",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1260,
+        220
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, decision: $json.action, riskScore: $json.riskScore ?? null }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🛒 Order created": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📥 Extract order signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Extract order signals": {
+      "main": [
+        [
+          {
+            "node": "🧮 Score the risk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧮 Score the risk": {
+      "main": [
+        [
+          {
+            "node": "🔀 Route the decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Route the decision": {
+      "main": [
+        [
+          {
+            "node": "✅ Allow → deliver",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🔍 Review → alert a human",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⛔ Block → do not deliver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Allow → deliver": {
+      "main": [
+        [
+          {
+            "node": "📒 Audit log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Review → alert a human": {
+      "main": [
+        [
+          {
+            "node": "📒 Audit log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⛔ Block → do not deliver": {
+      "main": [
+        [
+          {
+            "node": "📒 Audit log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Audit log": {
+      "main": [
+        [
+          {
+            "node": "↩️ Return decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "fraud"
+    },
+    {
+      "name": "chargeback"
+    },
+    {
+      "name": "security"
+    },
+    {
+      "name": "digital-products"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "pre-payment-fraud-scoring",
+    "category": "a3-fraud-security",
+    "version": "1.0.0"
+  }
+}

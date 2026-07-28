@@ -9,6 +9,9 @@ interface SectionHeadingProps {
   description?: React.ReactNode;
   align?: "center" | "left";
   className?: string;
+  /** Which product line this heading belongs to. Drives the eyebrow and the
+   *  rule beneath the title — iris for AI systems, gold for the books. */
+  accent?: "iris" | "gold";
 }
 
 export function SectionHeading({
@@ -17,6 +20,7 @@ export function SectionHeading({
   description,
   align = "center",
   className,
+  accent = "iris",
 }: SectionHeadingProps) {
   return (
     <div
@@ -28,7 +32,7 @@ export function SectionHeading({
     >
       {eyebrow && (
         <Reveal>
-          <Badge variant="gold" className="mb-5 uppercase">
+          <Badge variant={accent} className="mb-5 uppercase">
             {eyebrow}
           </Badge>
         </Reveal>
@@ -40,7 +44,12 @@ export function SectionHeading({
       </Reveal>
       {align === "center" && (
         <Reveal delay={0.08}>
-          <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
+          <div
+            className={cn(
+              "mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent to-transparent",
+              accent === "gold" ? "via-gold/60" : "via-iris/60"
+            )}
+          />
         </Reveal>
       )}
       {description && (

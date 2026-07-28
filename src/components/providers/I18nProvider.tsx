@@ -3,6 +3,10 @@
 import { createContext, useContext } from "react";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/config";
+import {
+  getMarketplaceCopy,
+  type MarketplaceCopy,
+} from "@/i18n/marketplace";
 
 interface I18nValue {
   t: Dictionary;
@@ -33,6 +37,17 @@ export function useI18n(): I18nValue {
 /** Shortcut to the dictionary. */
 export function useT(): Dictionary {
   return useI18n().t;
+}
+
+/**
+ * Copy for the AI marketplace, resolved from the active locale.
+ *
+ * It is derived here rather than threaded through the provider value so a
+ * server component never has to pass it down — the locale already is in
+ * context, and the copy is a pure lookup on it.
+ */
+export function useMarketplace(): MarketplaceCopy {
+  return getMarketplaceCopy(useI18n().locale);
 }
 
 /** Simple {placeholder} interpolation. */

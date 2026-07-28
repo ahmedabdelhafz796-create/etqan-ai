@@ -1,12 +1,43 @@
-# ETQAN AI — Premium Trading Bookstore
+# ETQAN AI
 
-A production-ready, dark-luxury digital bookstore for selling professional
-trading books. Built with **Next.js (App Router) · TypeScript · TailwindCSS ·
-Framer Motion · Radix UI · Lucide** and a NOWPayments-ready checkout
-architecture.
+A marketplace for **production-hardened AI automation systems, tools and
+templates**, with a professional trading library as a secondary collection.
 
-Design language: TradingView × Binance × Bloomberg × Apple × Stripe — glass,
-glow, animated candlesticks, gold & emerald accents on deep night black.
+Built with **Next.js (App Router) · TypeScript · TailwindCSS · Framer Motion ·
+Radix UI · Lucide**.
+
+## Two product lines, two checkout paths
+
+| Line | Sold through | Where |
+| --- | --- | --- |
+| AI systems, tools, templates | **Lemon Squeezy** (external) | `#catalog` |
+| Trading library | **NOWPayments** (in-house crypto) | `#store` |
+
+These never mix. The catalogue cards link out to Lemon Squeezy; the book
+cards use the site's own payment route. They share no component and no code
+path — see `src/components/sections/Catalog.tsx` for the first and
+`src/components/sections/BuyButton.tsx` for the second.
+
+The homepage is the AI marketplace end to end: hero, catalogue, how it
+installs, the six build rules, the test report, then the FAQ. The trading
+library is one section below a labelled divider, and it is the only place
+gold appears — the AI line runs on iris/aqua so the two are never confused.
+
+## The automation catalogue
+
+The workflows themselves are built and tested in [`suite/`](./suite), which
+contains a template factory, a validator that gates releases, and a minimal
+n8n execution engine used for behavioural testing.
+
+**23 workflows · 285 nodes · 151 behavioural tests · 14 gate probes.**
+
+```bash
+cd suite/factory
+python3 build.py        # generate + validate; writes only what passes
+python3 test_gate.py    # prove the validator rejects bad input
+node harness/run.mjs    # execute the workflows against adversarial input
+python3 package.py      # produce the sellable bundles
+```
 
 ## 🚀 Deploy in one click
 

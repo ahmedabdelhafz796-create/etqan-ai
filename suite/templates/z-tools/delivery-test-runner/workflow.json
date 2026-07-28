@@ -1,0 +1,364 @@
+{
+  "name": "DCA-TEST · Delivery Test Runner (press Execute, read the verdict)",
+  "nodes": [
+    {
+      "id": "2ea4b722-1bcf-5a54-bb6d-a62efdf72414",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -420
+      ],
+      "parameters": {
+        "content": "## 🧪 Delivery Test Runner\n**No terminal needed. Works from a phone.**\n\n### Before running\n1. Open **DCA-A1-01 · Instant Digital Delivery** and set `testMode: true`\n   in its Config. *(This bypasses signature checking only — set it back\n   to `false` before you go live.)*\n2. **Activate** that workflow, then copy its **Production URL** from the\n   webhook node.\n3. Paste it into **⚙️ Config → deliveryWebhookUrl** below.\n4. Put your own email in `testEmail` so you can see what arrives.\n5. Press **Execute Workflow**.\n\n### Then check your inbox\nYou should receive **exactly one** email. Two means replay protection is\nbroken; zero means delivery is broken.",
+        "height": 480,
+        "width": 540,
+        "color": 6
+      }
+    },
+    {
+      "id": "11c352b4-6ba2-503a-89ec-c948a9e38c4b",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        20,
+        -420
+      ],
+      "parameters": {
+        "content": "### What each test proves\n\n**1 · Paid order** → must deliver.\nIf this fails, nothing else matters.\n\n**2 · Same order again** → must deliver **nothing**.\nGateways replay webhooks constantly. Without dedupe one purchase\ndelivers twice — or one refund is issued twice.\n\n**3 · Unpaid order** → must deliver **nothing**.\nThis is the one that gives product away free.",
+        "height": 400,
+        "width": 440,
+        "color": 4
+      }
+    },
+    {
+      "id": "062db85d-e74e-5c57-8bc1-ea4a34b256b2",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        220
+      ],
+      "parameters": {
+        "content": "### ⚠️ Reading the result\nOpen the **📋 Verdict** node's output. Each line says PASS or FAIL with\nwhat to check.\n\nA `404` means the delivery workflow is not **Activated**.\nA `500` usually means the Config still has placeholder values.\n\nConfirm the email count in your inbox too — the HTTP response alone\ncannot see whether a message was actually sent.",
+        "height": 320,
+        "width": 440,
+        "color": 5
+      }
+    },
+    {
+      "id": "4aff8938-17c0-541c-9d01-71a418f6a19f",
+      "name": "▶️ Press Execute to run the tests",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        160
+      ],
+      "parameters": {},
+      "notes": "Use this to dry-run the workflow before you point real traffic at it.",
+      "notesInFlow": false
+    },
+    {
+      "id": "65caed46-f2f9-5488-8c89-03bbf6e9d727",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -340,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"deliveryWebhookUrl\": \"PASTE_YOUR_PRODUCTION_WEBHOOK_URL_HERE\",\n  \"testEmail\": \"your-own-email@example.com\"\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "Paste the Production URL from the delivery workflow's webhook node, and your own email.",
+      "notesInFlow": false
+    },
+    {
+      "id": "c06c250e-7a5f-5fa7-981d-b66940a353d3",
+      "name": "1️⃣ Paid order → expect delivery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -120,
+        160
+      ],
+      "parameters": {
+        "url": "={{ $json.__config.deliveryWebhookUrl }}",
+        "method": "POST",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"evt_test_replay_001\",\n  \"object\": \"event\",\n  \"data\": { \"object\": {\n    \"id\": \"cs_test_001\",\n    \"payment_status\": \"paid\",\n    \"amount_total\": 4900,\n    \"currency\": \"usd\",\n    \"customer_details\": { \"email\": \"{{ $json.__config.testEmail }}\", \"name\": \"Test Buyer\" },\n    \"metadata\": { \"product_id\": \"book-01\", \"product_name\": \"Test Product\" }\n  }}\n}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "notes": "Should return 200 and send one email.",
+      "notesInFlow": false
+    },
+    {
+      "id": "4c5b831c-190a-5bfa-9438-91e4170aa830",
+      "name": "⏱️ Brief pause",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// Give the first request time to finish writing its dedupe key before the\n// replay goes out, otherwise the two can race and the test reports a false\n// failure.\nconst started = Date.now();\nwhile (Date.now() - started < 1500) { /* deliberate short block */ }\nreturn $input.all();"
+      },
+      "notes": "Prevents a race between the first request and the replay.",
+      "notesInFlow": false
+    },
+    {
+      "id": "df4f4407-eb4b-5a6d-a93f-d29143bb11fb",
+      "name": "2️⃣ Same order again → expect NO delivery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        160
+      ],
+      "parameters": {
+        "url": "={{ $('⚙️ Config').first().json.__config.deliveryWebhookUrl }}",
+        "method": "POST",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"evt_test_replay_001\",\n  \"object\": \"event\",\n  \"data\": { \"object\": {\n    \"id\": \"cs_test_001\",\n    \"payment_status\": \"paid\",\n    \"amount_total\": 4900,\n    \"currency\": \"usd\",\n    \"customer_details\": { \"email\": \"{{ $json.__config.testEmail }}\", \"name\": \"Test Buyer\" },\n    \"metadata\": { \"product_id\": \"book-01\", \"product_name\": \"Test Product\" }\n  }}\n}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "notes": "Identical event id. Must NOT produce a second email.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7081ab4e-f620-5a5c-8b72-6c814d4fb335",
+      "name": "3️⃣ Unpaid order → expect NO delivery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        160
+      ],
+      "parameters": {
+        "url": "={{ $('⚙️ Config').first().json.__config.deliveryWebhookUrl }}",
+        "method": "POST",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"evt_test_unpaid_002\",\n  \"object\": \"event\",\n  \"data\": { \"object\": {\n    \"id\": \"cs_test_002\",\n    \"payment_status\": \"unpaid\",\n    \"amount_total\": 4900,\n    \"currency\": \"usd\",\n    \"customer_details\": { \"email\": \"{{ $json.__config.testEmail }}\", \"name\": \"Test Buyer\" },\n    \"metadata\": { \"product_id\": \"book-01\", \"product_name\": \"Test Product\" }\n  }}\n}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "notes": "payment_status is unpaid. Must NOT deliver.",
+      "notesInFlow": false
+    },
+    {
+      "id": "8ceccb48-2e72-51e1-881c-9068172fb1e1",
+      "name": "📋 Verdict",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        160
+      ],
+      "parameters": {
+        "jsCode": "// Turn three HTTP responses into something a non-engineer can act on.\n//\n// Deliberate limitation, stated plainly in the output: this can see HTTP status\n// codes, not mailboxes. It can prove the endpoint accepted or rejected each\n// call, but only the inbox proves how many emails were actually sent — so the\n// verdict tells the reader to go and count them.\nconst url = $('⚙️ Config').first().json.__config.deliveryWebhookUrl;\nconst email = $('⚙️ Config').first().json.__config.testEmail;\n\nfunction statusOf(nodeName) {\n  try {\n    const r = $(nodeName).first().json;\n    if (r?.error) return { ok: false, detail: String(r.error.message || r.error) };\n    return { ok: true, detail: JSON.stringify(r).slice(0, 160) };\n  } catch (e) {\n    return { ok: false, detail: 'no response captured' };\n  }\n}\n\nconst r1 = statusOf('1️⃣ Paid order → expect delivery');\nconst r2 = statusOf('2️⃣ Same order again → expect NO delivery');\nconst r3 = statusOf('3️⃣ Unpaid order → expect NO delivery');\n\nconst lines = [];\nlines.push('═══ DELIVERY TEST RESULTS ═══');\nlines.push('');\n\nif (String(url).includes('PASTE_YOUR')) {\n  lines.push('❌ STOP — you have not set deliveryWebhookUrl in Config yet.');\n  return [{ json: { verdict: lines.join('\\n') } }];\n}\n\nlines.push(r1.ok\n  ? '✅ TEST 1 — endpoint accepted the paid order'\n  : '❌ TEST 1 — endpoint did not accept the paid order');\nlines.push('   ' + r1.detail);\nif (!r1.ok) {\n  lines.push('   → 404? The delivery workflow is not Activated.');\n  lines.push('   → 500? Config still holds placeholder values, or testMode is false.');\n}\nlines.push('');\n\nlines.push(r2.ok\n  ? '✅ TEST 2 — replay was accepted at HTTP level (expected)'\n  : '⚠️ TEST 2 — replay errored: ' + r2.detail);\nlines.push('   The real check is your inbox: this must NOT have produced a 2nd email.');\nlines.push('');\n\nlines.push(r3.ok\n  ? '✅ TEST 3 — unpaid order was accepted at HTTP level (expected)'\n  : '⚠️ TEST 3 — unpaid order errored: ' + r3.detail);\nlines.push('   The real check is your inbox: this must NOT have produced an email.');\nlines.push('');\nlines.push('─────────────────────────────');\nlines.push('NOW CHECK ' + email + ':');\nlines.push('');\nlines.push('  Exactly 1 email  → 🎉 PERFECT. Delivery, replay protection and');\nlines.push('                      payment gating all work.');\nlines.push('  2 or more        → ❌ Replay protection failed. Report this.');\nlines.push('  0 emails         → ❌ Delivery failed. Check the delivery');\nlines.push('                      workflow Executions tab for the failing node.');\nlines.push('');\nlines.push('⚠️ Set testMode back to false before going live.');\n\nreturn [{ json: { verdict: lines.join('\\n'), checkedAt: new Date().toISOString() } }];"
+      },
+      "notes": "Open this node's output to read the result.",
+      "notesInFlow": false
+    },
+    {
+      "id": "fa405887-cbf2-58b6-83d2-d29e8f3d36ec",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        380
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"test-runner\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"delivery-test-runner\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "▶️ Press Execute to run the tests": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "1️⃣ Paid order → expect delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1️⃣ Paid order → expect delivery": {
+      "main": [
+        [
+          {
+            "node": "⏱️ Brief pause",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏱️ Brief pause": {
+      "main": [
+        [
+          {
+            "node": "2️⃣ Same order again → expect NO delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2️⃣ Same order again → expect NO delivery": {
+      "main": [
+        [
+          {
+            "node": "3️⃣ Unpaid order → expect NO delivery",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3️⃣ Unpaid order → expect NO delivery": {
+      "main": [
+        [
+          {
+            "node": "📋 Verdict",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "testing"
+    },
+    {
+      "name": "tools"
+    },
+    {
+      "name": "internal"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "delivery-test-runner",
+    "category": "z-tools",
+    "version": "1.0.0"
+  }
+}

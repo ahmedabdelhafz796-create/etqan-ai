@@ -1,0 +1,650 @@
+{
+  "name": "DCA-A3-03 · Leak Detection & Buyer Watermarking",
+  "nodes": [
+    {
+      "id": "5ffdcbd3-b245-573d-99ee-59a35813d7a3",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -560
+      ],
+      "parameters": {
+        "content": "## 🕵️ Leak Detection & Watermarking\n**Every copy traceable → sharing detected → takedown drafted.**\n\n### Setup (about 14 minutes)\n1. **⚙️ Config** → `storeName`, `alertEmail`, `legalName`.\n2. Call the Production URL with `{action:'stamp', orderId, email, productId}`\n   before delivering a file — it returns the marker to embed.\n3. Schedule handles detection automatically from download data.\n4. Found a leak? POST `{action:'trace', marker:'<found marker>'}` or\n   `{action:'takedown', marker, url}`.\n\n### Pairs with A1-01 and A1-02\nStamp at delivery, detect from download behaviour. It reads the counters\nA1-02 already writes, so detection costs nothing extra.",
+        "height": 540,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "b431d49f-24db-51a0-88d3-51ce8c0a0678",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -560
+      ],
+      "parameters": {
+        "content": "### ⚠️ READ THIS FIRST — what is actually possible\n**You cannot prevent copying.** Anyone who can open a file can copy it.\nAny template claiming to stop piracy is lying to you.\n\n**What you CAN do is make leaks attributable and visible.**\n\nThat is genuinely valuable: it changes the economics for organised\nresellers, deters casual sharing, and gives you a takedown that names an\nactual account instead of guessing.\n\nAim at the achievable thing and it works. Aim at prevention and you will\nwaste money on tools that do not deliver it.",
+        "height": 440,
+        "width": 520,
+        "color": 5
+      }
+    },
+    {
+      "id": "f67f0e09-0e14-5284-bdf5-92eaece97d23",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        460,
+        -560
+      ],
+      "parameters": {
+        "content": "### 🔍 What it does NOT do — and why\n**No automatic web scanning.**\n\nDoing it properly needs paid search APIs and produces mostly false\npositives on generic product names. A nightly job reporting forty\n\"possible leaks\" that are all unrelated pages **gets muted in a week**.\n\nSo: you find a leak, this does the work from there — trace, identify,\ndraft the notice.\n\nHonest scope beats an impressive feature nobody trusts.",
+        "height": 400,
+        "width": 480,
+        "color": 7
+      }
+    },
+    {
+      "id": "195cdbce-f0e1-5ce8-842b-ee7d42d87f0b",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        420
+      ],
+      "parameters": {
+        "content": "### 📊 The behavioural signal\nOne order downloaded from **40 different IPs** is not a customer on\nholiday.\n\nThe schedule reads what A1-02 already records — distinct IPs and download\ncounts per order — so this layer costs you nothing extra.\n\n⚠️ Tune `suspiciousIpCount` to your audience. Corporate buyers behind a\nVPN legitimately show several IPs.",
+        "height": 320,
+        "width": 460,
+        "color": 4
+      }
+    },
+    {
+      "id": "3f4156f2-a374-5826-84bc-18f210d7f05f",
+      "name": "🔖 Stamp / trace / takedown",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -700,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/leak",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST {action: 'stamp'|'trace'|'takedown', ...}. One endpoint, three jobs.",
+      "notesInFlow": false
+    },
+    {
+      "id": "1db2b00b-a3d0-5def-b930-4a131719bfac",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"legalName\": \"YOUR LEGAL NAME OR COMPANY\",\n  \"alertEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"alerts@yourdomain.com\",\n  \"contactEmail\": \"legal@yourdomain.com\",\n  \"productUrl\": \"https://yourdomain.com/product\",\n  \"suspiciousIpCount\": 8,\n  \"criticalIpCount\": 20,\n  \"markerSalt\": \"CHANGE_THIS_TO_A_LONG_RANDOM_STRING\",\n  \"historyTtlDays\": 365\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "markerSalt must be long, random and never change — old markers stop resolving if it does.",
+      "notesInFlow": false
+    },
+    {
+      "id": "7c59fbf8-475f-5536-8f7f-9afcaad8b815",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 1 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.action ?? '') + '|' + (j.body?.orderId ?? j.body?.marker ?? Date.now()) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "95d44b17-511b-5cda-986c-eb4ea47ff9e3",
+      "name": "🔀 Which job?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -40,
+        200
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": false,
+                  "typeValidation": "loose"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-stamp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.body.action }}",
+                    "rightValue": "stamp"
+                  }
+                ]
+              },
+              "outputKey": "stamp"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": false,
+                  "typeValidation": "loose"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-trace",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.body.action }}",
+                    "rightValue": "trace"
+                  }
+                ]
+              },
+              "outputKey": "trace"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": false,
+                  "typeValidation": "loose"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-takedown",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.body.action }}",
+                    "rightValue": "takedown"
+                  }
+                ]
+              },
+              "outputKey": "takedown"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 0
+        }
+      },
+      "notes": "Output 0 = stamp · 1 = trace · 2 = takedown.",
+      "notesInFlow": false
+    },
+    {
+      "id": "81ee3879-a8c4-53ab-a2ef-5b69f5bc54d0",
+      "name": "🔖 Create the buyer marker",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        20
+      ],
+      "parameters": {
+        "jsCode": "// Build a marker that is short enough to embed unobtrusively and long enough not\n// to collide, derived from the order so it can be resolved later.\n//\n// Two parts on purpose:\n//   visible   — \"Licensed to name (order)\". Most sharing is thoughtless rather\n//               than malicious, and a name on the page makes people hesitate.\n//   invisible — an opaque token to embed in metadata, a zero-width span, or a\n//               PDF property. Survives casual removal of the visible line.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.markers = store.markers || {};\n\nconst now = Date.now();\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nfor (const [k, m] of Object.entries(store.markers)) {\n  if (now - (m.issuedAt || 0) > ttlMs) delete store.markers[k];\n}\n\n// Deterministic, non-reversible-looking token. It does not need to resist\n// cryptanalysis — it needs to be unguessable enough that a leaker cannot forge\n// someone else's marker, and stable enough to resolve later.\nfunction token(input) {\n  let h1 = 0x811c9dc5, h2 = 0x01000193;\n  for (let i = 0; i < input.length; i++) {\n    h1 = ((h1 ^ input.charCodeAt(i)) * 0x01000193) >>> 0;\n    h2 = ((h2 + input.charCodeAt(i) * (i + 7)) * 0x85ebca6b) >>> 0;\n  }\n  return (h1.toString(36) + h2.toString(36)).toUpperCase().slice(0, 12);\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n\n  const orderId = String(b.orderId ?? b.order_id ?? '').trim();\n  const email = String(b.email ?? '').trim().toLowerCase();\n  const productId = String(b.productId ?? b.product_id ?? '').trim();\n  const name = String(b.name ?? '').trim();\n\n  if (!orderId || !email) {\n    throw new Error('Stamping needs orderId and email. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  const marker = token(`${cfg.markerSalt}|${orderId}|${email}|${productId}`);\n\n  store.markers[marker] = {\n    marker, orderId, email, name, productId,\n    issuedAt: now,\n  };\n\n  out.push({ json: {\n    action: 'stamped',\n    marker,\n    orderId, email, productId,\n    // Drop this line into a footer, a title page, or a page header.\n    visibleMark: `Licensed to ${name || email} · Order ${orderId} · ${cfg.storeName}`,\n    // Embed in PDF metadata, an EPUB property, or a zero-width span in HTML.\n    invisibleMark: `DCA-${marker}`,\n    // Ready to write straight into document metadata.\n    metadataFields: {\n      Author: cfg.legalName,\n      Subject: `Licensed copy — order ${orderId}`,\n      Keywords: `DCA-${marker}`,\n      Producer: cfg.storeName,\n    },\n    guidance: 'Apply BOTH marks. The visible one deters casual sharing; the invisible one survives its removal.',\n  }});\n}\n\nreturn out;"
+      },
+      "notes": "Returns visible + invisible marks and ready-made metadata fields. Apply both.",
+      "notesInFlow": false
+    },
+    {
+      "id": "48048ce0-8213-5391-b3ca-a8c79b3ce462",
+      "name": "🔎 Trace a found marker",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Someone found a leaked copy and pulled the marker out of it. Resolve it to the\n// account that was issued that copy.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.markers = store.markers || {};\n\nreturn $input.all().map(item => {\n  const b = item.json.body ?? item.json;\n  const raw = String(b.marker ?? '').trim().toUpperCase().replace(/^DCA-/, '');\n\n  if (!raw) {\n    throw new Error('Tracing needs a marker. Extract it from the leaked file first.');\n  }\n\n  const found = store.markers[raw];\n\n  if (!found) {\n    return { json: {\n      action: 'trace_failed',\n      marker: raw,\n      message:\n        'No record for this marker. Either it predates this workflow, markerSalt was changed since it was issued, ' +\n        'or the marker was misread. Check for character confusion — 0/O and 1/I are the usual culprits.',\n    }};\n  }\n\n  return { json: {\n    action: 'traced',\n    marker: raw,\n    orderId: found.orderId,\n    email: found.email,\n    name: found.name,\n    productId: found.productId,\n    issuedAt: new Date(found.issuedAt).toISOString(),\n    message: `This copy was issued to ${found.email} (order ${found.orderId}).`,\n    nextSteps:\n      '1. Decide whether this was deliberate resale or careless sharing — the response differs.\\n' +\n      '2. Consider contacting the buyer first. Many leaks are thoughtless, and a quiet word costs you nothing.\\n' +\n      '3. If it is organised resale, POST action:\"takedown\" with the URL to generate the notice.\\n' +\n      '4. Revoke their download access if you have not already.',\n  }};\n});"
+      },
+      "notes": "Resolves a marker to the buyer. Includes what to do next, since most sellers have never done this.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ab7e2c89-9150-5fe4-be6f-3be428355435",
+      "name": "⚖️ Draft the takedown notice",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        380
+      ],
+      "parameters": {
+        "jsCode": "// A seller who finds their product being resold has about ten minutes of\n// motivation and no idea what a DMCA notice looks like. Pre-filling it is the\n// difference between action and a shrug.\n//\n// Not legal advice, and the notice says so — but the structure is the standard\n// one hosts expect, and a correctly-shaped notice gets actioned.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.markers = store.markers || {};\n\nreturn $input.all().map(item => {\n  const b = item.json.body ?? item.json;\n  const raw = String(b.marker ?? '').trim().toUpperCase().replace(/^DCA-/, '');\n  const url = String(b.url ?? '').trim();\n\n  if (!url) {\n    throw new Error('A takedown notice needs the URL where the material is hosted.');\n  }\n\n  const found = raw ? store.markers[raw] : null;\n  const today = new Date().toISOString().slice(0, 10);\n\n  const notice =\n`DMCA TAKEDOWN NOTICE\nDate: ${today}\n\nTo whom it may concern,\n\nI am the copyright owner of the work described below, and I am writing to\nreport an infringing copy hosted on your service.\n\n1. IDENTIFICATION OF THE COPYRIGHTED WORK\n   Title:        ${b.productName || found?.productId || '[PRODUCT NAME]'}\n   Owner:        ${cfg.legalName}\n   Original URL: ${cfg.productUrl}\n\n2. IDENTIFICATION OF THE INFRINGING MATERIAL\n   Infringing URL: ${url}\n${found ? `\n3. EVIDENCE\n   Each authorised copy of this work carries a unique identifier tied to the\n   purchaser. The copy at the URL above carries identifier ${raw}, which was\n   issued to a specific customer account on ${new Date(found.issuedAt).toISOString().slice(0, 10)}.\n   The copy being distributed is therefore not an authorised distribution.\n` : `\n3. EVIDENCE\n   The material at the URL above is a copy of my work, distributed without\n   authorisation. I did not license it for redistribution.\n`}\n4. STATEMENTS\n   I have a good faith belief that the use of the material described above is\n   not authorised by the copyright owner, its agent, or the law.\n\n   I state, under penalty of perjury, that the information in this notice is\n   accurate and that I am the copyright owner or authorised to act on the\n   owner's behalf.\n\n5. CONTACT\n   Name:  ${cfg.legalName}\n   Email: ${cfg.contactEmail}\n\nSignature: /${cfg.legalName}/\n\n---\n⚠️ NOT LEGAL ADVICE. Review this before sending. Requirements vary by\njurisdiction and by host. Send it to the host's designated DMCA agent —\nusually found at their /dmca, /legal or /copyright page, or in their WHOIS\nrecord — not to the person who posted the file.`;\n\n  return { json: {\n    action: 'takedown_drafted',\n    marker: raw || null,\n    infringingUrl: url,\n    tracedTo: found ? { email: found.email, orderId: found.orderId } : null,\n    notice,\n    whereToSend:\n      'Find the host\\'s DMCA agent: check their /dmca or /legal page, or the WHOIS record for the domain. ' +\n      'For Telegram, use abuse@telegram.org. For Gumroad, use their report form. ' +\n      'Sending it to the uploader instead of the host usually achieves nothing.',\n  }};\n});"
+      },
+      "notes": "Standard DMCA structure, pre-filled. Explicitly not legal advice — review before sending.",
+      "notesInFlow": false
+    },
+    {
+      "id": "cb471d31-fd2f-5331-b1f1-2c52905ffb8a",
+      "name": "🕐 Scan download patterns daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -700,
+        640
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "06d1c9b8-10c7-58d1-a0a4-3c0b50ded6d4",
+      "name": "⚙️ Config (detection side)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        640
+      ],
+      "parameters": {
+        "jsCode": "// Mirror of the main Config — n8n cannot share a node across trigger branches.\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"alertEmail\": \"you@yourdomain.com\",\n  \"fromEmail\": \"alerts@yourdomain.com\",\n  \"suspiciousIpCount\": 8,\n  \"criticalIpCount\": 20\n};\nreturn [{ json: { __config: CONFIG } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "⚠️ Mirror of the main Config. Change one, change both.",
+      "notesInFlow": false
+    },
+    {
+      "id": "5f48faf1-181d-5737-92a8-ce00c0b4aabf",
+      "name": "📊 Find sharing patterns",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        640
+      ],
+      "parameters": {
+        "jsCode": "// Reads the counters DCA-A1-02 already writes. No extra collection, no extra\n// cost — the signal was already there, nobody was looking at it.\nconst cfg = $input.first().json.__config;\nconst store = $getWorkflowStaticData('global');\nconst downloads = store.downloads || {};\nconst markers = store.markers || {};\n\nconst suspects = [];\n\nfor (const [key, rec] of Object.entries(downloads)) {\n  const ipCount = (rec.ips || []).length;\n  if (ipCount < Number(cfg.suspiciousIpCount)) continue;\n\n  const [orderId] = String(key).split('|');\n  const owner = Object.values(markers).find(m => m.orderId === orderId);\n\n  suspects.push({\n    orderId,\n    email: owner?.email ?? null,\n    marker: owner?.marker ?? null,\n    distinctIps: ipCount,\n    downloadCount: rec.count || 0,\n    severity: ipCount >= Number(cfg.criticalIpCount) ? 'critical' : 'suspicious',\n    // Say what the number means, not just what it is.\n    interpretation: ipCount >= Number(cfg.criticalIpCount)\n      ? `${ipCount} distinct IPs on one order. This is not one person — the link or the file is circulating.`\n      : `${ipCount} distinct IPs on one order. Could be a VPN or a shared office, but worth a look.`,\n  });\n}\n\nsuspects.sort((a, b) => b.distinctIps - a.distinctIps);\n\nreturn [{ json: {\n  __detection: true,\n  found: suspects.length,\n  critical: suspects.filter(s => s.severity === 'critical').length,\n  suspects: suspects.slice(0, 20),\n  scannedAt: new Date().toISOString(),\n  __config: cfg,\n}}];"
+      },
+      "alwaysOutputData": true,
+      "notes": "Reads A1-02's download counters. Zero extra collection cost.",
+      "notesInFlow": false
+    },
+    {
+      "id": "eaa4acd0-9fec-596b-891e-f1672beb96cf",
+      "name": "🚩 Anything found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -40,
+        640
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "40b8afda-9b77-5301-93f4-1424e147a97f",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.found > 0 }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "d6787b39-7699-5d5e-a205-30d48fe4eb95",
+      "name": "✍️ Write the leak alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        560
+      ],
+      "parameters": {
+        "jsCode": "const o = $input.first().json;\nconst cfg = o.__config;\n\nconst lines = o.suspects.map(s =>\n  `${s.severity === 'critical' ? '🔴' : '🟡'} Order ${s.orderId}${s.email ? ` (${s.email})` : ''}\\n` +\n  `   ${s.distinctIps} distinct IPs · ${s.downloadCount} downloads\\n` +\n  `   ${s.interpretation}` +\n  (s.marker ? `\\n   Marker: DCA-${s.marker}` : '')\n).join('\\n\\n');\n\nreturn [{ json: { ...o,\n  subject: `🕵️ ${o.found} order(s) showing sharing patterns`,\n  alertText:\n`🕵️ Possible sharing detected — ${cfg.storeName}\n\n${o.found} order(s) crossed the threshold${o.critical ? `, ${o.critical} of them clearly` : ''}.\n\n${lines}\n\n── WHAT TO DO ──────────────────────\n1. Check the 🔴 ones first. A VPN explains a few IPs, not twenty.\n2. Consider contacting the buyer before acting. Most sharing is careless,\n   not malicious, and a quiet word costs you nothing.\n3. If you find the file being resold publicly, POST action:\"takedown\" with\n   the URL to get a pre-filled DMCA notice.\n4. Revoke access for confirmed leaks.\n\n⚠️ Do not act on this number alone. It is a signal worth investigating,\nnot proof of wrongdoing.`,\n}}];"
+      },
+      "notes": "States plainly that the signal is worth investigating, not proof.",
+      "notesInFlow": false
+    },
+    {
+      "id": "2cf9ec22-4eec-58ee-b121-773d3de3777f",
+      "name": "📨 Send the leak alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        440,
+        560
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.__config.alertEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.alertText }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "notes": "Attach SMTP.",
+      "notesInFlow": false
+    },
+    {
+      "id": "e1afc3eb-a474-5378-b7a0-7e527d8331eb",
+      "name": "✅ Nothing unusual",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        740
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { scannedAt: new Date().toISOString(), found: 0,\n                  note: 'No orders crossed the sharing threshold.' }}];"
+      },
+      "notes": "Logged so you can tell 'all clear' from 'not running'.",
+      "notesInFlow": false
+    },
+    {
+      "id": "0f5edd09-3568-5ac2-b4a8-fbc42d696876",
+      "name": "📒 Leak log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        380
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  action: i.json.action ?? 'scan',\n  found: i.json.found ?? null,\n  marker: i.json.marker ?? null,\n  orderId: i.json.orderId ?? null,\n  infringingUrl: i.json.infringingUrl ?? null,\n}}));"
+      },
+      "notes": "Append to a Sheet. Repeat offenders show up here.",
+      "notesInFlow": false
+    },
+    {
+      "id": "6b0582ab-a5c3-5d5b-9ae7-b6776ff5e812",
+      "name": "↩️ Return result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🔖 Stamp / trace / takedown": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "🔀 Which job?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Which job?": {
+      "main": [
+        [
+          {
+            "node": "🔖 Create the buyer marker",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🔎 Trace a found marker",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⚖️ Draft the takedown notice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔖 Create the buyer marker": {
+      "main": [
+        [
+          {
+            "node": "📒 Leak log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Trace a found marker": {
+      "main": [
+        [
+          {
+            "node": "📒 Leak log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚖️ Draft the takedown notice": {
+      "main": [
+        [
+          {
+            "node": "📒 Leak log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Leak log": {
+      "main": [
+        [
+          {
+            "node": "↩️ Return result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🕐 Scan download patterns daily": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config (detection side)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config (detection side)": {
+      "main": [
+        [
+          {
+            "node": "📊 Find sharing patterns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Find sharing patterns": {
+      "main": [
+        [
+          {
+            "node": "🚩 Anything found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚩 Anything found?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Write the leak alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "✅ Nothing unusual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Write the leak alert": {
+      "main": [
+        [
+          {
+            "node": "📨 Send the leak alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📨 Send the leak alert": {
+      "main": [
+        [
+          {
+            "node": "📒 Leak log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Nothing unusual": {
+      "main": [
+        [
+          {
+            "node": "📒 Leak log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "security"
+    },
+    {
+      "name": "anti-piracy"
+    },
+    {
+      "name": "digital-products"
+    },
+    {
+      "name": "watermarking"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "leak-detection-watermarking",
+    "category": "a3-fraud-security",
+    "version": "1.0.0"
+  }
+}

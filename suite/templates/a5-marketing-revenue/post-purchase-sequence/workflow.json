@@ -1,0 +1,495 @@
+{
+  "name": "DCA-A5-02 · Post-Purchase Sequence & Review Collection",
+  "nodes": [
+    {
+      "id": "20c55873-3e1b-53e2-b604-b8518cca7685",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -540
+      ],
+      "parameters": {
+        "content": "## 🌱 Post-Purchase Sequence\n**Help → tip → \"did it work?\" → review or rescue.**\n\n### Setup (about 12 minutes)\n1. **⚙️ Config** → `storeName`, `fromEmail`, `reviewUrl`, `usageTip`.\n2. POST each completed order:\n   ```json\n   { \"orderId\": \"...\", \"email\": \"...\",\n     \"name\": \"...\", \"productName\": \"...\" }\n   ```\n   *(Or chain it from A1-01 after delivery succeeds.)*\n3. Attach SMTP. Activate. The schedule runs the sequence.\n\n### Two problems, one sequence\nNo reviews and no repeat customers have the same cause: silence during\nthe only window when the buyer is paying attention.",
+        "height": 500,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "91f5d628-2844-576b-ab07-cebf185dc26e",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -540
+      ],
+      "parameters": {
+        "content": "### 🔄 Why the review ask comes LAST\nThe obvious build asks for a review immediately. That costs you twice:\n\n1. The buyer **has not used it yet**, so the review is thin and\n   unconvincing.\n2. The ask arrives **before any value was delivered**, so it reads as\n   extraction.\n\nThis gives first — a help nudge, then a usage tip — and asks only after\nthe buyer has had time to get something out of it.",
+        "height": 380,
+        "width": 500,
+        "color": 7
+      }
+    },
+    {
+      "id": "2d7c9053-8785-51ed-a577-6ab35e34148e",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -540
+      ],
+      "parameters": {
+        "content": "### 🛟 The step that protects your rating\nBefore asking for a **public** review, it asks privately:\n**\"did this work for you?\"**\n\n· Happy → review link\n· Not happy → replies to **you**, not to a review page\n\nA sequence that routes dissatisfaction into a private reply is worth far\nmore than one that simply harvests ratings — and it is more honest.",
+        "height": 360,
+        "width": 480,
+        "color": 4
+      }
+    },
+    {
+      "id": "f23501be-0b8d-52e5-b420-09b59281157d",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        360
+      ],
+      "parameters": {
+        "content": "### ⏳ The upsell waits for the refund window\nMentioning another product before the refund window closes invites the\nbuyer to reconsider **both** purchases at once.\n\n`upsellAfterDays` should be **longer** than your refund period. Set\n`enableUpsell: false` to skip it entirely — the sequence works fine\nwithout it.",
+        "height": 300,
+        "width": 460,
+        "color": 5
+      }
+    },
+    {
+      "id": "7eeb662c-f71f-57af-819c-ac2fc3e1bc9b",
+      "name": "🎉 Order completed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -700,
+        180
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/post-purchase",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST {orderId, email, name, productName}. Chain from A1-01 after delivery.",
+      "notesInFlow": false
+    },
+    {
+      "id": "568b7eb1-e421-5fb8-a192-0fa8e2686b6e",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"hello@yourdomain.com\",\n  \"supportEmail\": \"support@yourdomain.com\",\n  \"reviewUrl\": \"https://yourdomain.com/review\",\n  \"usageTip\": \"REPLACE: one genuinely useful tip for getting value from your product.\",\n  \"helpAfterHours\": 24,\n  \"tipAfterDays\": 3,\n  \"checkInAfterDays\": 7,\n  \"upsellAfterDays\": 21,\n  \"enableUpsell\": false,\n  \"upsellText\": \"REPLACE: one sentence about your other product, and its link.\",\n  \"batchSize\": 50,\n  \"historyTtlDays\": 60\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "upsellAfterDays must exceed your refund window. usageTip should be genuinely useful — filler here undoes the whole sequence.",
+      "notesInFlow": false
+    },
+    {
+      "id": "1890b508-17d4-50c8-83e2-3b45172c1f58",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 168 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String(j.body?.orderId ?? j.body?.order_id ?? (j.body?.email + '|' + Date.now()) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "5cff9fdc-33ea-5383-a4f5-332c13b381e4",
+      "name": "📝 Enrol the buyer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// One sequence per buyer per order. A buyer who purchases twice gets two\n// sequences, which is correct — the second product needs its own help and its\n// own tip.\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.sequences = store.sequences || {};\n\nconst now = Date.now();\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nfor (const [k, s] of Object.entries(store.sequences)) {\n  if (now - (s.startedAt || 0) > ttlMs) delete store.sequences[k];\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n\n  const email = String(b.email ?? '').trim().toLowerCase();\n  const orderId = String(b.orderId ?? b.order_id ?? '').trim();\n\n  if (!email) {\n    throw new Error('Post-purchase sequence needs a buyer email. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  const key = `${email}|${orderId || 'no-order'}`;\n\n  // Unsubscribe and opt-out arrive here too.\n  const event = String(b.event ?? '').toLowerCase();\n  if (event.includes('unsubscribe') || event.includes('optout') || b.unsubscribe === true) {\n    if (store.sequences[key]) {\n      store.sequences[key].stopped = true;\n      store.sequences[key].stoppedReason = 'buyer unsubscribed';\n    }\n    // Remember the opt-out even if there is no sequence yet, so a later order\n    // does not restart contact with someone who asked to be left alone.\n    store.optOuts = store.optOuts || {};\n    store.optOuts[email] = now;\n    out.push({ json: { action: 'unsubscribed', email } });\n    continue;\n  }\n\n  if ((store.optOuts || {})[email]) {\n    out.push({ json: { action: 'skipped_opted_out', email,\n                       note: 'This buyer previously unsubscribed. No sequence started.' } });\n    continue;\n  }\n\n  if (store.sequences[key]) {\n    out.push({ json: { action: 'already_enrolled', email, orderId } });\n    continue;\n  }\n\n  store.sequences[key] = {\n    key, email, orderId,\n    name: String(b.name ?? '').trim(),\n    productName: String(b.productName ?? b.product_name ?? 'your purchase').trim(),\n    startedAt: now,\n    stage: 0,\n    stopped: false,\n    happy: null,\n  };\n\n  out.push({ json: { action: 'enrolled', email, orderId } });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Honours unsubscribes permanently, including for future orders.",
+      "notesInFlow": false
+    },
+    {
+      "id": "5eff209c-0297-50a6-bd1a-4208762fcde6",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        180
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, action: $json.action }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    },
+    {
+      "id": "f3bb656e-0c60-5015-ac01-8ae3b4922277",
+      "name": "🕐 Advance sequences",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -700,
+        600
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "d8df452d-85e0-5d15-b74f-8f932762771f",
+      "name": "⚙️ Config (sequence side)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        600
+      ],
+      "parameters": {
+        "jsCode": "// Mirror of the main Config — n8n cannot share a node across trigger branches.\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"hello@yourdomain.com\",\n  \"supportEmail\": \"support@yourdomain.com\",\n  \"reviewUrl\": \"https://yourdomain.com/review\",\n  \"usageTip\": \"REPLACE: one genuinely useful tip for getting value from your product.\",\n  \"helpAfterHours\": 24,\n  \"tipAfterDays\": 3,\n  \"checkInAfterDays\": 7,\n  \"upsellAfterDays\": 21,\n  \"enableUpsell\": false,\n  \"upsellText\": \"REPLACE: one sentence about your other product, and its link.\",\n  \"batchSize\": 50\n};\nreturn [{ json: { __config: CONFIG } }];"
+      },
+      "alwaysOutputData": true,
+      "notes": "⚠️ Mirror of the main Config. Change one, change both.",
+      "notesInFlow": false
+    },
+    {
+      "id": "ae2680e8-f86b-51bb-bc8c-713d37fca6aa",
+      "name": "⏭️ Find who is due a message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        600
+      ],
+      "parameters": {
+        "jsCode": "// Advance each sequence by at most one stage per run. Sending two stages in one\n// day defeats the point of a timed sequence.\nconst cfg = $input.first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.sequences = store.sequences || {};\n\nconst now = Date.now();\nconst HOUR = 3600000;\nconst DAY = 86400000;\n\nconst due = [];\nlet active = 0;\n\nfor (const s of Object.values(store.sequences)) {\n  if (s.stopped) continue;\n  active++;\n\n  const age = now - s.startedAt;\n\n  // Stages in order. The first match that has not been sent wins.\n  const stages = [\n    { n: 1, at: Number(cfg.helpAfterHours) * HOUR, kind: 'help' },\n    { n: 2, at: Number(cfg.tipAfterDays) * DAY, kind: 'tip' },\n    { n: 3, at: Number(cfg.checkInAfterDays) * DAY, kind: 'checkin' },\n  ];\n\n  // The upsell only exists if enabled AND the refund window has passed.\n  if (cfg.enableUpsell === true) {\n    stages.push({ n: 4, at: Number(cfg.upsellAfterDays) * DAY, kind: 'upsell' });\n  }\n\n  const next = stages.find(st => (s.stage || 0) < st.n && age >= st.at);\n  if (!next) continue;\n\n  s.stage = next.n;\n  s.lastSentAt = now;\n\n  // The final stage retires the sequence.\n  const isLast = next.n === stages[stages.length - 1].n;\n  if (isLast) { s.stopped = true; s.stoppedReason = 'sequence complete'; }\n\n  due.push({ json: {\n    __summary: false,\n    email: s.email,\n    name: s.name,\n    productName: s.productName,\n    orderId: s.orderId,\n    kind: next.kind,\n    stage: next.n,\n    daysSincePurchase: Math.floor(age / DAY),\n    __config: cfg,\n  }});\n}\n\nconst batch = due.slice(0, Number(cfg.batchSize));\nbatch.push({ json: { __summary: true, activeSequences: active, sentThisRun: batch.length, __config: cfg } });\n\nreturn batch;"
+      },
+      "alwaysOutputData": true,
+      "notes": "One stage per run maximum. The upsell stage only exists when enabled.",
+      "notesInFlow": false
+    },
+    {
+      "id": "3df45e34-eb9d-53d9-b8c2-602b2f92a975",
+      "name": "✉️ A message to send?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -20,
+        600
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3123cbe2-6990-50e0-92ac-3cc40df135e3",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.__summary }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "38ef6ac6-2010-5edc-9454-adc4f7d59e74",
+      "name": "✍️ Compose for this stage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        520
+      ],
+      "parameters": {
+        "jsCode": "// Four different messages with four different jobs. Each is short — a long\n// post-purchase email gets skimmed, and skimmed help is no help.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n  const first = (o.name || '').split(' ')[0];\n  const hi = `Hi${first ? ' ' + first : ''}`;\n\n  const wrap = (inner) =>\n`<div style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:540px;margin:0 auto;padding:32px 24px;color:#111;line-height:1.65\">\n  ${inner}\n  <p style=\"color:#999;font-size:12px;margin:28px 0 0;border-top:1px solid #eee;padding-top:14px\">\n    ${cfg.storeName} · <a href=\"mailto:${cfg.supportEmail}?subject=unsubscribe\" style=\"color:#999\">unsubscribe</a>\n  </p>\n</div>`;\n\n  let subject, html;\n\n  if (o.kind === 'help') {\n    // Deflects a support ticket before it is written.\n    subject = `Got everything OK?`;\n    html = wrap(\n`<h2 style=\"margin:0 0 12px;font-size:19px\">${hi}, quick check</h2>\n <p style=\"color:#555;margin:0 0 18px\">Just making sure your download of <strong>${o.productName}</strong> came through and opened properly.</p>\n <p style=\"color:#555;margin:0 0 18px\">If anything did not work — the link, the file, anything at all — reply to this email and I will sort it out. No form, no ticket number.</p>\n <p style=\"color:#777;font-size:13px;margin:0\">If it all worked, no need to reply. Enjoy it.</p>`);\n\n  } else if (o.kind === 'tip') {\n    // Gives value with nothing asked in return.\n    subject = `One thing that helps with ${o.productName}`;\n    html = wrap(\n`<h2 style=\"margin:0 0 12px;font-size:19px\">${hi}</h2>\n <p style=\"color:#555;margin:0 0 18px\">A few days in — here is the one thing most people find useful:</p>\n <div style=\"background:#f7f7f7;border-radius:8px;padding:16px;margin:0 0 18px;color:#333\">${cfg.usageTip}</div>\n <p style=\"color:#777;font-size:13px;margin:0\">Nothing to do here. Reply if you want to ask something.</p>`);\n\n  } else if (o.kind === 'checkin') {\n    // Asks privately BEFORE asking publicly. This is the step that protects\n    // the seller's rating and gets unhappy buyers to the right place.\n    subject = `Did ${o.productName} work out for you?`;\n    html = wrap(\n`<h2 style=\"margin:0 0 12px;font-size:19px\">${hi}, honest question</h2>\n <p style=\"color:#555;margin:0 0 20px\">You have had <strong>${o.productName}</strong> for about a week. Did it do what you needed?</p>\n <p style=\"margin:0 0 10px\">\n   <a href=\"${cfg.reviewUrl}\" style=\"display:inline-block;background:#111;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600\">Yes — leave a review</a>\n </p>\n <p style=\"color:#555;margin:16px 0 0\">\n   <strong>If not</strong> — please reply to this email and tell me what went wrong. I would much rather fix it than have you quietly disappointed.\n </p>`);\n\n  } else {\n    subject = `Something else you might find useful`;\n    html = wrap(\n`<h2 style=\"margin:0 0 12px;font-size:19px\">${hi}</h2>\n <p style=\"color:#555;margin:0 0 18px\">${cfg.upsellText}</p>\n <p style=\"color:#777;font-size:13px;margin:0\">Last email in this sequence — you will not hear from me about this again.</p>`);\n  }\n\n  return { json: { ...o, subject, html } };\n});"
+      },
+      "notes": "Four short messages. The check-in asks privately before asking publicly.",
+      "notesInFlow": false
+    },
+    {
+      "id": "0206e439-0c12-5d46-a537-582f14c491e6",
+      "name": "📧 Send it",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        520
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Attach SMTP. Batched upstream to protect sending reputation.",
+      "notesInFlow": false
+    },
+    {
+      "id": "85b80659-3146-59f3-ab9b-ca0e8c92b1cd",
+      "name": "📊 Sequence summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        720
+      ],
+      "parameters": {
+        "jsCode": "const s = $input.first().json;\nreturn [{ json: {\n  ts: new Date().toISOString(),\n  activeSequences: s.activeSequences ?? 0,\n  sentThisRun: s.sentThisRun ?? 0,\n}}];"
+      },
+      "notes": "Optional. Wire to a Sheet if you want a record.",
+      "notesInFlow": false
+    },
+    {
+      "id": "8e84d97b-c6a3-5eda-a9d2-e5e19c129f09",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        700
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"post-purchase-send\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"post-purchase-sequence\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "0e3b1934-629f-5df1-a231-b11a55dcaa08",
+      "name": "📒 Sequence log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        520
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  email: i.json.email ?? null,\n  stage: i.json.stage ?? null,\n  kind: i.json.kind ?? null,\n  sent: !i.json.error,\n}}));"
+      },
+      "notes": "Track which stage people reach. A drop-off at one stage means that message needs rewriting.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🎉 Order completed": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📝 Enrol the buyer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Enrol the buyer": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🕐 Advance sequences": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config (sequence side)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config (sequence side)": {
+      "main": [
+        [
+          {
+            "node": "⏭️ Find who is due a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏭️ Find who is due a message": {
+      "main": [
+        [
+          {
+            "node": "✉️ A message to send?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✉️ A message to send?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Compose for this stage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📊 Sequence summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Compose for this stage": {
+      "main": [
+        [
+          {
+            "node": "📧 Send it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Send it": {
+      "main": [
+        [
+          {
+            "node": "📒 Sequence log",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "📒 Sequence log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "marketing"
+    },
+    {
+      "name": "retention"
+    },
+    {
+      "name": "reviews"
+    },
+    {
+      "name": "digital-products"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "post-purchase-sequence",
+    "category": "a5-marketing-revenue",
+    "version": "1.0.0"
+  }
+}

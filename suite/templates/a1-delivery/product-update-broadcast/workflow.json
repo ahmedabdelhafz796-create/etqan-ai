@@ -1,0 +1,463 @@
+{
+  "name": "DCA-A1-04 · Product Update Broadcast (tell past buyers, safely)",
+  "nodes": [
+    {
+      "id": "17aad238-1aad-528d-a3bb-563d51e8d6ab",
+      "name": "__note_1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -560
+      ],
+      "parameters": {
+        "content": "## 📢 Product Update Broadcast\n**New version → the right buyers told once → fresh working link.**\n\n### Setup (about 14 minutes)\n1. **⚙️ Config** → `storeName`, `fromEmail`, `downloadBaseUrl`.\n2. **✍️ Sign fresh links** → the **same secret** as A1-01 and A1-02.\n3. Seed `buyers` from your order log, or wire the recipient node to your\n   real order source.\n4. POST when you ship an update:\n   ```json\n   { \"productId\": \"book-01\", \"version\": \"2.0\",\n     \"significance\": \"major\",\n     \"changes\": [\"...\", \"...\"] }\n   ```\n\n### This is a revenue template, not a courtesy\nA buyer who gets a free improvement six months later learns you keep your\nword — which is the whole basis of the second purchase.",
+        "height": 560,
+        "width": 600,
+        "color": 6
+      }
+    },
+    {
+      "id": "d1f00aee-0810-5620-aa58-3a8e51d039b5",
+      "name": "__note_2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -560
+      ],
+      "parameters": {
+        "content": "### 🔇 Not every change deserves an email\n| significance | What happens |\n| --- | --- |\n| `major` | everyone who bought it is told |\n| `minor` | told, but low-key wording |\n| `patch` | **recorded, nobody emailed** |\n\nMailing your whole buyer list about a typo fix is how a welcome update\nbecomes an unsubscribe.\n\nThe version is still recorded on `patch`, so the next major update can\nmention the accumulated fixes.",
+        "height": 400,
+        "width": 480,
+        "color": 7
+      }
+    },
+    {
+      "id": "887a8276-3b31-53c7-93e5-6b43e05dbd56",
+      "name": "__note_3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -560
+      ],
+      "parameters": {
+        "content": "### 🛡️ Four things that go wrong, prevented\n1. **Wrong people** — filtered to buyers of *that* product only.\n2. **Twice** — every send recorded per buyer per version, so re-running\n   the job mails nobody again.\n3. **Dead links** — each recipient gets a **freshly signed** link, not the\n   expired one from their original purchase.\n4. **Rate limits** — sent in batches.\n\nPoint 4 matters beyond this template: a provider throttling or flagging\nyou damages **every** email the rest of the suite sends.",
+        "height": 400,
+        "width": 500,
+        "color": 5
+      }
+    },
+    {
+      "id": "de62d2de-fbc4-5927-9d20-6ca94b2ba002",
+      "name": "__note_4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        380
+      ],
+      "parameters": {
+        "content": "### 📦 Batching\n`batchSize` recipients per run. Re-POST the same update to send the next\nbatch — already-notified buyers are skipped automatically, so you can\nsimply call it again until `remaining` reaches 0.\n\nOr schedule the same payload to repeat every few minutes and let it drain\nthe list by itself.",
+        "height": 300,
+        "width": 440,
+        "color": 4
+      }
+    },
+    {
+      "id": "eed93b64-7b55-5f87-8c67-08f82fa6352b",
+      "name": "🆕 Update shipped",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -700,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dca/product-update",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "POST {productId, version, significance, changes[]} when you ship an update.",
+      "notesInFlow": false
+    },
+    {
+      "id": "a6cc7f76-88e4-5e72-a60e-a4f495eb21e9",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// ⚙️  CONFIG — this is the only node you need to edit.\n//    Secrets do NOT belong here. Use n8n Credentials for those.\n// ═══════════════════════════════════════════════════════════\nconst CONFIG = {\n  \"storeName\": \"YOUR_STORE_NAME\",\n  \"fromEmail\": \"updates@yourdomain.com\",\n  \"supportEmail\": \"support@yourdomain.com\",\n  \"downloadBaseUrl\": \"https://yourdomain.com/download\",\n  \"linkTtlHours\": 168,\n  \"maxDownloads\": 5,\n  \"batchSize\": 50,\n  \"buyers\": {},\n  \"historyTtlDays\": 730\n};\n\n// Surface config on every item so later nodes can read it without\n// reaching back across the graph by node name (which breaks on rename).\nconst items = $input.all();\nif (items.length === 0) return [{ json: { __config: CONFIG } }];\nreturn items.map(i => ({ json: { ...i.json, __config: CONFIG }, binary: i.binary }));\n"
+      },
+      "alwaysOutputData": true,
+      "notes": "buyers maps productId → [{email, orderId, name}]. Seed it or wire the recipient node to your order store.",
+      "notesInFlow": false
+    },
+    {
+      "id": "b221dd65-4bd0-5626-969e-3ccc208c4821",
+      "name": "🛡️ Guard · validate + dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ── Validation ────────────────────────────────────────────────\n// Reject malformed payloads at the door. A template that happily\n// processes half a payload is how silent data corruption starts.\nconst REQUIRED = [\"body\"];\nconst TTL_MS = 1 * 60 * 60 * 1000;\n\nconst out = [];\nconst store = $getWorkflowStaticData('global');\nstore.seen = store.seen || {};\n\n// Prune expired keys so static data cannot grow without bound.\nconst now = Date.now();\nfor (const [k, ts] of Object.entries(store.seen)) {\n  if (now - ts > TTL_MS) delete store.seen[k];\n}\n\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  const missing = REQUIRED.filter(p => {\n    const v = p.split('.').reduce((o, k) => (o == null ? o : o[k]), j);\n    return v === undefined || v === null || v === '';\n  });\n  if (missing.length) {\n    throw new Error(\n      'Invalid payload — missing required field(s): ' + missing.join(', ') +\n      '. Received keys: ' + Object.keys(j).join(', ')\n    );\n  }\n\n  // ── Idempotency ─────────────────────────────────────────────\n  const eventId = String((j.body?.productId ?? '') + '|' + (j.body?.version ?? '') + '|' + Math.floor(Date.now() / 30000) ?? '');\n  if (!eventId) throw new Error('Cannot derive an event id; refusing to run without replay protection.');\n\n  if (store.seen[eventId]) {\n    // Already handled. Emit nothing so downstream side effects do not repeat.\n    continue;\n  }\n  store.seen[eventId] = now;\n\n  out.push({ json: { ...j, __eventId: eventId, __receivedAt: new Date().toISOString() }, binary: item.binary });\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Validates required fields and drops duplicate deliveries. Safe to re-run.",
+      "notesInFlow": false
+    },
+    {
+      "id": "6503f463-9a3d-55d2-95fc-228441451e39",
+      "name": "📋 Decide who to tell",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Work out whether to mail at all, then who has not already been told about\n// this exact version.\n//\n// WIRING THIS TO YOUR REAL DATA:\n// `buyers` in Config is fine for a small catalogue and needs no infrastructure.\n// For a real store, replace the lookup below with a read from wherever A1-01\n// writes its order log and return the same shape: [{ email, orderId, name }].\nconst cfg = $('⚙️ Config').first().json.__config;\nconst store = $getWorkflowStaticData('global');\nstore.notified = store.notified || {};\nstore.versions = store.versions || {};\n\nconst now = Date.now();\nconst ttlMs = Number(cfg.historyTtlDays) * 24 * 60 * 60 * 1000;\nfor (const [k, v] of Object.entries(store.notified)) {\n  if (now - (v.at || 0) > ttlMs) delete store.notified[k];\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const b = item.json.body ?? item.json;\n\n  const productId = String(b.productId ?? b.product_id ?? '').trim();\n  const version = String(b.version ?? '').trim();\n  const significance = String(b.significance ?? 'minor').toLowerCase();\n  const changes = Array.isArray(b.changes)\n    ? b.changes.map(c => String(c).trim()).filter(Boolean)\n    : String(b.changes ?? '').split('\\n').map(c => c.trim()).filter(Boolean);\n\n  if (!productId || !version) {\n    throw new Error('An update needs productId and version. Received keys: ' + Object.keys(b).join(', '));\n  }\n\n  // Record the version regardless — even a silent patch should be on record so\n  // the next major release can mention accumulated fixes.\n  const vKey = `${productId}|${version}`;\n  store.versions[vKey] = store.versions[vKey] || { productId, version, significance, changes, at: now };\n\n  // ── Trivial changes do not earn an email ────────────────────\n  if (significance === 'patch') {\n    out.push({ json: {\n      __send: false,\n      productId, version, significance,\n      reason: 'patch-level change — recorded but nobody emailed',\n      note: 'Mailing your whole buyer list about a typo fix is how a welcome update becomes an unsubscribe.',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  // ── Recipients: buyers of THIS product only ─────────────────\n  const all = (cfg.buyers || {})[productId] || [];\n  if (!all.length) {\n    out.push({ json: {\n      __send: false,\n      productId, version, significance,\n      reason: 'no buyers found for this product',\n      note: 'Seed `buyers` in Config, or wire this node to your order log.',\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  // ── Skip anyone already told about this exact version ───────\n  const pending = all.filter(buyer => {\n    const email = String(buyer.email ?? '').trim().toLowerCase();\n    if (!email) return false;\n    return !store.notified[`${email}|${vKey}`];\n  });\n\n  const batch = pending.slice(0, Number(cfg.batchSize));\n\n  if (!batch.length) {\n    out.push({ json: {\n      __send: false,\n      productId, version, significance,\n      reason: 'every buyer has already been told about this version',\n      totalBuyers: all.length,\n      __config: cfg,\n    }});\n    continue;\n  }\n\n  const expiresAt = Math.floor(now / 1000) + Number(cfg.linkTtlHours) * 3600;\n\n  for (const buyer of batch) {\n    const email = String(buyer.email).trim().toLowerCase();\n    const orderId = String(buyer.orderId ?? buyer.order_id ?? '').trim();\n\n    // Mark as notified up front. Sending twice is worse than missing one, and a\n    // failed send still leaves a structured error for manual recovery.\n    store.notified[`${email}|${vKey}`] = { at: now, email, version, productId };\n\n    out.push({ json: {\n      __send: true,\n      productId, version, significance, changes,\n      email,\n      name: String(buyer.name ?? '').trim(),\n      orderId,\n      totalBuyers: all.length,\n      remaining: Math.max(0, pending.length - batch.length),\n      __expires: expiresAt,\n      // Must match A1-01's payload ordering exactly or the link will not verify.\n      __signaturePayload: [orderId, email, productId, expiresAt, cfg.maxDownloads].join('|'),\n      __config: cfg,\n    }});\n  }\n}\n\nreturn out;"
+      },
+      "alwaysOutputData": true,
+      "notes": "Filters to real buyers, skips anyone already told, batches, and stays silent on patches.",
+      "notesInFlow": false
+    },
+    {
+      "id": "d0903efa-aa41-5ec0-b125-e895c700029d",
+      "name": "📤 Anyone to tell?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "841c6809-fd03-5af3-af70-30cdef37702a",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.__send }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "257b4c44-9fed-583c-9e6a-b87df29d3e34",
+      "name": "✍️ Sign fresh links",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        440,
+        80
+      ],
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.__signaturePayload }}",
+        "dataPropertyName": "linkSignature",
+        "secret": "YOUR_OWN_LONG_RANDOM_LINK_SECRET",
+        "encoding": "hex"
+      },
+      "notes": "⚠️ Must be the SAME secret as A1-01, A1-02 and A4-01.",
+      "notesInFlow": false
+    },
+    {
+      "id": "15043360-b1c8-5646-892b-54480ea65d97",
+      "name": "✍️ Compose the announcement",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        80
+      ],
+      "parameters": {
+        "jsCode": "// Same URL contract as A1-01, so the fresh link verifies in A1-02 without any\n// special-casing. Four templates now agree on this shape.\nreturn $input.all().map(i => {\n  const o = i.json;\n  const cfg = o.__config;\n\n  const qs = new URLSearchParams({\n    order: String(o.orderId),\n    email: String(o.email),\n    product: String(o.productId),\n    expires: String(o.__expires),\n    max: String(cfg.maxDownloads),\n    sig: String(o.linkSignature),\n  });\n  const url = cfg.downloadBaseUrl.replace(/\\/+$/, '') + '?' + qs.toString();\n\n  const isMajor = o.significance === 'major';\n  const changeList = o.changes.length\n    ? `<ul style=\"color:#444;padding-left:20px;margin:0 0 22px\">${o.changes.map(c =>\n        `<li style=\"margin-bottom:6px\">${String(c).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</li>`).join('')}</ul>`\n    : '';\n\n  return { json: { ...o,\n    downloadUrl: url,\n    subject: isMajor\n      ? `${o.productId} has been updated — version ${o.version} is ready`\n      : `A small update to ${o.productId}`,\n    html:\n`<div style=\"font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#111\">\n  <h2 style=\"margin:0 0 12px;font-size:20px\">Hi${o.name ? ' ' + o.name : ''}, there's a new version</h2>\n  <p style=\"color:#555;line-height:1.65;margin:0 0 20px\">\n    You bought this${o.orderId ? ` (order ${o.orderId})` : ''}, so here is version <strong>${o.version}</strong> —\n    free, as always.\n  </p>\n  ${o.changes.length ? '<p style=\"font-weight:600;margin:0 0 8px\">What changed</p>' + changeList : ''}\n  <a href=\"${url}\" style=\"display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600\">Download version ${o.version}</a>\n  <p style=\"color:#777;font-size:13px;margin:22px 0 0\">\n    This is a fresh link — your original one has likely expired by now.\n  </p>\n  <p style=\"color:#777;font-size:13px;margin:8px 0 0\">\n    Questions? Reply here or email <a href=\"mailto:${cfg.supportEmail}\">${cfg.supportEmail}</a>.\n  </p>\n</div>`,\n  }};\n});"
+      },
+      "notes": "Every recipient gets a freshly signed link, not the dead one from their purchase.",
+      "notesInFlow": false
+    },
+    {
+      "id": "02266d65-b176-511e-95ec-d7027eacfcd0",
+      "name": "📧 Send the announcement",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        920,
+        80
+      ],
+      "parameters": {
+        "fromEmail": "={{ $json.__config.fromEmail }}",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Attach SMTP. Batched upstream to protect your sending reputation.",
+      "notesInFlow": false
+    },
+    {
+      "id": "dd422a50-5c10-573f-a437-ef016df8a96e",
+      "name": "⏭️ Nothing sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        340
+      ],
+      "parameters": {
+        "jsCode": "// Patch-level change, no buyers, or everyone already told. Recorded so a re-run\n// is visibly a no-op rather than looking like a failure.\nreturn $input.all().map(i => ({ json: {\n  sent: false,\n  productId: i.json.productId,\n  version: i.json.version,\n  reason: i.json.reason,\n  note: i.json.note ?? null,\n}}));"
+      },
+      "notes": "A re-run lands here and does nothing, which is correct.",
+      "notesInFlow": false
+    },
+    {
+      "id": "dae5ab2f-cc13-515d-83fd-0bd1a4d6f802",
+      "name": "🚨 Handle failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        920,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Normalise whatever failed into one structured record. Route this node's\n// output to Slack / email / a sheet — or set the workflow's Error Workflow in\n// Settings and let every template report into one place.\nconst ctx = \"update-broadcast\";\nreturn $input.all().map(i => ({\n  json: {\n    ok: false,\n    template: \"product-update-broadcast\",\n    version: \"1.0.0\",\n    stage: ctx,\n    error: i.json?.error?.message || i.json?.message || 'Unknown error',\n    payload: i.json,\n    failedAt: new Date().toISOString(),\n  }\n}));"
+      },
+      "notes": "Structured failure record. Wire to your alert channel.",
+      "notesInFlow": false
+    },
+    {
+      "id": "e3ee8a43-d850-5594-ac20-13548ac0f6e6",
+      "name": "📒 Broadcast log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        200
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(i => ({ json: {\n  ts: new Date().toISOString(),\n  productId: i.json.productId ?? null,\n  version: i.json.version ?? null,\n  email: i.json.email ?? null,\n  sent: i.json.sent !== false && !i.json.error,\n  remaining: i.json.remaining ?? null,\n  reason: i.json.reason ?? null,\n}}));"
+      },
+      "notes": "`remaining` tells you whether to call again for the next batch.",
+      "notesInFlow": false
+    },
+    {
+      "id": "afedac62-e1b3-5657-ada4-77e7638d68ed",
+      "name": "↩️ 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1400,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, remaining: $json.remaining ?? 0 }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "notes": "Answer fast so the provider does not retry on timeout.",
+      "notesInFlow": false
+    }
+  ],
+  "connections": {
+    "🆕 Update shipped": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Guard · validate + dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Guard · validate + dedupe": {
+      "main": [
+        [
+          {
+            "node": "📋 Decide who to tell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Decide who to tell": {
+      "main": [
+        [
+          {
+            "node": "📤 Anyone to tell?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📤 Anyone to tell?": {
+      "main": [
+        [
+          {
+            "node": "✍️ Sign fresh links",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⏭️ Nothing sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Sign fresh links": {
+      "main": [
+        [
+          {
+            "node": "✍️ Compose the announcement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✍️ Compose the announcement": {
+      "main": [
+        [
+          {
+            "node": "📧 Send the announcement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Send the announcement": {
+      "main": [
+        [
+          {
+            "node": "📒 Broadcast log",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Handle failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏭️ Nothing sent": {
+      "main": [
+        [
+          {
+            "node": "📒 Broadcast log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Handle failure": {
+      "main": [
+        [
+          {
+            "node": "📒 Broadcast log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Broadcast log": {
+      "main": [
+        [
+          {
+            "node": "↩️ 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  },
+  "tags": [
+    {
+      "name": "delivery"
+    },
+    {
+      "name": "retention"
+    },
+    {
+      "name": "digital-products"
+    },
+    {
+      "name": "email"
+    },
+    {
+      "name": "hardened"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "suite": "digital-commerce-automation-suite",
+    "slug": "product-update-broadcast",
+    "category": "a1-delivery",
+    "version": "1.0.0"
+  }
+}

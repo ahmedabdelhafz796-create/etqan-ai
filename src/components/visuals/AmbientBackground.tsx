@@ -3,7 +3,8 @@
 /**
  * Global cinematic backdrop rendered once behind the whole site.
  *  - Deep vignette base
- *  - Three slow-drifting aurora orbs (gold / royal / emerald)
+ *  - Three slow-drifting aurora orbs (iris / royal / aqua) — the AI
+ *    line's palette, since this sits behind the whole site
  *  - Faint perspective grid
  *  - Film grain
  * All decorative & GPU-friendly (transform/opacity only).
@@ -19,13 +20,13 @@ export function AmbientBackground() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(20,27,45,0.9),transparent_60%)]" />
 
       {/* aurora orbs */}
-      <div className="absolute -left-[10%] top-[-8%] h-[52vmax] w-[52vmax] rounded-full bg-[radial-gradient(circle,rgba(233,196,106,0.16),transparent_62%)] blur-3xl animate-aurora" />
+      <div className="absolute -left-[10%] top-[-8%] h-[52vmax] w-[52vmax] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.18),transparent_62%)] blur-3xl animate-aurora" />
       <div
         className="absolute right-[-12%] top-[18%] h-[48vmax] w-[48vmax] rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.14),transparent_60%)] blur-3xl animate-aurora"
         style={{ animationDelay: "-7s", animationDuration: "26s" }}
       />
       <div
-        className="absolute bottom-[-18%] left-[30%] h-[46vmax] w-[46vmax] rounded-full bg-[radial-gradient(circle,rgba(18,185,129,0.12),transparent_60%)] blur-3xl animate-aurora"
+        className="absolute bottom-[-18%] left-[30%] h-[46vmax] w-[46vmax] rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.10),transparent_60%)] blur-3xl animate-aurora"
         style={{ animationDelay: "-14s", animationDuration: "30s" }}
       />
 
