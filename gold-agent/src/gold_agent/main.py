@@ -8,6 +8,10 @@ from src.gold_agent.analysis.indicators import IndicatorEngine
 from src.gold_agent.analysis.scoring import ScoringEngine
 from src.gold_agent.analysis.macro import MacroAgent
 from src.gold_agent.analysis.correlations import CorrelationAgent
+from src.gold_agent.analysis.volatility_adjuster import VolatilityAdjuster
+from src.gold_agent.analysis.regime_detector import RegimeDetector
+from src.gold_agent.analysis.signal_ensemble import SignalEnsemble
+from src.gold_agent.analysis.feature_importance import FeatureImportanceAnalyzer
 from src.gold_agent.audit.db import get_audit_log
 from src.gold_agent.brain.llm_brain import get_brain
 from src.gold_agent.config import load_config, load_sharia_rules
@@ -59,6 +63,12 @@ class GoldTradingAgent:
         # Phase 2: Macro & Correlation Analysis
         self.macro_agent = MacroAgent(self.config)
         self.correlation_agent = CorrelationAgent(self.config)
+
+        # Tier 4: Advanced Analysis
+        self.volatility_adjuster = VolatilityAdjuster(self.config)
+        self.regime_detector = RegimeDetector(self.config)
+        self.signal_ensemble = SignalEnsemble(self.config)
+        self.feature_importance = FeatureImportanceAnalyzer(self.config)
 
         # Brain
         self.brain = get_brain(self.config.brain.provider, self.config)
@@ -190,6 +200,9 @@ class GoldTradingAgent:
             "capital": self.capital_manager.get_status(),
             "trades": self.trade_lifecycle.get_status(),
             "learning": self.learning_engine.get_status(),
+            "volatility": self.volatility_adjuster.get_status(),
+            "regime": self.regime_detector.get_status(),
+            "ensemble": self.signal_ensemble.get_status(),
             "sharia": self.sharia_gate.get_compliance_status(),
         }
 
@@ -208,6 +221,9 @@ class GoldTradingAgent:
         print(f"\nCapital: {status['capital']}")
         print(f"\nTrades: {status['trades']}")
         print(f"\nLearning: {status['learning']}")
+        print(f"\nVolatility: {status['volatility']}")
+        print(f"\nRegime: {status['regime']}")
+        print(f"\nEnsemble: {status['ensemble']}")
         print(f"\nSharia Compliance: {status['sharia']}")
 
     def print_report(self):
