@@ -21,6 +21,7 @@ from src.gold_agent.execution.order_manager import OrderManager
 from src.gold_agent.execution.position_manager import PositionManager
 from src.gold_agent.execution.capital_manager import CapitalManager
 from src.gold_agent.execution.trade_lifecycle_manager import TradeLifecycleManager
+from src.gold_agent.learning.learning_engine import LearningEngine
 from src.gold_agent.monitoring.health import Monitor
 from src.gold_agent.notification.telegram import get_notifier
 from src.gold_agent.risk.risk_gate import RiskGate
@@ -99,6 +100,9 @@ class GoldTradingAgent:
             self.capital_manager,
             self.config
         )
+
+        # Tier 2: Learning & Memory
+        self.learning_engine = LearningEngine(self.config, self.audit_log)
 
         # Monitoring
         self.monitor = Monitor(self.config)
@@ -179,6 +183,7 @@ class GoldTradingAgent:
             "positions": self.position_manager.get_status(),
             "capital": self.capital_manager.get_status(),
             "trades": self.trade_lifecycle.get_status(),
+            "learning": self.learning_engine.get_status(),
             "sharia": self.sharia_gate.get_compliance_status(),
         }
 
@@ -196,6 +201,7 @@ class GoldTradingAgent:
         print(f"\nPositions: {status['positions']}")
         print(f"\nCapital: {status['capital']}")
         print(f"\nTrades: {status['trades']}")
+        print(f"\nLearning: {status['learning']}")
         print(f"\nSharia Compliance: {status['sharia']}")
 
     def print_report(self):
