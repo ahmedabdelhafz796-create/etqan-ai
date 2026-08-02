@@ -51,9 +51,13 @@ class StateMachine:
     - All transitions audited
     """
 
-    def __init__(self, initial_state: StateType = StateType.AUTONOMOUS):
-        self.current_state = initial_state
-        self.previous_state = initial_state
+    def __init__(self, initial_state = StateType.AUTONOMOUS):
+        # Handle both string and enum inputs (config passes strings)
+        if isinstance(initial_state, str):
+            self.current_state = StateType(initial_state)
+        else:
+            self.current_state = initial_state
+        self.previous_state = self.current_state
         self.transitions: List[StateTransition] = []
         self.transition_history: List[Dict] = []
         self.kill_switch_armed = True  # Armed = stopped; disarmed = ready

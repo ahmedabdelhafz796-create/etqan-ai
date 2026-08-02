@@ -47,6 +47,12 @@ class BrainConfig(BaseModel):
     fallback_to_rule_engine: bool = True
 
 
+class FallbackEngineConfig(BaseModel):
+    enabled: bool = True
+    conservative_confidence_reduction: float = 0.10
+    min_indicator_agreement: int = 3
+
+
 class RiskGateConfig(BaseModel):
     enabled: bool = True
     max_drawdown_percent: float = 5.0
@@ -111,6 +117,7 @@ class Config(BaseModel):
     indicators: IndicatorConfig = Field(default_factory=IndicatorConfig)
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
     brain: BrainConfig = Field(default_factory=BrainConfig)
+    fallback_engine: FallbackEngineConfig = Field(default_factory=FallbackEngineConfig)
     risk_gate: RiskGateConfig = Field(default_factory=RiskGateConfig)
     sharia: ShartiaConfig = Field(default_factory=ShartiaConfig)
     notification: NotificationConfig = Field(default_factory=NotificationConfig)
