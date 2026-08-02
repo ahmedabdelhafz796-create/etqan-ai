@@ -15,7 +15,12 @@ from src.gold_agent.core.pipeline import Pipeline
 from src.gold_agent.data.market import get_market_provider
 from src.gold_agent.data.news import get_news_provider
 from src.gold_agent.decision.decision_engine import DecisionEngine
-from src.gold_agent.execution.placeholder import ExecutionEngine
+from src.gold_agent.execution.engine import ExecutionEngine
+from src.gold_agent.execution.brokers.mock import MockBrokerAdapter
+from src.gold_agent.execution.order_manager import OrderManager
+from src.gold_agent.execution.position_manager import PositionManager
+from src.gold_agent.execution.capital_manager import CapitalManager
+from src.gold_agent.execution.trade_lifecycle_manager import TradeLifecycleManager
 from src.gold_agent.monitoring.health import Monitor
 from src.gold_agent.notification.telegram import get_notifier
 from src.gold_agent.risk.risk_gate import RiskGate
@@ -68,8 +73,32 @@ class GoldTradingAgent:
         # Audit
         self.audit_log = get_audit_log(self.config)
 
-        # Execution
-        self.execution = ExecutionEngine(self.config)
+        # Tier 1 Execution Architecture
+        # Initialize broker adapter (mock by default, or real broker if configured)
+        broker_type = self.config.execution.broker_type
+        if broker_type == "mock":
+            self.broker = MockBrokerAdapter(self.config)
+        elif broker_type == "mt5":
+            from src.gold_agent.execution.brokers.mt5 import MT5BrokerAdapter
+            self.broker = MT5BrokerAdapter(self.config)
+        elif broker_type == "oanda":
+            from src.gold_agent.execution.brokers.oanda import OANDABrokerAdapter
+            self.broker = OANDABrokerAdapter(self.config)
+        else:
+            self.broker = MockBrokerAdapter(self.config)
+
+        # Execution engine
+        self.execution = ExecutionEngine(self.broker, self.config)
+
+        # Execution subsystems
+        self.order_manager = OrderManager(self.config)
+        self.position_manager = PositionManager(self.config)
+        self.capital_manager = CapitalManager(self.config, initial_capital=100000.0)
+        self.trade_lifecycle = TradeLifecycleManager(
+            self.position_manager,
+            self.capital_manager,
+            self.config
+        )
 
         # Monitoring
         self.monitor = Monitor(self.config)
@@ -146,6 +175,10 @@ class GoldTradingAgent:
             "health": self.monitor.get_status(),
             "performance": self.monitor.get_performance(),
             "execution": self.execution.get_status(),
+            "orders": self.order_manager.get_status(),
+            "positions": self.position_manager.get_status(),
+            "capital": self.capital_manager.get_status(),
+            "trades": self.trade_lifecycle.get_status(),
             "sharia": self.sharia_gate.get_compliance_status(),
         }
 
@@ -158,7 +191,11 @@ class GoldTradingAgent:
         print(f"Kill Switch: {'ARMED' if status['state_machine']['kill_switch_armed'] else 'DISARMED'}")
         print(f"\nHealth: {status['health']}")
         print(f"\nPerformance: {status['performance']}")
-        print(f"\nExecution: {status['execution']}")
+        print(f"\nExecution Engine: {status['execution']}")
+        print(f"\nOrders: {status['orders']}")
+        print(f"\nPositions: {status['positions']}")
+        print(f"\nCapital: {status['capital']}")
+        print(f"\nTrades: {status['trades']}")
         print(f"\nSharia Compliance: {status['sharia']}")
 
     def print_report(self):

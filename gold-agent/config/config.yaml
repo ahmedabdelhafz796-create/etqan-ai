@@ -116,20 +116,32 @@ notification:
       enabled: false
       url: null
 
-# Execution Configuration (§4, §5.1)
+# Execution Configuration (Tier 1, §4, §5.1)
 execution:
   enabled: false  # Must be explicitly activated after testing
   kill_switch_required: true
   kill_switch_armed: true  # Armed = stopping trades; disarmed = ready to execute
-  broker: "mock"  # Options: "mock", "mt5", "oanda"
-  mt5:
-    terminal_path: null
-    account_number: null
-    password: null
-  oanda:
-    api_key: null  # Set from env: OANDA_API_KEY
-    account_id: null  # Set from env: OANDA_ACCOUNT_ID
-    environment: "practice"  # "practice" or "live"
+  broker_type: "mock"  # Options: "mock", "mt5", "oanda"
+  default_position_size: 1.0  # Standard position size in ounces
+
+  # Broker-specific configuration
+  brokers:
+    mt5:
+      login: null  # Set from env: MT5_LOGIN
+      password: null  # Set from env: MT5_PASSWORD
+      server: null  # e.g., "XM.COM-MT5"
+    oanda:
+      api_key: null  # Set from env: OANDA_API_KEY
+      account_id: null  # Set from env: OANDA_ACCOUNT_ID
+      environment: "practice"  # "practice" or "live"
+
+  # Capital Management (Tier 1)
+  capital:
+    initial_capital: 100000  # USD
+    daily_loss_limit_percent: 3  # Stop trading if lose 3% in a day
+    max_drawdown_percent: 5  # Emergency if drawdown > 5%
+    max_position_size_percent: 2  # Max 2% of capital per position
+    max_leverage: 10  # Max 10x leverage
 
 # State Machine (§5.1)
 state_machine:

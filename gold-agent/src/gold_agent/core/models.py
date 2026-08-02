@@ -135,3 +135,131 @@ class HealthStatus:
     state: StateType
     requires_intervention: bool = False
     reason: Optional[str] = None
+
+
+# ============================================================================
+# TIER 1: EXECUTION ARCHITECTURE MODELS
+# ============================================================================
+
+class OrderStatus(str, Enum):
+    """Order execution status."""
+    PENDING = "pending"
+    PARTIAL = "partial"
+    FILLED = "filled"
+    CANCELLED = "cancelled"
+    REJECTED = "rejected"
+    ERROR = "error"
+
+
+class OrderType(str, Enum):
+    """Order types."""
+    MARKET = "market"
+    LIMIT = "limit"
+    STOP_LOSS = "stop_loss"
+    TAKE_PROFIT = "take_profit"
+
+
+class PositionSide(str, Enum):
+    """Position direction."""
+    LONG = "long"
+    SHORT = "short"
+    FLAT = "flat"
+
+
+@dataclass
+class Order:
+    """A single order to be executed."""
+    order_id: str  # Unique order ID
+    timestamp: datetime  # When order was created
+    symbol: str  # Trading symbol (e.g., "XAUUSD")
+    side: ActionType  # BUY or SELL
+    quantity: float  # Amount to trade
+    order_type: OrderType
+    price: Optional[float] = None  # For limit orders
+    stop_price: Optional[float] = None  # For stop orders
+    status: OrderStatus = OrderStatus.PENDING
+    filled_quantity: float = 0.0
+    average_fill_price: Optional[float] = None
+    rejection_reason: Optional[str] = None
+    broker_order_id: Optional[str] = None  # Broker's order ID
+    created_at: datetime = None
+
+    def __post_init__(self):
+        if self.created_at is None:
+            self.created_at = datetime.utcnow()
+
+
+@dataclass
+class Trade:
+    """A single opened trade (position)."""
+    trade_id: str  # Unique trade ID
+    entry_decision_id: int  # Links to decision that triggered entry
+    symbol: str
+    side: PositionSide
+    entry_price: float
+    quantity: float
+    entry_timestamp: datetime
+    entry_order_id: str  # Order that opened the trade
+
+    # Position management
+    current_price: Optional[float] = None
+    current_p_l: Optional[float] = None  # Current profit/loss
+    current_p_l_percent: Optional[float] = None  # Current P&L %
+
+    # Risk management
+    stop_loss: Optional[float] = None
+    take_profit: Optional[float] = None
+    risk_reward_ratio: Optional[float] = None
+
+    # Exit
+    exit_price: Optional[float] = None
+    exit_timestamp: Optional[datetime] = None
+    exit_reason: Optional[str] = None  # "tp", "sl", "manual", "closed"
+    exit_order_id: Optional[str] = None
+    final_p_l: Optional[float] = None
+    final_p_l_percent: Optional[float] = None
+
+    # Metadata
+    state: str = "open"  # "open", "closed", "error"
+    created_at: datetime = None
+
+    def __post_init__(self):
+        if self.created_at is None:
+            self.created_at = datetime.utcnow()
+
+
+@dataclass
+class Position:
+    """Current open position summary."""
+    symbol: str
+    side: PositionSide
+    quantity: float
+    entry_price: float
+    current_price: float
+    entry_timestamp: datetime
+    unrealized_p_l: float
+    unrealized_p_l_percent: float
+    trade_ids: list  # Trade IDs in this position
+    stop_loss: Optional[float] = None
+    take_profit: Optional[float] = None
+
+
+@dataclass
+class PortfolioMetrics:
+    """Portfolio-level statistics."""
+    timestamp: datetime
+    total_value: float  # Total account value
+    cash_balance: float
+    positions_value: float
+    unrealized_p_l: float
+    realized_p_l_today: float
+    max_drawdown_percent: float
+    num_open_positions: int
+    num_winning_trades_today: int
+    num_losing_trades_today: int
+    win_rate: float  # 0-1
+    average_win: float
+    average_loss: float
+    risk_reward_ratio: float
+    sharpe_ratio: Optional[float] = None
+    max_leverage_used: float = 1.0

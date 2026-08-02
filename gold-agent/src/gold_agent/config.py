@@ -79,11 +79,39 @@ class NotificationConfig(BaseModel):
     console_language: str = "ar"
 
 
+class MT5BrokerConfig(BaseModel):
+    login: Optional[int] = None
+    password: Optional[str] = None
+    server: Optional[str] = None
+
+
+class OANDABrokerConfig(BaseModel):
+    api_key: Optional[str] = None
+    account_id: Optional[str] = None
+    environment: str = "practice"
+
+
+class BrokersConfig(BaseModel):
+    mt5: MT5BrokerConfig = Field(default_factory=MT5BrokerConfig)
+    oanda: OANDABrokerConfig = Field(default_factory=OANDABrokerConfig)
+
+
+class CapitalConfig(BaseModel):
+    initial_capital: float = 100000.0
+    daily_loss_limit_percent: float = 3.0
+    max_drawdown_percent: float = 5.0
+    max_position_size_percent: float = 2.0
+    max_leverage: float = 10.0
+
+
 class ExecutionConfig(BaseModel):
     enabled: bool = False
     kill_switch_required: bool = True
     kill_switch_armed: bool = True
-    broker: str = "mock"
+    broker_type: str = "mock"
+    default_position_size: float = 1.0
+    brokers: BrokersConfig = Field(default_factory=BrokersConfig)
+    capital: CapitalConfig = Field(default_factory=CapitalConfig)
 
 
 class StateMachineConfig(BaseModel):
