@@ -37,11 +37,9 @@ class GoldTradingAgent:
         # Data Providers
         self.market_data = get_market_provider(
             self.config.data.market_provider,
-            api_key=self.config.data.market.provider,
         )
         self.news = get_news_provider(
             self.config.data.news_provider,
-            api_key=self.config.data.news.provider,
         )
 
         # Indicators & Scoring

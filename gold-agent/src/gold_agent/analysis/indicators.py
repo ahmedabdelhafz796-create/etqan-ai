@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import List, Optional
 
 import pandas as pd
-import pandas_ta
 
 from src.gold_agent.core.models import IndicatorValues, MarketData
 
@@ -64,41 +63,55 @@ class IndicatorEngine:
         )
 
     def _calculate_rsi(self, series: pd.Series) -> float:
-        """Calculate Relative Strength Index (RSI)."""
+        """Calculate Relative Strength Index (RSI) natively."""
         period = self.config.indicators.rsi_period
+        if len(series) < period:
+            return 50.0
 
-        # Using pandas_ta
-        rsi_values = pandas_ta.rsi(series, length=period)
-        if rsi_values is not None and len(rsi_values) > 0:
-            return float(rsi_values.iloc[-1])
-        return 50.0  # Neutral if calculation fails
+        # Calculate price changes
+        delta = series.diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+
+        # Avoid division by zero
+        rs = gain / loss.replace(0, 0.00001)
+        rsi = 100 - (100 / (1 + rs))
+
+        rsi_value = rsi.iloc[-1]
+        return float(rsi_value) if pd.notna(rsi_value) else 50.0
 
     def _calculate_macd(
         self, series: pd.Series
     ) -> tuple[float, float, float]:
-        """Calculate MACD (Moving Average Convergence Divergence)."""
+        """Calculate MACD natively."""
         fast = self.config.indicators.macd_fast
         slow = self.config.indicators.macd_slow
         signal = self.config.indicators.macd_signal
 
-        # Using pandas_ta
-        macd_result = pandas_ta.macd(
-            series,
-            fast=fast,
-            slow=slow,
-            signal=signal,
+        if len(series) < slow:
+            return 0.0, 0.0, 0.0
+
+        # Calculate exponential moving averages
+        ema_fast = series.ewm(span=fast, adjust=False).mean()
+        ema_slow = series.ewm(span=slow, adjust=False).mean()
+
+        # MACD line
+        macd_line = ema_fast - ema_slow
+
+        # Signal line (EMA of MACD)
+        signal_line = macd_line.ewm(span=signal, adjust=False).mean()
+
+        # Histogram
+        histogram = macd_line - signal_line
+
+        return (
+            float(macd_line.iloc[-1]) if pd.notna(macd_line.iloc[-1]) else 0.0,
+            float(signal_line.iloc[-1]) if pd.notna(signal_line.iloc[-1]) else 0.0,
+            float(histogram.iloc[-1]) if pd.notna(histogram.iloc[-1]) else 0.0,
         )
 
-        if macd_result is not None and len(macd_result) >= 3:
-            macd_line = float(macd_result.iloc[-1, 0])
-            signal_line = float(macd_result.iloc[-1, 1])
-            histogram = float(macd_result.iloc[-1, 2])
-            return macd_line, signal_line, histogram
-
-        return 0.0, 0.0, 0.0
-
     def _calculate_mas(self, series: pd.Series) -> tuple[float, float]:
-        """Calculate Moving Averages (short and long)."""
+        """Calculate Moving Averages natively."""
         short_period = self.config.indicators.ma_short
         long_period = self.config.indicators.ma_long
 

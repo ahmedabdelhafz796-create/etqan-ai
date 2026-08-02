@@ -67,9 +67,14 @@ class Monitor:
     def get_status(self) -> Dict:
         """Get current health status."""
         if self.last_check:
+            state_value = (
+                self.last_check.state.value
+                if hasattr(self.last_check.state, "value")
+                else str(self.last_check.state)
+            )
             return {
                 "timestamp": self.last_check.timestamp.isoformat(),
-                "state": self.last_check.state.value,
+                "state": state_value,
                 "data_quality": self.last_check.data_quality,
                 "connection": self.last_check.connection_status,
                 "last_data_age_minutes": self.last_check.last_data_age_minutes,
