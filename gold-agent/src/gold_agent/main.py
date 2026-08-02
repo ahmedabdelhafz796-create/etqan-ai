@@ -121,21 +121,10 @@ class GoldTradingAgent:
         # Tier 2: Learning & Memory
         self.learning_engine = LearningEngine(self.config, self.audit_log)
 
-        # Tier 3: Validation & Testing
-        self.backtester = Backtester(self.config, self.pipeline)
-        self.performance_validator = PerformanceValidator(self.config)
-
-        # Tier 5: Self-Management
-        self.config_tuner = ConfigurationTuner(self.config)
-        self.strategy_selector = AdaptiveStrategySelector(self.config)
-        self.risk_adjuster = RiskAdjuster(self.config)
-        self.performance_monitor = PerformanceMonitor(self.config)
-        self.parameter_optimizer = ParameterOptimizer(self.config)
-
         # Monitoring
         self.monitor = Monitor(self.config)
 
-        # Pipeline
+        # Pipeline (must be created before backtester which references it)
         self.pipeline = Pipeline(
             market_data_provider=self.market_data,
             news_provider=self.news,
@@ -152,6 +141,17 @@ class GoldTradingAgent:
             state_machine=self.state_machine,
             config=self.config,
         )
+
+        # Tier 3: Validation & Testing (after pipeline)
+        self.backtester = Backtester(self.config, self.pipeline)
+        self.performance_validator = PerformanceValidator(self.config)
+
+        # Tier 5: Self-Management
+        self.config_tuner = ConfigurationTuner(self.config)
+        self.strategy_selector = AdaptiveStrategySelector(self.config)
+        self.risk_adjuster = RiskAdjuster(self.config)
+        self.performance_monitor = PerformanceMonitor(self.config)
+        self.parameter_optimizer = ParameterOptimizer(self.config)
 
     async def run_once(self) -> bool:
         """Run one complete analysis cycle."""

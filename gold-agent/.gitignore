@@ -45,11 +45,10 @@ ENV/
 htmlcov/
 .tox/
 
-# Database
+# Database (runtime files only, not the data provider modules)
 *.db
 *.sqlite
 *.sqlite3
-data/
 
 # Logs
 logs/

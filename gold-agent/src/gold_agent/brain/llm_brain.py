@@ -54,8 +54,19 @@ class AnthropicBrain(Brain):
         self.model = model
         self.config = config
         self.client = None
-        # TODO: Initialize Anthropic client
-        pass
+        self._initialize_client()
+
+    def _initialize_client(self):
+        """Initialize Anthropic client."""
+        try:
+            from anthropic import Anthropic
+            self.client = Anthropic(api_key=self.api_key)
+        except ImportError:
+            print("Warning: anthropic library not installed. Claude API will be unavailable.")
+            self.client = None
+        except Exception as e:
+            print(f"Warning: Failed to initialize Anthropic client: {e}")
+            self.client = None
 
     async def analyze(
         self,
@@ -65,8 +76,38 @@ class AnthropicBrain(Brain):
         news: List[NewsItem],
     ) -> Optional[BrainResult]:
         """Call Claude API for analysis."""
-        # TODO: Implement
-        pass
+        if not self.client:
+            return None
+
+        try:
+            prompt = self._build_prompt(market_data, indicators, score, news)
+
+            # Call Claude API synchronously (wrapped in async)
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=500,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+
+            # Parse response
+            response_text = response.content[0].text
+
+            # Extract signal, confidence, and reason from response
+            result = self._parse_response(response_text)
+            if result:
+                return BrainResult(
+                    confidence=result['confidence'],
+                    reason=result['reason'],
+                    signal=result['signal'],
+                    used_llm=True,
+                    used_fallback=False,
+                )
+        except Exception as e:
+            print(f"Claude API error: {e}")
+
+        return None
 
     def _build_prompt(
         self,
@@ -76,8 +117,73 @@ class AnthropicBrain(Brain):
         news: List[NewsItem],
     ) -> str:
         """Build prompt for Claude."""
-        # TODO: Implement
-        pass
+        news_summary = "No recent news." if not news else ", ".join([f"{n.title} (sentiment: {n.sentiment:.1f})" for n in news[:3]])
+
+        prompt = f"""You are an expert gold trading analyst. Analyze the following market data and technical indicators to provide a trading decision.
+
+MARKET DATA:
+- Gold Price (XAU/USD): ${market_data.xau_usd:.2f}
+- US Dollar Index (DXY): {market_data.dxy:.2f}
+- 10-Year Bond Yield: {market_data.bond_yield_10y:.2f}%
+- VIX (Volatility Index): {market_data.vix:.2f}
+- Data Quality: {market_data.data_quality:.1%}
+
+TECHNICAL INDICATORS:
+- RSI (Relative Strength Index): {indicators.rsi:.1f}
+- MACD (Moving Average Convergence Divergence): {indicators.macd:.4f}
+- MACD Signal: {indicators.macd_signal:.4f}
+- MACD Histogram: {indicators.macd_histogram:.4f}
+- 50-MA: ${indicators.ma_short:.2f}
+- 200-MA: ${indicators.ma_long:.2f}
+
+SCORING ANALYSIS:
+- RSI Score: {score.rsi_score:.0f}/100
+- MACD Score: {score.macd_score:.0f}/100
+- MA Score: {score.ma_score:.0f}/100
+- Combined Score: {score.combined_score:.0f}/100
+- Signals Aligned: {score.signals_aligned}/5
+
+NEWS SENTIMENT:
+{news_summary}
+
+TASK:
+Provide a concise trading analysis with:
+1. Signal: "bullish", "bearish", or "neutral" (one word only)
+2. Confidence: A percentage 0-100 reflecting your conviction
+3. Reason: A brief 1-2 sentence explanation
+
+Format your response as:
+SIGNAL: [bullish/bearish/neutral]
+CONFIDENCE: [0-100]
+REASON: [explanation]
+
+Remember: Gold is a safe-haven asset. It rises during risk-off periods (high VIX, weak dollar, rising rates uncertainty).
+"""
+        return prompt
+
+    def _parse_response(self, response_text: str) -> Optional[Dict[str, Any]]:
+        """Parse Claude response."""
+        try:
+            lines = response_text.strip().split('\n')
+            result = {}
+
+            for line in lines:
+                if line.startswith("SIGNAL:"):
+                    signal = line.replace("SIGNAL:", "").strip().lower()
+                    if signal in ["bullish", "bearish", "neutral"]:
+                        result['signal'] = signal
+                elif line.startswith("CONFIDENCE:"):
+                    confidence = float(line.replace("CONFIDENCE:", "").strip())
+                    result['confidence'] = max(0, min(100, confidence))
+                elif line.startswith("REASON:"):
+                    result['reason'] = line.replace("REASON:", "").strip()
+
+            if 'signal' in result and 'confidence' in result and 'reason' in result:
+                return result
+        except Exception as e:
+            print(f"Error parsing Claude response: {e}")
+
+        return None
 
 
 class FallbackRuleEngine(Brain):
@@ -259,11 +365,12 @@ class HybridBrain(Brain):
 
 def get_brain(provider_type: str, config) -> Brain:
     """Factory function to get brain."""
-    api_key = None  # TODO: Load from env
+    import os
 
     if provider_type == "mock":
         return FallbackRuleEngine(config)
     elif provider_type == "anthropic":
+        api_key = os.getenv("ANTHROPIC_API_KEY")
         return HybridBrain(api_key, config.brain.model, config)
     else:
         raise ValueError(f"Unknown brain provider: {provider_type}")
