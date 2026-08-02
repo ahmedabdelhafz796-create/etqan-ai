@@ -10,7 +10,7 @@ Analyzes:
 
 from datetime import datetime
 from typing import Optional
-from src.gold_agent.core.models import MarketData
+from gold_agent.core.models import MarketData
 
 
 class MacroSignal:

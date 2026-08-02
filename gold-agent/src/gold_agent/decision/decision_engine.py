@@ -2,8 +2,8 @@
 
 from typing import Optional, Tuple
 
-from src.gold_agent.brain.llm_brain import BrainResult
-from src.gold_agent.core.models import ActionType, MarketData, Score
+from gold_agent.brain.llm_brain import BrainResult
+from gold_agent.core.models import ActionType, MarketData, Score
 
 
 class DecisionEngine:

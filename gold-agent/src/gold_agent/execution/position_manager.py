@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Dict, Optional, List
 
-from src.gold_agent.core.models import Position, PositionSide, Trade
+from gold_agent.core.models import Position, PositionSide, Trade
 
 
 class PositionManager:

@@ -4,40 +4,40 @@ import asyncio
 import sys
 from pathlib import Path
 
-from src.gold_agent.analysis.indicators import IndicatorEngine
-from src.gold_agent.analysis.scoring import ScoringEngine
-from src.gold_agent.analysis.macro import MacroAgent
-from src.gold_agent.analysis.correlations import CorrelationAgent
-from src.gold_agent.analysis.volatility_adjuster import VolatilityAdjuster
-from src.gold_agent.analysis.regime_detector import RegimeDetector
-from src.gold_agent.analysis.signal_ensemble import SignalEnsemble
-from src.gold_agent.analysis.feature_importance import FeatureImportanceAnalyzer
-from src.gold_agent.audit.db import get_audit_log
-from src.gold_agent.brain.llm_brain import get_brain
-from src.gold_agent.config import load_config, load_sharia_rules
-from src.gold_agent.core.pipeline import Pipeline
-from src.gold_agent.data.market import get_market_provider
-from src.gold_agent.data.news import get_news_provider
-from src.gold_agent.decision.decision_engine import DecisionEngine
-from src.gold_agent.execution.engine import ExecutionEngine
-from src.gold_agent.execution.brokers.mock import MockBrokerAdapter
-from src.gold_agent.execution.order_manager import OrderManager
-from src.gold_agent.execution.position_manager import PositionManager
-from src.gold_agent.execution.capital_manager import CapitalManager
-from src.gold_agent.execution.trade_lifecycle_manager import TradeLifecycleManager
-from src.gold_agent.learning.learning_engine import LearningEngine
-from src.gold_agent.validation.backtester import Backtester
-from src.gold_agent.validation.performance_validator import PerformanceValidator
-from src.gold_agent.monitoring.health import Monitor
-from src.gold_agent.notification.telegram import get_notifier
-from src.gold_agent.risk.risk_gate import RiskGate
-from src.gold_agent.sharia.sharia_gate import ShariGate
-from src.gold_agent.state_machine import StateMachine
-from src.gold_agent.self_management.config_tuner import ConfigurationTuner
-from src.gold_agent.self_management.adaptive_strategy_selector import AdaptiveStrategySelector
-from src.gold_agent.self_management.risk_adjuster import RiskAdjuster
-from src.gold_agent.self_management.performance_monitor import PerformanceMonitor
-from src.gold_agent.self_management.parameter_optimizer import ParameterOptimizer
+from gold_agent.analysis.indicators import IndicatorEngine
+from gold_agent.analysis.scoring import ScoringEngine
+from gold_agent.analysis.macro import MacroAgent
+from gold_agent.analysis.correlations import CorrelationAgent
+from gold_agent.analysis.volatility_adjuster import VolatilityAdjuster
+from gold_agent.analysis.regime_detector import RegimeDetector
+from gold_agent.analysis.signal_ensemble import SignalEnsemble
+from gold_agent.analysis.feature_importance import FeatureImportanceAnalyzer
+from gold_agent.audit.db import get_audit_log
+from gold_agent.brain.llm_brain import get_brain
+from gold_agent.config import load_config, load_sharia_rules
+from gold_agent.core.pipeline import Pipeline
+from gold_agent.data.market import get_market_provider
+from gold_agent.data.news import get_news_provider
+from gold_agent.decision.decision_engine import DecisionEngine
+from gold_agent.execution.engine import ExecutionEngine
+from gold_agent.execution.brokers.mock import MockBrokerAdapter
+from gold_agent.execution.order_manager import OrderManager
+from gold_agent.execution.position_manager import PositionManager
+from gold_agent.execution.capital_manager import CapitalManager
+from gold_agent.execution.trade_lifecycle_manager import TradeLifecycleManager
+from gold_agent.learning.learning_engine import LearningEngine
+from gold_agent.validation.backtester import Backtester
+from gold_agent.validation.performance_validator import PerformanceValidator
+from gold_agent.monitoring.health import Monitor
+from gold_agent.notification.telegram import get_notifier
+from gold_agent.risk.risk_gate import RiskGate
+from gold_agent.sharia.sharia_gate import ShariGate
+from gold_agent.state_machine import StateMachine
+from gold_agent.self_management.config_tuner import ConfigurationTuner
+from gold_agent.self_management.adaptive_strategy_selector import AdaptiveStrategySelector
+from gold_agent.self_management.risk_adjuster import RiskAdjuster
+from gold_agent.self_management.performance_monitor import PerformanceMonitor
+from gold_agent.self_management.parameter_optimizer import ParameterOptimizer
 
 
 class GoldTradingAgent:
@@ -97,10 +97,10 @@ class GoldTradingAgent:
         if broker_type == "mock":
             self.broker = MockBrokerAdapter(self.config)
         elif broker_type == "mt5":
-            from src.gold_agent.execution.brokers.mt5 import MT5BrokerAdapter
+            from gold_agent.execution.brokers.mt5 import MT5BrokerAdapter
             self.broker = MT5BrokerAdapter(self.config)
         elif broker_type == "oanda":
-            from src.gold_agent.execution.brokers.oanda import OANDABrokerAdapter
+            from gold_agent.execution.brokers.oanda import OANDABrokerAdapter
             self.broker = OANDABrokerAdapter(self.config)
         else:
             self.broker = MockBrokerAdapter(self.config)

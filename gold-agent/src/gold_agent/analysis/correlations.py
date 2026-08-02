@@ -9,7 +9,7 @@ Analyzes relationships between:
 
 from datetime import datetime
 from typing import Dict, Optional, Tuple
-from src.gold_agent.core.models import MarketData
+from gold_agent.core.models import MarketData
 
 
 class CorrelationSignal:

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, Dict, List
 
-from src.gold_agent.core.models import Order, OrderStatus, OrderType, ActionType, Trade, PositionSide
+from gold_agent.core.models import Order, OrderStatus, OrderType, ActionType, Trade, PositionSide
 
 
 class ExecutionResult:

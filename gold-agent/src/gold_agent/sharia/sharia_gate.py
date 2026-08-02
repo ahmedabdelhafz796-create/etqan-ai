@@ -10,7 +10,7 @@ Verifies:
 
 from typing import Dict, Optional
 
-from src.gold_agent.core.models import ActionType, GateVerdict, GateVerdictType, MarketData
+from gold_agent.core.models import ActionType, GateVerdict, GateVerdictType, MarketData
 
 
 class ShariaCertification:

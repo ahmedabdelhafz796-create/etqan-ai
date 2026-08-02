@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.gold_agent.core.models import (
+from gold_agent.core.models import (
     IndicatorValues,
     MarketData,
     NewsItem,

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Callable, Dict, List, Optional
 
-from src.gold_agent.core.models import StateType
+from gold_agent.core.models import StateType
 
 
 class StateTransition:

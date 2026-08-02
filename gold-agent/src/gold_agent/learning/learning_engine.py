@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
 import json
 
-from src.gold_agent.learning.trade_analyzer import TradeAnalyzer, TradeStatistics
+from gold_agent.learning.trade_analyzer import TradeAnalyzer, TradeStatistics
 
 
 class LearningSignal:

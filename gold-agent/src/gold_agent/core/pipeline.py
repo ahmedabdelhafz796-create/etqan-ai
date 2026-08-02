@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional, Tuple
 
-from src.gold_agent.core.models import (
+from gold_agent.core.models import (
     Decision,
     GateVerdict,
     GateVerdictType,
@@ -251,7 +251,7 @@ class Pipeline:
         reason: str,
     ) -> Decision:
         """Create a WAIT decision."""
-        from src.gold_agent.core.models import ActionType
+        from gold_agent.core.models import ActionType
 
         return Decision(
             timestamp=datetime.utcnow(),

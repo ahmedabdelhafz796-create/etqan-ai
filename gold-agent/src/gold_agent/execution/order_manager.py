@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional, List, Dict
 
-from src.gold_agent.core.models import Order, OrderStatus
+from gold_agent.core.models import Order, OrderStatus
 
 
 class OrderManager:

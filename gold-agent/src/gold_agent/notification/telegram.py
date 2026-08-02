@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional
 
-from src.gold_agent.core.models import Decision, StateType
+from gold_agent.core.models import Decision, StateType
 
 
 class Notifier(ABC):

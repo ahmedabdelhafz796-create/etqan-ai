@@ -3,8 +3,8 @@
 from datetime import datetime
 from typing import List, Dict, Optional
 
-from src.gold_agent.core.models import Order, OrderStatus
-from src.gold_agent.execution.engine import BrokerAdapter, ExecutionResult
+from gold_agent.core.models import Order, OrderStatus
+from gold_agent.execution.engine import BrokerAdapter, ExecutionResult
 
 
 class MT5BrokerAdapter(BrokerAdapter):

@@ -1,18 +1,23 @@
 """Integration tests — full pipeline with mock data."""
 
 import asyncio
+import sys
+from pathlib import Path
 import pytest
 from datetime import datetime
 
-from src.gold_agent.analysis.indicators import IndicatorEngine
-from src.gold_agent.analysis.scoring import ScoringEngine
-from src.gold_agent.core.models import MarketData, ActionType, StateType
-from src.gold_agent.data.market import MockMarketDataProvider
-from src.gold_agent.data.news import MockNewsProvider
-from src.gold_agent.decision.decision_engine import DecisionEngine
-from src.gold_agent.risk.risk_gate import RiskGate
-from src.gold_agent.sharia.sharia_gate import ShariGate
-from src.gold_agent.config import Config, load_config
+# Add gold-agent/src to path
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+from gold_agent.analysis.indicators import IndicatorEngine
+from gold_agent.analysis.scoring import ScoringEngine
+from gold_agent.core.models import MarketData, ActionType, StateType
+from gold_agent.data.market import MockMarketDataProvider
+from gold_agent.data.news import MockNewsProvider
+from gold_agent.decision.decision_engine import DecisionEngine
+from gold_agent.risk.risk_gate import RiskGate
+from gold_agent.sharia.sharia_gate import ShariGate
+from gold_agent.config import Config, load_config
 
 
 class TestIntegration:
@@ -88,7 +93,7 @@ class TestIntegration:
         )
 
         # Create indicators
-        from src.gold_agent.core.models import IndicatorValues
+        from gold_agent.core.models import IndicatorValues
         indicators = IndicatorValues(
             timestamp=datetime.utcnow(),
             rsi=35.0,  # Oversold
@@ -113,7 +118,7 @@ class TestIntegration:
         """Test decision generation."""
         decision_engine = DecisionEngine(config)
 
-        from src.gold_agent.core.models import IndicatorValues, Score
+        from gold_agent.core.models import IndicatorValues, Score
         indicators = IndicatorValues(
             timestamp=datetime.utcnow(),
             rsi=25.0,
@@ -160,7 +165,7 @@ class TestIntegration:
             data_quality=1.0,
         )
 
-        from src.gold_agent.core.models import Score
+        from gold_agent.core.models import Score
         score = Score(
             timestamp=datetime.utcnow(),
             rsi_score=70.0,
@@ -191,7 +196,7 @@ class TestIntegration:
 
     def test_state_machine(self):
         """Test state machine."""
-        from src.gold_agent.state_machine import StateMachine
+        from gold_agent.state_machine import StateMachine
 
         sm = StateMachine(StateType.AUTONOMOUS)
 

@@ -4,9 +4,9 @@ from datetime import datetime
 from typing import Optional
 import uuid
 
-from src.gold_agent.core.models import Trade, PositionSide, ActionType, IndicatorValues, Score
-from src.gold_agent.execution.position_manager import PositionManager
-from src.gold_agent.execution.capital_manager import CapitalManager
+from gold_agent.core.models import Trade, PositionSide, ActionType, IndicatorValues, Score
+from gold_agent.execution.position_manager import PositionManager
+from gold_agent.execution.capital_manager import CapitalManager
 
 
 class TradeLifecycleManager:

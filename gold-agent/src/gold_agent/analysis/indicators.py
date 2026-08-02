@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import pandas as pd
 
-from src.gold_agent.core.models import IndicatorValues, MarketData
+from gold_agent.core.models import IndicatorValues, MarketData
 
 
 class IndicatorEngine:

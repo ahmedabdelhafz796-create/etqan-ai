@@ -7,7 +7,7 @@ after real testing.
 
 from typing import Optional
 
-from src.gold_agent.core.models import Decision
+from gold_agent.core.models import Decision
 
 
 class ExecutionEngine:

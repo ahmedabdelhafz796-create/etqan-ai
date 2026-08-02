@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from src.gold_agent.core.models import Decision
+from gold_agent.core.models import Decision
 
 
 class AuditLog(ABC):

@@ -5,11 +5,11 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
 import asyncio
 
-from src.gold_agent.core.models import Decision, MarketData, IndicatorValues, Score, ActionType, PositionSide
-from src.gold_agent.execution.position_manager import PositionManager
-from src.gold_agent.execution.capital_manager import CapitalManager
-from src.gold_agent.execution.trade_lifecycle_manager import TradeLifecycleManager
-from src.gold_agent.learning.trade_analyzer import TradeAnalyzer, TradeStatistics
+from gold_agent.core.models import Decision, MarketData, IndicatorValues, Score, ActionType, PositionSide
+from gold_agent.execution.position_manager import PositionManager
+from gold_agent.execution.capital_manager import CapitalManager
+from gold_agent.execution.trade_lifecycle_manager import TradeLifecycleManager
+from gold_agent.learning.trade_analyzer import TradeAnalyzer, TradeStatistics
 
 
 @dataclass

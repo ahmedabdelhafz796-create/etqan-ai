@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from src.gold_agent.core.models import ActionType, GateVerdict, GateVerdictType, MarketData, Score
+from gold_agent.core.models import ActionType, GateVerdict, GateVerdictType, MarketData, Score
 
 
 class RiskGate:

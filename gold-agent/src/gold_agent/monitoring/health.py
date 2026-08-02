@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from src.gold_agent.core.models import HealthStatus, StateType
+from gold_agent.core.models import HealthStatus, StateType
 
 
 class Monitor:
