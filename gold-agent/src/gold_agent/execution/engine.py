@@ -256,11 +256,17 @@ class ExecutionEngine:
             print(f"Failed to get open positions: {e}")
             return []
 
+    async def get_connection_status(self) -> bool:
+        """Check actual broker connection status."""
+        try:
+            return await self.broker.is_connected()
+        except:
+            return False
+
     def get_status(self) -> dict:
         """Get execution engine status."""
         return {
             "enabled": self.enabled,
-            "connected": True,  # TODO: check broker connection
             "pending_orders": len(self.pending_orders),
             "active_trades": len(self.active_trades),
             "kill_switch": "ARMED" if not self.enabled else "DISARMED",

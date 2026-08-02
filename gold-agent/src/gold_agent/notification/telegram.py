@@ -92,33 +92,122 @@ class TelegramNotifier(Notifier):
         self.chat_id = chat_id
         self.config = config
         self.client = None
-        # TODO: Initialize Telegram client
-        pass
+        self._initialize_client()
+
+    def _initialize_client(self):
+        """Initialize Telegram bot client."""
+        try:
+            from telegram import Bot
+            self.client = Bot(token=self.bot_token)
+        except ImportError:
+            print("python-telegram-bot not installed. Telegram notifications disabled.")
+            self.client = None
+        except Exception as e:
+            print(f"Failed to initialize Telegram: {e}")
+            self.client = None
 
     async def notify_decision(self, decision: Decision) -> bool:
         """Send decision via Telegram."""
-        # TODO: Implement
-        pass
+        if not self.client:
+            return False
+
+        try:
+            msg = self._format_decision(decision)
+            await self.client.send_message(
+                chat_id=self.chat_id,
+                text=msg,
+                parse_mode='Markdown'
+            )
+            return True
+        except Exception as e:
+            print(f"Telegram send failed: {e}")
+            return False
 
     async def notify_blocked(self, decision: Decision, gate: str) -> bool:
         """Send gate block via Telegram."""
-        # TODO: Implement
-        pass
+        if not self.client:
+            return False
+
+        try:
+            msg = f"*🚫 {gate} BLOCKED*\n\nAction: {decision.action.value}\nConfidence: {decision.confidence:.0f}%\n\nReason: {decision.reason}"
+            await self.client.send_message(
+                chat_id=self.chat_id,
+                text=msg,
+                parse_mode='Markdown'
+            )
+            return True
+        except Exception as e:
+            print(f"Telegram send failed: {e}")
+            return False
 
     async def notify_wait(self, decision: Decision) -> bool:
         """Send WAIT via Telegram."""
-        # TODO: Implement
-        pass
+        if not self.client:
+            return False
+
+        try:
+            msg = f"*⏳ WAIT*\n\nConfidence {decision.confidence:.0f}% below threshold ({self.config.scoring.confidence_threshold_wait}%)"
+            await self.client.send_message(
+                chat_id=self.chat_id,
+                text=msg,
+                parse_mode='Markdown'
+            )
+            return True
+        except Exception as e:
+            print(f"Telegram send failed: {e}")
+            return False
 
     async def notify_state_change(self, new_state: str, reason: str) -> bool:
         """Send state change via Telegram."""
-        # TODO: Implement
-        pass
+        if not self.client:
+            return False
+
+        try:
+            state_emoji = {
+                "autonomous": "✅",
+                "safe_mode": "⚠️",
+                "emergency": "🚨",
+                "manual_recovery": "🔧"
+            }
+            emoji = state_emoji.get(new_state, "")
+            msg = f"*{emoji} State Change*\n\nNew State: {new_state.upper()}\n\nReason: {reason}"
+            await self.client.send_message(
+                chat_id=self.chat_id,
+                text=msg,
+                parse_mode='Markdown'
+            )
+            return True
+        except Exception as e:
+            print(f"Telegram send failed: {e}")
+            return False
 
     async def notify_emergency(self, reason: str) -> bool:
         """Send emergency alert via Telegram."""
-        # TODO: Implement
-        pass
+        if not self.client:
+            return False
+
+        try:
+            msg = f"*🚨 EMERGENCY ALERT*\n\n{reason}\n\nTimestamp: {datetime.utcnow().isoformat()}"
+            await self.client.send_message(
+                chat_id=self.chat_id,
+                text=msg,
+                parse_mode='Markdown'
+            )
+            return True
+        except Exception as e:
+            print(f"Telegram send failed: {e}")
+            return False
+
+    def _format_decision(self, decision: Decision) -> str:
+        """Format decision for Telegram."""
+        emoji = "📈" if decision.action.value == "BUY" else "📉" if decision.action.value == "SELL" else "⏳"
+        msg = (
+            f"{emoji} *{decision.action.value}* Decision\n\n"
+            f"Confidence: {decision.confidence:.0f}%\n"
+            f"Reason: {decision.reason}\n"
+            f"Time: {decision.timestamp.strftime('%H:%M:%S UTC')}"
+        )
+        return msg
 
     def _format_decision_arabic(self, decision: Decision) -> str:
         """Format decision in Arabic for Telegram."""
