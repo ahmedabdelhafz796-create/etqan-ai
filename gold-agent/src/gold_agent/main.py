@@ -33,6 +33,11 @@ from src.gold_agent.notification.telegram import get_notifier
 from src.gold_agent.risk.risk_gate import RiskGate
 from src.gold_agent.sharia.sharia_gate import ShariGate
 from src.gold_agent.state_machine import StateMachine
+from src.gold_agent.self_management.config_tuner import ConfigurationTuner
+from src.gold_agent.self_management.adaptive_strategy_selector import AdaptiveStrategySelector
+from src.gold_agent.self_management.risk_adjuster import RiskAdjuster
+from src.gold_agent.self_management.performance_monitor import PerformanceMonitor
+from src.gold_agent.self_management.parameter_optimizer import ParameterOptimizer
 
 
 class GoldTradingAgent:
@@ -120,6 +125,13 @@ class GoldTradingAgent:
         self.backtester = Backtester(self.config, self.pipeline)
         self.performance_validator = PerformanceValidator(self.config)
 
+        # Tier 5: Self-Management
+        self.config_tuner = ConfigurationTuner(self.config)
+        self.strategy_selector = AdaptiveStrategySelector(self.config)
+        self.risk_adjuster = RiskAdjuster(self.config)
+        self.performance_monitor = PerformanceMonitor(self.config)
+        self.parameter_optimizer = ParameterOptimizer(self.config)
+
         # Monitoring
         self.monitor = Monitor(self.config)
 
@@ -203,6 +215,11 @@ class GoldTradingAgent:
             "volatility": self.volatility_adjuster.get_status(),
             "regime": self.regime_detector.get_status(),
             "ensemble": self.signal_ensemble.get_status(),
+            "config_tuner": self.config_tuner.get_status(),
+            "strategy_selector": self.strategy_selector.get_status(),
+            "risk_adjuster": self.risk_adjuster.get_status(),
+            "performance_monitor": self.performance_monitor.get_status(),
+            "parameter_optimizer": self.parameter_optimizer.get_status(),
             "sharia": self.sharia_gate.get_compliance_status(),
         }
 
@@ -224,6 +241,11 @@ class GoldTradingAgent:
         print(f"\nVolatility: {status['volatility']}")
         print(f"\nRegime: {status['regime']}")
         print(f"\nEnsemble: {status['ensemble']}")
+        print(f"\nConfiguration Tuner: {status['config_tuner']}")
+        print(f"\nStrategy Selector: {status['strategy_selector']}")
+        print(f"\nRisk Adjuster: {status['risk_adjuster']}")
+        print(f"\nPerformance Monitor: {status['performance_monitor']}")
+        print(f"\nParameter Optimizer: {status['parameter_optimizer']}")
         print(f"\nSharia Compliance: {status['sharia']}")
 
     def print_report(self):
