@@ -84,13 +84,20 @@ class FallbackRuleEngine(Brain):
     """
     Rule-based fallback engine when LLM unavailable.
 
-    Conservative approach:
-    - 3 of 5 indicators must agree to take action
+    Phase 1: Conservative approach (3 of 5 indicators must agree)
+    Phase 2: Enhanced with macro and correlation signals
     - Reduce confidence by 10% from what LLM would give
     """
 
     def __init__(self, config):
         self.config = config
+        self.macro_signal = None
+        self.correlation_signal = None
+
+    def set_macro_correlation_signals(self, macro_signal, correlation_signal):
+        """Set macro and correlation signals for enhanced analysis."""
+        self.macro_signal = macro_signal
+        self.correlation_signal = correlation_signal
 
     async def analyze(
         self,
@@ -146,13 +153,28 @@ class FallbackRuleEngine(Brain):
             signal = "neutral"
             base_confidence = 50.0
 
-        # Apply conservative reduction (10% as per design)
-        final_confidence = base_confidence * (1 - self.config.fallback_engine.conservative_confidence_reduction)
+        # Phase 2: Apply macro and correlation signal boost/penalty
+        macro_boost = self._calculate_macro_boost()
+        correlation_boost = self._calculate_correlation_boost()
 
-        reason = (
-            f"Fallback rule engine: {bullish_signals}/5 signals aligned. "
+        # Apply boosts (positive values boost confidence, negative reduce it)
+        adjusted_confidence = base_confidence + macro_boost + correlation_boost
+
+        # Apply conservative reduction (10% as per design)
+        final_confidence = adjusted_confidence * (1 - self.config.fallback_engine.conservative_confidence_reduction)
+        final_confidence = max(0, min(100, final_confidence))
+
+        # Build detailed reason
+        reason_parts = [
+            f"Fallback rule engine: {bullish_signals}/5 signals aligned.",
             f"Signals: {', '.join(signals_list)}."
-        )
+        ]
+        if self.macro_signal:
+            reason_parts.append(f"Macro: {self.macro_signal.risk_sentiment} (score {self.macro_signal.macro_score:.0f})")
+        if self.correlation_signal:
+            reason_parts.append(f"Regime: {self.correlation_signal.regime}")
+
+        reason = " ".join(reason_parts)
 
         return BrainResult(
             confidence=final_confidence,
@@ -161,6 +183,44 @@ class FallbackRuleEngine(Brain):
             used_llm=False,
             used_fallback=True,
         )
+
+    def _calculate_macro_boost(self) -> float:
+        """
+        Calculate confidence boost from macro signals.
+
+        Bullish macro environment = boost confidence
+        Bearish macro environment = reduce confidence
+        """
+        if not self.macro_signal:
+            return 0.0
+
+        # Risk-off environment boosts gold confidence
+        if self.macro_signal.risk_sentiment == "risk-off":
+            return 5.0  # +5% confidence boost
+        elif self.macro_signal.risk_sentiment == "risk-on":
+            return -3.0  # -3% confidence reduction
+        else:
+            return 0.0  # Neutral macro, no boost
+
+    def _calculate_correlation_boost(self) -> float:
+        """
+        Calculate confidence boost from correlation signals.
+
+        Strong expected correlations = more reliable signals
+        Broken correlations = less reliable (reduce confidence)
+        """
+        if not self.correlation_signal:
+            return 0.0
+
+        correlation_quality_score = self.correlation_signal.correlation_score
+
+        # Strong correlations (>70) boost confidence, weak (<30) reduce it
+        if correlation_quality_score > 70:
+            return 5.0  # +5% confidence boost
+        elif correlation_quality_score < 30:
+            return -5.0  # -5% confidence reduction (broken correlations = unreliable)
+        else:
+            return 0.0  # Moderate correlations, no adjustment
 
 
 class HybridBrain(Brain):

@@ -108,6 +108,13 @@ class Pipeline:
                 return decision
 
             # 6. LLM brain (Claude API or fallback)
+            # Phase 2: Provide macro and correlation signals to brain
+            if hasattr(self.brain, 'set_macro_correlation_signals'):
+                self.brain.set_macro_correlation_signals(macro_signal, correlation_signal)
+            # Also set on fallback engine if hybrid brain
+            if hasattr(self.brain, 'fallback_brain') and hasattr(self.brain.fallback_brain, 'set_macro_correlation_signals'):
+                self.brain.fallback_brain.set_macro_correlation_signals(macro_signal, correlation_signal)
+
             brain_result = await self.brain.analyze(
                 market_data=market_data,
                 indicators=indicator_values,
