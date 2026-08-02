@@ -22,6 +22,8 @@ from src.gold_agent.execution.position_manager import PositionManager
 from src.gold_agent.execution.capital_manager import CapitalManager
 from src.gold_agent.execution.trade_lifecycle_manager import TradeLifecycleManager
 from src.gold_agent.learning.learning_engine import LearningEngine
+from src.gold_agent.validation.backtester import Backtester
+from src.gold_agent.validation.performance_validator import PerformanceValidator
 from src.gold_agent.monitoring.health import Monitor
 from src.gold_agent.notification.telegram import get_notifier
 from src.gold_agent.risk.risk_gate import RiskGate
@@ -103,6 +105,10 @@ class GoldTradingAgent:
 
         # Tier 2: Learning & Memory
         self.learning_engine = LearningEngine(self.config, self.audit_log)
+
+        # Tier 3: Validation & Testing
+        self.backtester = Backtester(self.config, self.pipeline)
+        self.performance_validator = PerformanceValidator(self.config)
 
         # Monitoring
         self.monitor = Monitor(self.config)
