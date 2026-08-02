@@ -6,6 +6,8 @@ from pathlib import Path
 
 from src.gold_agent.analysis.indicators import IndicatorEngine
 from src.gold_agent.analysis.scoring import ScoringEngine
+from src.gold_agent.analysis.macro import MacroAgent
+from src.gold_agent.analysis.correlations import CorrelationAgent
 from src.gold_agent.audit.db import get_audit_log
 from src.gold_agent.brain.llm_brain import get_brain
 from src.gold_agent.config import load_config, load_sharia_rules
@@ -46,6 +48,10 @@ class GoldTradingAgent:
         self.indicators = IndicatorEngine(self.config)
         self.scoring = ScoringEngine(self.config)
 
+        # Phase 2: Macro & Correlation Analysis
+        self.macro_agent = MacroAgent(self.config)
+        self.correlation_agent = CorrelationAgent(self.config)
+
         # Brain
         self.brain = get_brain(self.config.brain.provider, self.config)
 
@@ -74,6 +80,8 @@ class GoldTradingAgent:
             news_provider=self.news,
             indicator_engine=self.indicators,
             scoring_engine=self.scoring,
+            macro_agent=self.macro_agent,
+            correlation_agent=self.correlation_agent,
             brain_engine=self.brain,
             decision_engine=self.decision,
             risk_gate=self.risk_gate,

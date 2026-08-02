@@ -39,6 +39,8 @@ class Pipeline:
         news_provider,
         indicator_engine,
         scoring_engine,
+        macro_agent,
+        correlation_agent,
         brain_engine,
         decision_engine,
         risk_gate,
@@ -52,6 +54,8 @@ class Pipeline:
         self.news = news_provider
         self.indicators = indicator_engine
         self.scoring = scoring_engine
+        self.macro = macro_agent
+        self.correlation = correlation_agent
         self.brain = brain_engine
         self.decision = decision_engine
         self.risk_gate = risk_gate
@@ -82,6 +86,10 @@ class Pipeline:
 
             # 3. Calculate indicators
             indicator_values = self.indicators.calculate(market_data)
+
+            # 3b. Phase 2: Macro and Correlation Analysis
+            macro_signal = self.macro.analyze(market_data)
+            correlation_signal = self.correlation.analyze(market_data)
 
             # 4. Score
             score = self.scoring.score(
