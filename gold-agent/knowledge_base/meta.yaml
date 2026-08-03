@@ -1,0 +1,30 @@
+# Knowledge Base Metadata
+# =====================
+# This file tracks KB version, refresh schedule, and integrity
+
+kb_version: "1.0.0"
+created_date: "2026-08-03"
+last_refresh: "2026-08-03"
+next_refresh_due:
+  weekly_update: "2026-08-10"  # VIX, Fed policy, CB flows
+  monthly_update: "2026-09-03"  # Correlation re-calc
+  quarterly_update: "2026-11-03"  # Academic research review
+  annual_update: "2027-08-03"  # Expert methodology review
+
+sources_count: 45  # Total sources documented
+claims_count: 230  # Total claims across all domains
+conflicting_claims: 12  # Flagged disagreements between sources
+probabilistic_claims: 87  # Marked as empirical regularity (not guaranteed)
+
+domains:
+  - quantitative_finance
+  - market_microstructure
+  - technical_analysis
+  - macroeconomics
+  - risk_management
+
+refresh_log:
+  - date: "2026-08-03"
+    updated_sections: ["initial_build"]
+    new_sources: 45
+    findings: "Knowledge base initialized with 45 authoritative sources"
