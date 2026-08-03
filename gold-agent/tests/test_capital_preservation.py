@@ -16,7 +16,7 @@ class MockCapitalConfig:
     """Mock capital configuration."""
     daily_loss_limit_percent = 5.0
     max_drawdown_percent = 15.0
-    max_position_size_percent = 2.0
+    max_position_size_percent = 1.0  # PRIMARY default: 1% (2% is emergency ceiling only)
     max_consecutive_losses = 3
 
 
@@ -38,43 +38,52 @@ def engine():
 # ============================================================================
 
 def test_van_tharp_position_sizing_basic(engine):
-    """Test basic Van Tharp position sizing formula."""
-    # Entry: $2050, Stop Loss: $2040, Equity: $10,000, Risk: 2%
-    # Account Risk = $10,000 × 2% = $200
+    """Test basic Van Tharp position sizing formula (fixed baseline principle)."""
+    # Entry: $2050, Stop Loss: $2040, Initial Capital: $10,000, Risk: 1%
+    # Account Risk = $10,000 × 1% = $100 (uses INITIAL capital, not current equity)
     # Price Risk = $2050 - $2040 = $10
-    # Position Size = $200 / $10 = 20 units
+    # Position Size = $100 / $10 = 10 units
 
     position_size, audit = engine.calculate_position_size(
         entry_price=2050.0,
         stop_loss_price=2040.0,
-        risk_per_trade_pct=2.0,
+        risk_per_trade_pct=1.0,
     )
 
-    assert position_size == 20.0, f"Expected 20 units, got {position_size}"
-    assert audit["account_risk_dollars"] == 200.0
-    assert audit["position_size"] == 20.0
+    assert position_size == 10.0, f"Expected 10 units, got {position_size}"
+    assert audit["account_risk_dollars"] == 100.0
+    assert audit["position_size"] == 10.0
+    assert audit["initial_capital"] == 10000.0
     assert "formula" in audit
 
 
-def test_van_tharp_with_different_equity(engine):
-    """Test position sizing when equity changes."""
-    # After losing $1000, equity = $9000
+def test_van_tharp_uses_original_capital_not_current_equity(engine):
+    """Test CRITICAL: Position sizing uses INITIAL capital, not current equity.
+
+    This is the Fixed Baseline Principle — prevents house money effect where
+    position sizes balloon after winning streaks.
+    """
+    # Simulate losing $1000, so current_equity = $9000
     engine.current_equity = 9000.0
 
     position_size, audit = engine.calculate_position_size(
         entry_price=2050.0,
         stop_loss_price=2040.0,
-        risk_per_trade_pct=2.0,
+        risk_per_trade_pct=1.0,
     )
 
-    # Account Risk = $9,000 × 2% = $180
-    # Position Size = $180 / $10 = 18 units
-    assert position_size == 18.0
-    assert audit["account_risk_dollars"] == 180.0
+    # CRITICAL: Should use INITIAL capital ($10,000), not current equity ($9,000)
+    # Account Risk = $10,000 × 1% = $100 (uses starting capital)
+    # Position Size = $100 / $10 = 10 units (same as if equity hadn't changed)
+    assert position_size == 10.0, f"Expected 10 units (fixed baseline), got {position_size}"
+    assert audit["account_risk_dollars"] == 100.0, "Should use initial capital, not current"
+    assert audit["initial_capital"] == 10000.0
+    assert audit["current_equity"] == 9000.0
+    assert "Fixed Baseline Principle" in audit["immutable_rule"]
 
 
-def test_van_tharp_caps_risk_at_2_percent(engine):
-    """Test immutable rule: Risk per trade cannot exceed 2%."""
+def test_van_tharp_caps_risk_at_2_percent_emergency_ceiling(engine):
+    """Test immutable rule: Risk per trade cannot exceed 2% (emergency ceiling only)."""
     # Try to set 3%, should be capped at 2%
     position_size, audit = engine.calculate_position_size(
         entry_price=2050.0,
@@ -83,6 +92,7 @@ def test_van_tharp_caps_risk_at_2_percent(engine):
     )
 
     assert audit["risk_per_trade_percent"] == 2.0, "Should be capped at 2%"
+    assert "emergency ceiling" in audit["immutable_rule"].lower()
 
 
 def test_van_tharp_rejects_invalid_prices(engine):
@@ -92,6 +102,21 @@ def test_van_tharp_rejects_invalid_prices(engine):
             entry_price=2040.0,
             stop_loss_price=2050.0,  # Invalid: SL above entry
         )
+
+
+def test_van_tharp_defaults_to_1_percent_risk(engine):
+    """Test that default risk is 1% (not 2%)."""
+    # Call without specifying risk_per_trade_pct
+    position_size, audit = engine.calculate_position_size(
+        entry_price=2050.0,
+        stop_loss_price=2040.0,
+        # risk_per_trade_pct not specified, should default to 1%
+    )
+
+    # Account Risk = $10,000 × 1% = $100
+    # Position Size = $100 / $10 = 10 units
+    assert audit["risk_per_trade_percent"] == 1.0, "Should default to 1%"
+    assert position_size == 10.0
 
 
 def test_van_tharp_kelly_diagnostic(engine):
