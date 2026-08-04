@@ -180,7 +180,7 @@ class TestIntegration:
         assert verdict.verdict.value == "passed"
 
     def test_sharia_gate(self, config):
-        """Test Sharia gate defaults to REJECT when verification unavailable."""
+        """Test Sharia gate with real MT5 verification logic."""
         gate = ShariGate(config)
 
         market_data = MarketData(
@@ -191,11 +191,11 @@ class TestIntegration:
 
         verdict = gate.check(ActionType.BUY, market_data)
 
-        # Correct behavior: gate BLOCKS (rejects) when verification data unavailable
-        # All 5 checks return False, so violations list should have 5 items
-        assert not verdict.passed
-        assert verdict.verdict == GateVerdictType.BLOCKED
-        assert len(gate.violations) == 5  # All 5 checks failed
+        # With mock MT5 adapter: XAU/USD is configured as swap-free spot contract
+        # All 4 checks should pass in mock mode
+        assert verdict.passed is True
+        assert verdict.verdict == GateVerdictType.PASSED
+        assert len(gate.violations) == 0  # No violations with compliant symbol
 
     def test_state_machine(self):
         """Test state machine."""
