@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from gold_agent.analysis.indicators import IndicatorEngine
 from gold_agent.analysis.scoring import ScoringEngine
-from gold_agent.core.models import MarketData, ActionType, StateType
+from gold_agent.core.models import MarketData, ActionType, StateType, GateVerdictType
 from gold_agent.data.market import MockMarketDataProvider
 from gold_agent.data.news import MockNewsProvider
 from gold_agent.decision.decision_engine import DecisionEngine
@@ -180,7 +180,7 @@ class TestIntegration:
         assert verdict.verdict.value == "passed"
 
     def test_sharia_gate(self, config):
-        """Test Sharia gate."""
+        """Test Sharia gate defaults to REJECT when verification unavailable."""
         gate = ShariGate(config)
 
         market_data = MarketData(
@@ -191,8 +191,11 @@ class TestIntegration:
 
         verdict = gate.check(ActionType.BUY, market_data)
 
-        # Should pass with default mock rules
-        assert verdict.passed
+        # Correct behavior: gate BLOCKS (rejects) when verification data unavailable
+        # All 5 checks return False, so violations list should have 5 items
+        assert not verdict.passed
+        assert verdict.verdict == GateVerdictType.BLOCKED
+        assert len(gate.violations) == 5  # All 5 checks failed
 
     def test_state_machine(self):
         """Test state machine."""

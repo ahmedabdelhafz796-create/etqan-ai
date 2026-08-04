@@ -102,12 +102,13 @@ class ShariGate:
         §8: Gold is riba'i commodity; only spot or agreed-upon forward allowed.
         No futures, options, CFDs, leverage instruments.
 
-        NOTE: In mock mode, we assume spot contracts.
-        Production: Query broker API for actual contract specification.
+        IMPLEMENTATION: Currently cannot query broker for contract type.
+        SAFE DEFAULT: Return False (REJECT) — if we can't verify, we don't allow.
         """
-        # TODO: In production, query broker API: self.broker.get_instrument_type(symbol)
-        # For now, in mock/test we assume spot, in production we'd verify
-        return self._is_mock_or_test_environment()
+        # TODO: Implement broker API call: contract_type = self.broker.get_instrument_type(symbol)
+        # Return True only if contract_type == "SPOT"
+        # For now: cannot verify, so REJECT (return False)
+        return False
 
     def _check_no_overnight_interest(self, market_data: MarketData) -> bool:
         """
@@ -115,12 +116,13 @@ class ShariGate:
 
         §8: Riba' (interest) is prohibited. Must be zero.
 
-        NOTE: In mock mode, we assume zero swap charges.
-        Production: Query broker API and verify swap charges = 0.0%.
+        IMPLEMENTATION: Cannot query broker for swap charges without real connection.
+        SAFE DEFAULT: Return False (REJECT) — if we can't verify, we don't allow.
         """
-        # TODO: In production, query broker: swap_pct = self.broker.get_swap_charges(symbol)
-        # For mock/dev, allow if in test environment
-        return self._is_mock_or_test_environment()
+        # TODO: Implement broker API call: swap_pct = self.broker.get_swap_charges(symbol)
+        # Return True only if swap_pct == 0.0
+        # For now: cannot verify, so REJECT (return False)
+        return False
 
     def _check_taqabud(self) -> bool:
         """
@@ -128,12 +130,13 @@ class ShariGate:
 
         §8: Immediate transfer required; spot or T+2 maximum.
 
-        NOTE: In mock mode, we assume T+2 settlement.
-        Production: Query broker API for actual settlement terms.
+        IMPLEMENTATION: Cannot query broker for settlement terms without real connection.
+        SAFE DEFAULT: Return False (REJECT) — if we can't verify, we don't allow.
         """
-        # TODO: In production, query broker: settlement = self.broker.get_settlement_type(symbol)
-        # Verify settlement <= T+2
-        return self._is_mock_or_test_environment()
+        # TODO: Implement broker API call: settlement = self.broker.get_settlement_type(symbol)
+        # Return True only if settlement in ["T+0", "T+1", "T+2"]
+        # For now: cannot verify, so REJECT (return False)
+        return False
 
     def _check_no_leverage(self) -> bool:
         """
@@ -142,12 +145,13 @@ class ShariGate:
         §8: Leverage = gharar (uncertainty) + riba' (interest) + maysir (gambling).
         Max 1:1 (no leverage).
 
-        NOTE: In mock mode, we assume 1:1 (no leverage).
-        Production: Query broker API and verify account leverage = 1.0.
+        IMPLEMENTATION: Cannot query broker for account leverage without real connection.
+        SAFE DEFAULT: Return False (REJECT) — if we can't verify, we don't allow.
         """
-        # TODO: In production, query broker: leverage = self.broker.get_account_leverage(account_id)
-        # Verify leverage == 1.0 (no margin)
-        return self._is_mock_or_test_environment()
+        # TODO: Implement broker API call: leverage = self.broker.get_account_leverage(account_id)
+        # Return True only if leverage == 1.0
+        # For now: cannot verify, so REJECT (return False)
+        return False
 
     def _check_no_borrowing(self) -> bool:
         """
@@ -155,44 +159,13 @@ class ShariGate:
 
         §8: Borrowing = riba' + gharar. Only personal capital allowed.
 
-        NOTE: In mock mode, we assume only personal capital.
-        Production: Verify account funding source and borrowing status.
+        IMPLEMENTATION: Cannot verify funding source without real broker/audit data.
+        SAFE DEFAULT: Return False (REJECT) — if we can't verify, we don't allow.
         """
-        # TODO: In production, query broker/audit trail for borrowing
-        # Verify account has zero borrowed funds
-        return self._is_mock_or_test_environment()
-
-    def _is_mock_or_test_environment(self) -> bool:
-        """
-        Determine if we're in mock/test environment (allow verification bypass).
-
-        In mock/test: we cannot verify broker details, so we allow compliance for testing.
-        In production: we would fail safe if broker verification unavailable.
-
-        This allows the system to run in development while still enforcing
-        real verification in production against real brokers.
-        """
-        # Check if running in test mode via config
-        if hasattr(self.config, 'environment'):
-            return self.config.environment in ('mock', 'test', 'dev')
-        # Also check broker type
-        if hasattr(self.config, 'execution'):
-            broker_type = getattr(self.config.execution, 'broker_type', 'mock')
-            return broker_type in ('mock', 'test')
-        # Default: if we can't determine, assume development/safe
-        return True
-
-    def _broker_contract_verification_available(self) -> bool:
-        """
-        Check if broker contract verification is available.
-
-        Returns True only if:
-        1. In mock/test mode, OR
-        2. In production with real broker API available
-
-        This ensures safe defaults: if we can't verify, we fail gracefully.
-        """
-        return self._is_mock_or_test_environment()
+        # TODO: Implement broker/audit verification: check account funding source
+        # Return True only if no borrowed funds detected
+        # For now: cannot verify, so REJECT (return False)
+        return False
 
     def get_compliance_status(self) -> Dict:
         """Get current compliance status."""
