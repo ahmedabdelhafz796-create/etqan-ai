@@ -1,0 +1,243 @@
+# Gold Trading Analysis Agent — Configuration
+# All values are configurable; none are hard-coded
+
+# Market Data Sources (§6)
+data:
+  market:
+    provider: "mock"  # Options: "mock", "twelve_data", "alpha_vantage"
+    twelve_data_api_key: null  # Set from env: TWELVE_DATA_API_KEY
+    alpha_vantage_api_key: null  # Set from env: ALPHA_VANTAGE_API_KEY
+    symbols:
+      xau_usd: "XAUUSD"
+      dxy: "DXY"
+      bond_yield_10y: "^TNX"
+      vix: "^VIX"
+    update_interval_minutes: 60
+    timeout_seconds: 30
+
+  news:
+    provider: "mock"  # Options: "mock", "newsapi", "rss"
+    newsapi_key: null  # Set from env: NEWSAPI_KEY
+    rss_feeds: []
+    keywords: ["gold", "Federal Reserve", "USD", "inflation"]
+    update_interval_minutes: 120
+    timeout_seconds: 30
+
+# Technical Indicators (§7)
+indicators:
+  rsi:
+    period: 14
+    threshold_overbought: 70
+    threshold_oversold: 30
+
+  macd:
+    fast_period: 12
+    slow_period: 26
+    signal_period: 9
+
+  moving_averages:
+    short_period: 50
+    long_period: 200
+
+# Scoring Configuration (§7 Decision Flow)
+scoring:
+  weights:
+    rsi: 0.30
+    macd: 0.35
+    moving_average: 0.35
+    news_signal: 0.20
+    macro_signal: 0.15
+
+  # Confidence thresholds (0-100%)
+  confidence_threshold_act: 65  # Only send alert if >= this
+  confidence_threshold_wait: 50  # Below this = WAIT
+  confidence_threshold_conflict: 40  # Conflict if indicators diverge beyond this
+
+# LLM Brain Configuration (Claude API)
+brain:
+  provider: "mock"  # Options: "mock", "anthropic"
+  anthropic_api_key: null  # Set from env: ANTHROPIC_API_KEY
+  model: "claude-sonnet-5"
+  temperature: 0.7
+  max_tokens: 200
+  timeout_seconds: 30
+  fallback_to_rule_engine: true  # If API fails, use rule-based engine
+
+# Rule-Based Fallback Engine (when LLM unavailable)
+fallback_engine:
+  enabled: true
+  conservative_confidence_reduction: 0.10  # Reduce LLM confidence by 10% if using fallback
+  min_indicator_agreement: 3  # Need 3 of 5 indicators aligned to act
+
+# Decision Engine (§7)
+decision:
+  actions: ["BUY", "SELL", "WAIT"]
+  default_action: "WAIT"
+  reason_required: true
+
+# Risk Gate (§4, §8)
+risk_gate:
+  enabled: true
+  max_drawdown_percent: 5  # Emergency if exceeded
+  max_position_size_percent: 2  # % of capital
+  daily_loss_limit_percent: 3
+  max_consecutive_losses: 5
+  data_quality_threshold: 0.95  # 95% of data must be valid
+  market_volatility_limit_vix: 40  # Safe Mode if VIX > 40
+
+# Sharia Gate — Hard Veto (§8)
+sharia:
+  enabled: true
+  school: "hanafi"  # "hanafi", "shafi", "maliki", "hanbali", "twelver"
+  audit_log_enabled: true
+  rules_file: "config/sharia_rules.yaml"
+
+# Notification Configuration (§4)
+notification:
+  primary_channel: "telegram"  # Options: "telegram", "console"
+  telegram:
+    bot_token: null  # Set from env: TELEGRAM_BOT_TOKEN
+    chat_id: null  # Set from env: TELEGRAM_CHAT_ID
+    enabled: true
+  console:
+    enabled: true
+    language: "ar"  # Arabic alerts to console
+  fallback_channels:
+    - type: "file"
+      enabled: false
+      path: "logs/alerts.log"
+    - type: "email"
+      enabled: false
+      smtp_server: null
+      smtp_port: 587
+      from_email: null
+      to_email: null
+    - type: "webhook"
+      enabled: false
+      url: null
+
+# Execution Configuration (Tier 1, §4, §5.1)
+execution:
+  enabled: false  # Must be explicitly activated after testing
+  kill_switch_required: true
+  kill_switch_armed: true  # Armed = stopping trades; disarmed = ready to execute
+  broker_type: "mock"  # Options: "mock", "mt5", "oanda"
+  default_position_size: 1.0  # Standard position size in ounces
+
+  # Broker-specific configuration
+  brokers:
+    mt5:
+      login: null  # Set from env: MT5_LOGIN
+      password: null  # Set from env: MT5_PASSWORD
+      server: null  # e.g., "XM.COM-MT5"
+    oanda:
+      api_key: null  # Set from env: OANDA_API_KEY
+      account_id: null  # Set from env: OANDA_ACCOUNT_ID
+      environment: "practice"  # "practice" or "live"
+
+  # Capital Management (Tier 1)
+  capital:
+    initial_capital: 100000  # USD
+    daily_loss_limit_percent: 3  # Stop trading if lose 3% in a day
+    max_drawdown_percent: 5  # Emergency if drawdown > 5%
+    max_position_size_percent: 2  # Max 2% of capital per position
+    max_leverage: 10  # Max 10x leverage
+
+# State Machine (§5.1)
+state_machine:
+  initial_state: "autonomous"  # "autonomous", "safe_mode", "emergency", "manual_recovery"
+  transition_rules:
+    autonomous_to_safe:
+      - trigger: "data_quality_degradation"
+        threshold: 0.95  # If data quality drops below 95%
+      - trigger: "model_conflict"
+        threshold: 0.60  # If indicators disagree beyond 60%
+
+    autonomous_to_emergency:
+      - trigger: "drawdown"
+        threshold: 0.15  # 15% drawdown
+      - trigger: "data_interruption"
+        duration_minutes: 60  # 60 minutes without data
+      - trigger: "connection_loss"
+        duration_seconds: 300  # 5 minutes
+      - trigger: "market_anomaly"
+        vix_spike: 30  # VIX spike > 30%
+
+    safe_mode_to_autonomous:
+      requires_manual_review: true
+      auto_timeout_minutes: null  # null = never auto-exit; must be manual
+
+    emergency_to_manual_recovery:
+      automatic: true  # Must exit emergency before continuing
+
+    manual_recovery_to_autonomous:
+      requires_manual_approval: true
+
+# Audit & Logging (§12-18)
+audit:
+  database:
+    type: "sqlite"  # "sqlite" (Phase 1-2), "postgresql" (Phase 3+)
+    sqlite_path: "data/gold_agent.db"
+    postgresql:
+      host: "localhost"
+      port: 5432
+      database: "gold_agent"
+      user: null  # Set from env
+      password: null  # Set from env
+
+  sharia_audit_log_enabled: true
+  decision_log_enabled: true
+  trade_log_enabled: true
+  performance_log_enabled: true
+
+  retention_days: 730  # 2 years
+  auto_backup_enabled: true
+  backup_interval_days: 7
+
+# Monitoring (§12-18)
+monitoring:
+  data_health:
+    enabled: true
+    check_interval_minutes: 15
+    alert_on_missing_data: true
+    alert_on_stale_data_minutes: 120
+
+  agent_performance:
+    enabled: true
+    check_interval_minutes: 30
+    track_decision_accuracy: true
+    track_signal_distribution: true
+
+# Backtesting (§10, Phase 3)
+backtesting:
+  enabled: true
+  initial_capital: 100000  # USD
+  start_date: "2023-01-01"
+  end_date: "2024-12-31"
+  data_source: "mock"  # "mock", "csv", "twelve_data"
+
+  # Realistic costs
+  slippage_percent: 0.10  # 0.1% slippage
+  commission_percent: 0.05  # 0.05% commission
+  spread_percent: 0.02  # 0.02% bid-ask spread
+
+  # Walk-forward parameters
+  walk_forward_period_days: 30
+  reoptimization_enabled: false  # Not in Phase 1
+
+# Deployment & Scheduling
+deployment:
+  run_mode: "once"  # "once", "schedule", "continuous"
+  schedule_cron: "0 9 * * *"  # 9 AM daily (UTC)
+  timezone: "UTC"
+
+  github_actions:
+    enabled: false  # Enable after testing locally
+    workflow_file: ".github/workflows/gold-agent.yml"
+
+# Development & Testing
+development:
+  mock_data_enabled: true
+  offline_mode: true  # No API calls; all mock data
+  debug_logging: true
+  test_mode: true

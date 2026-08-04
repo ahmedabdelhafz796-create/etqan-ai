@@ -1,0 +1,194 @@
+# Gold Trading Analysis Agent — Sharia Compliance Rules
+# Based on Hanafi school (المذهب الحنفي)
+# This file is user-editable; replace with your chosen school's fatwa
+
+# Section 1: Contract Type Verification (§8)
+contract_type:
+  # Gold (XAUUSD) is a commodity with special Sharia rules
+  acceptable_contracts:
+    - "spot_gold"
+    - "gold_forward"  # With conditions
+  rejected_contracts:
+    - "gold_futures"  # Involves uncertainty (gharar) in Hanafi school
+    - "gold_options"  # Speculative; prohibited
+    - "gold_cfd"  # Derivative; not ownership
+
+  rationale_hanafi: |
+    Gold (al-dhahab) is riba'i commodity; trading requires:
+    1. Direct ownership (either current or future with conditions)
+    2. No leverage (kuli) or borrowing (istiqrad)
+    3. Spot settlement or agreed-upon forward price
+    4. No speculation (maysir) or uncertainty (gharar)
+
+# Section 2: No Overnight Interest (Swap) — (§8)
+overnight_interest:
+  swap_charges:
+    prohibited: true
+    reason: |
+      Overnight interest (riba') is prohibited in Islam (Quran 2:275-279).
+      This includes all charges for holding positions beyond market hours.
+      Trading must settle daily or avoid positions with swap charges.
+
+  broker_swap_verification:
+    required: true
+    acceptable_swap: 0.0  # Must be zero
+    tolerance_ticks: 1  # Allow 1 tick variance due to rounding
+    audit_required: true
+
+# Section 3: Taqābuḍ — Spot Settlement / Possession (§8)
+taqabud:
+  definition: |
+    Taqābuḍ: Immediate transfer of ownership and possession (qabd).
+    For spot gold: delivery within T+2 business days (market standard).
+    For forward gold: agreed date before execution.
+
+  spot_settlement:
+    max_settlement_days: 2  # T+2 standard
+    verification_required: true
+
+  forward_settlement:
+    allowed: true
+    conditions:
+      - price_must_be_fixed: true
+      - date_must_be_agreed: true
+      - no_speculation_window: true
+
+# Section 4: No Financial Leverage (§8)
+leverage:
+  leverage_prohibited: true
+  reason: |
+    Leverage (kuli) = borrowing capital to increase trading size.
+    This is gharar (uncertainty) + riba' (interest) + maysir (gambling).
+    Position size must never exceed available capital.
+
+  max_leverage: 1.0  # 1:1 = no leverage
+  verification:
+    check_before_execution: true
+    monitor_continuously: true
+
+# Section 5: No Borrowing (§8)
+borrowing:
+  borrowing_prohibited: true
+  reason: |
+    Borrowing (istiqrad) combines riba' (interest) and gharar (uncertainty).
+
+  acceptable_funding:
+    - personal_capital: true
+    - profit_from_previous_trades: true
+  rejected_funding:
+    - margin_loan: false
+    - credit_line: false
+    - leveraged_instrument: false
+
+  verification:
+    check_funding_source: true
+    audit_log_required: true
+
+# Section 6: Broker Verification
+broker:
+  sharia_certified: true
+  certified_brokers:
+    - name: "Saxo Bank"
+      status: "Sharia-compliant offerings"
+    - name: "Interactive Brokers"
+      status: "Islamic accounts available"
+    - name: "Pepperstone"
+      status: "Islamic account option"
+    - name: "Axiory"
+      status: "Islamic account option"
+
+  verification_required: true
+  reason: |
+    Broker must:
+    1. Offer Islamic/swap-free accounts
+    2. Not charge overnight interest
+    3. Allow spot/forward settlement
+    4. Provide Sharia audit trail
+
+# Section 7: Position Monitoring Rules
+position_management:
+  daily_review: true
+  leverage_check_frequency_hours: 1
+  swap_charge_monitoring: true
+
+  auto_close_triggers:
+    - if_overnight_interest_occurs: true
+      action: "close_immediately"
+    - if_leverage_detected: true
+      action: "reduce_to_100_percent"
+
+# Section 8: Restricted Instruments
+restricted_instruments:
+  - "gold_futures"
+  - "gold_options"
+  - "gold_cfd"
+  - "gold_leverage"
+  - "gold_margin"
+  - "binary_options"
+  - "contracts_for_difference"
+
+# Section 9: Audit & Compliance Logging
+audit_requirements:
+  sharia_audit_log: true
+  log_fields:
+    - timestamp
+    - action
+    - instrument
+    - leverage_used
+    - swap_charge
+    - settlement_date
+    - contract_type
+    - compliance_status
+    - notes
+
+  report_frequency: "daily"
+  non_compliance_alert: true
+  escalation_to_scholar: true
+
+# Section 10: Scholar Contact (for fatwa updates)
+scholar_contact:
+  name: "To be filled by user"
+  email: "To be filled by user"
+  organization: "To be filled by user"
+  last_fatwa_date: null
+  next_review_date: null
+
+# Section 11: School-Specific Notes
+hanafi_notes: |
+  Hanafi school (المذهب الحنفي) characteristics:
+
+  1. GOLD IS RIBA'I COMMODITY: Cannot be sold for delayed delivery (muajjal)
+     without strict conditions. Spot or agreed-upon forward only.
+
+  2. LEVERAGE = GHARAR: All forms of leverage involve uncertainty that
+     violates Hanafi principles.
+
+  3. FORWARD CONTRACTS: Permitted if price and date are fixed before execution,
+     and no speculation window exists.
+
+  4. DERIVATIVES: Futures, options, CFDs = prohibited. They involve excessive
+     uncertainty (gharar) and speculation (maysir).
+
+  5. SWAP CHARGES: Strictly prohibited. If broker charges swap, position must
+     close immediately.
+
+  6. SETTLEMENT: Taqābuḍ required = actual transfer of possession.
+
+  Reference: Al-Marghinani's "Al-Hidayah" (الهداية), classical Hanafi texts.
+
+# Instructions for changing schools
+instructions_for_other_schools: |
+  To use a different jurisprudential school:
+
+  1. Consult your chosen school's Sharia scholar
+  2. Request a written fatwa (فتوى) for gold trading rules
+  3. Update this config file with the scholar's requirements
+  4. Set school name in config.yaml to match
+  5. Update the rules under each section above
+  6. Test thoroughly in backtesting before live trading
+
+  Common schools:
+  - Maliki (المالكية): Generally stricter on derivatives
+  - Shafi'i (الشافعية): Similar to Hanafi; may allow limited forward contracts
+  - Hanbali (الحنبلية): Most conservative; closest to Hanafi on leverage
+  - Twelver (الإمامية): Similar principles; check Khomeini's "Risalah"
