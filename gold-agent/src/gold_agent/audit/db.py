@@ -725,64 +725,131 @@ class PostgreSQLAuditLog(AuditLog):
         pass
 
     async def log_decision(self, decision: Decision) -> bool:
-        # TODO: Implement
-        pass
+        """Log a trading decision (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        Returns False for now (PostgreSQL not yet configured).
+        """
+        logger.info(f"PostgreSQL log_decision stub: would log decision {decision.id} to PostgreSQL")
+        return False  # Phase 3+ implementation
 
     async def log_sharia_decision(self, decision: Decision) -> bool:
-        # TODO: Implement
-        pass
+        """Log a Sharia compliance decision (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        """
+        logger.info(f"PostgreSQL log_sharia_decision stub: would log Sharia decision to PostgreSQL")
+        return False  # Phase 3+ implementation
 
     async def log_error(self, error_msg: str) -> bool:
-        # TODO: Implement
-        pass
+        """Log an error (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        """
+        logger.info(f"PostgreSQL log_error stub: would log error to PostgreSQL: {error_msg}")
+        return False  # Phase 3+ implementation
 
     async def count_errors_last_hour(self) -> int:
-        # TODO: Implement
-        pass
+        """Count errors in last hour (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        Returns 0 for now.
+        """
+        logger.info("PostgreSQL count_errors_last_hour stub: returns 0 (PostgreSQL not yet configured)")
+        return 0  # Phase 3+ implementation
 
     async def count_alerts_today(self) -> int:
-        # TODO: Implement
-        pass
+        """Count alerts today (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        Returns 0 for now.
+        """
+        logger.info("PostgreSQL count_alerts_today stub: returns 0 (PostgreSQL not yet configured)")
+        return 0  # Phase 3+ implementation
 
     async def log_order(self, order) -> bool:
-        # TODO: Implement
-        pass
+        """Log an order (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        """
+        logger.info(f"PostgreSQL log_order stub: would log order {order.id if hasattr(order, 'id') else order}")
+        return False  # Phase 3+ implementation
 
     async def log_trade(self, trade) -> bool:
-        # TODO: Implement
-        pass
+        """Log a trade (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        """
+        logger.info(f"PostgreSQL log_trade stub: would log trade to PostgreSQL")
+        return False  # Phase 3+ implementation
 
     async def update_trade(self, trade_id: str, updates: dict) -> bool:
-        # TODO: Implement
-        pass
+        """Update a trade record (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        """
+        logger.info(f"PostgreSQL update_trade stub: would update trade {trade_id} with {updates}")
+        return False  # Phase 3+ implementation
 
     async def log_position(self, position) -> bool:
-        # TODO: Implement
-        pass
+        """Log a position (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        """
+        logger.info(f"PostgreSQL log_position stub: would log position to PostgreSQL")
+        return False  # Phase 3+ implementation
 
     async def log_portfolio_metrics(self, metrics) -> bool:
-        # TODO: Implement
-        pass
+        """Log portfolio metrics (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        """
+        logger.info(f"PostgreSQL log_portfolio_metrics stub: would log metrics to PostgreSQL")
+        return False  # Phase 3+ implementation
 
     async def log_trade_outcome(self, trade_id: str, decision_id: int, outcome: dict) -> bool:
-        # TODO: Implement
-        pass
+        """Log trade outcome and P&L (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        """
+        logger.info(f"PostgreSQL log_trade_outcome stub: would log outcome for trade {trade_id}")
+        return False  # Phase 3+ implementation
 
     async def get_trade(self, trade_id: str) -> Optional[dict]:
-        # TODO: Implement
-        pass
+        """Retrieve a trade by ID (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        Returns None for now.
+        """
+        logger.info(f"PostgreSQL get_trade stub: would retrieve trade {trade_id} from PostgreSQL")
+        return None  # Phase 3+ implementation
 
     async def get_open_trades(self, symbol: Optional[str] = None) -> List[dict]:
-        # TODO: Implement
-        pass
+        """Get all open trades (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        Returns empty list for now.
+        """
+        logger.info(f"PostgreSQL get_open_trades stub: would query PostgreSQL for open trades")
+        return []  # Phase 3+ implementation
 
     async def get_closed_trades_today(self) -> List[dict]:
-        # TODO: Implement
-        pass
+        """Get closed trades today (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        Returns empty list for now.
+        """
+        logger.info("PostgreSQL get_closed_trades_today stub: would query PostgreSQL")
+        return []  # Phase 3+ implementation
 
     async def get_portfolio_performance(self) -> dict:
-        # TODO: Implement
-        pass
+        """Get portfolio performance metrics (PostgreSQL implementation).
+
+        NOTE: Phase 1 uses SQLite. PostgreSQL is Phase 3+ enhancement.
+        Returns empty dict for now.
+        """
+        logger.info("PostgreSQL get_portfolio_performance stub: would query PostgreSQL")
+        return {}  # Phase 3+ implementation
 
 
 def get_audit_log(config) -> AuditLog:
