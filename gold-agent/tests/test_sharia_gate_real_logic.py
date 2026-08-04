@@ -37,7 +37,7 @@ class MockMT5Adapter:
         return self.symbol_is_spot
 
     def is_instant_settlement(self, symbol: str) -> bool:
-        return self.symbol_settlement in ["INSTANT", "T+0", "T+1", "T+2"]
+        return self.symbol_settlement in ["INSTANT", "T+0"]  # T+0 only (Taqabud requires immediate)
 
     def is_no_margin_loan(self) -> bool:
         return not self.account_has_margin_loans
@@ -182,20 +182,37 @@ class TestShariGateRealLogic:
         assert verdict.verdict == GateVerdictType.BLOCKED
         assert len(gate.violations) == 1
 
-    def test_t_plus_2_settlement_passes_taqabud(self, config, market_data):
-        """T+2 settlement is compliant with Taqabud (maximum allowed)."""
+    def test_t_plus_2_settlement_fails_taqabud(self, config, market_data):
+        """T+2 settlement is NOT compliant with Taqabud (requires T+0 immediate)."""
         mock_adapter = MockMT5Adapter()
         mock_adapter.symbol_swap_free = True
         mock_adapter.symbol_is_spot = True
-        mock_adapter.symbol_settlement = "T+2"  # Exactly at limit, should pass
+        mock_adapter.symbol_settlement = "T+2"  # Deferred, must FAIL
         mock_adapter.account_has_margin_loans = False
 
         gate = ShariGate(config, broker_adapter=mock_adapter)
         verdict = gate.check(ActionType.BUY, market_data)
 
-        assert verdict.passed is True
-        assert verdict.verdict == GateVerdictType.PASSED
-        assert len(gate.violations) == 0
+        assert verdict.passed is False
+        assert verdict.verdict == GateVerdictType.BLOCKED
+        assert len(gate.violations) == 1
+        assert "Settlement" in gate.violations[0]
+
+    def test_t_plus_1_settlement_fails_taqabud(self, config, market_data):
+        """T+1 settlement is NOT compliant with Taqabud (requires T+0 immediate)."""
+        mock_adapter = MockMT5Adapter()
+        mock_adapter.symbol_swap_free = True
+        mock_adapter.symbol_is_spot = True
+        mock_adapter.symbol_settlement = "T+1"  # Deferred, must FAIL
+        mock_adapter.account_has_margin_loans = False
+
+        gate = ShariGate(config, broker_adapter=mock_adapter)
+        verdict = gate.check(ActionType.BUY, market_data)
+
+        assert verdict.passed is False
+        assert verdict.verdict == GateVerdictType.BLOCKED
+        assert len(gate.violations) == 1
+        assert "Settlement" in gate.violations[0]
 
     def test_t_plus_0_settlement_passes_taqabud(self, config, market_data):
         """T+0 settlement (instant) is compliant with Taqabud."""

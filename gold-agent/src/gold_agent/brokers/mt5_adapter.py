@@ -321,18 +321,21 @@ class MT5BrokerAdapter:
         """
         Check if a symbol has instant settlement (complies with Taqabud).
 
+        Taqabud requires immediate possession (قبض) — T/0 only.
+        Multi-day settlement (T+1, T+2) violates Sharia compliance for gold.
+
         Args:
             symbol: Symbol name
 
         Returns:
-            True if settlement is INSTANT or T+0/T+1/T+2
-            False if deferred or unknown
+            True if settlement is INSTANT or T+0 (same-day)
+            False if T+1, T+2, or any deferred settlement
         """
         info = self.get_symbol_info(symbol)
         if info is None:
             return False
 
-        compliant_settlements = ["INSTANT", "T+0", "T+1", "T+2"]
+        compliant_settlements = ["INSTANT", "T+0"]  # T+0 only, no T+1/T+2
         is_compliant = info.settlement in compliant_settlements
         logger.debug(
             f"Symbol {symbol} settlement: {info.settlement}, "

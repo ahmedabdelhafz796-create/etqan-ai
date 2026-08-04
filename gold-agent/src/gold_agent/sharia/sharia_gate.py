@@ -161,20 +161,21 @@ class ShariGate:
         """
         Verify Taqabud (spot possession/settlement).
 
-        §8: Immediate transfer required; spot or T+2 maximum.
-        Islamic financing requires actual possession (قبض) or immediate electronic custody.
+        §8: Immediate transfer required; T+0 (same-day) only.
+        Taqabud requires actual possession (قبض). Multi-day settlement violates Islamic law.
+        Multi-day delays introduce gharar (uncertainty) and riba' mechanics.
 
         Returns:
-            True if settlement is INSTANT or T+0/T+1/T+2
-            False if deferred settlement or unknown
+            True if settlement is INSTANT or T+0 (same-day settlement)
+            False if T+1, T+2, or any deferred settlement
         """
         is_compliant = self.broker.is_instant_settlement(symbol)
 
         if is_compliant:
-            logger.info(f"✓ Sharia Check 3 PASSED: {symbol} has compliant settlement (T+0/T+1/T+2)")
+            logger.info(f"✓ Sharia Check 3 PASSED: {symbol} has compliant settlement (T+0, immediate)")
         else:
             logger.warning(
-                f"✗ Sharia Check 3 FAILED: {symbol} settlement is deferred or unknown"
+                f"✗ Sharia Check 3 FAILED: {symbol} settlement is deferred (not T+0 instant)"
             )
 
         return is_compliant
