@@ -67,12 +67,15 @@ class CapitalPreservationEngine:
         Van Tharp fixed-fractional position sizing formula.
 
         Formula: Position Size = (Account Risk $) / (Entry Price - Stop Loss Price)
-        where Account Risk $ = Current Equity × Risk Per Trade %
+        where Account Risk $ = Initial Capital × Risk Per Trade %
+
+        CRITICAL: Uses INITIAL capital (not current equity) to enforce Fixed Baseline Principle.
+        This prevents house-money effect where position sizes grow after wins or shrink after losses.
 
         Args:
             entry_price: Entry level (e.g., 2050.0 for gold)
             stop_loss_price: Stop loss level (e.g., 2040.0)
-            risk_per_trade_pct: Risk per trade as % of equity (default: 2%)
+            risk_per_trade_pct: Risk per trade as % of initial capital (default: 1%, max: 2%)
 
         Returns:
             (position_size, {inputs_dict, formula_result, kelly_diagnostic})
@@ -81,7 +84,7 @@ class CapitalPreservationEngine:
             ValueError: If inputs violate capital rules
         """
         if risk_per_trade_pct is None:
-            risk_per_trade_pct = self.config.capital.max_position_size_percent
+            risk_per_trade_pct = 1.0
 
         # Immutable rule: Risk per trade cannot exceed 2%
         if risk_per_trade_pct > 2.0:
@@ -92,8 +95,8 @@ class CapitalPreservationEngine:
         if entry_price <= stop_loss_price:
             raise ValueError(f"Entry {entry_price} must be above stop loss {stop_loss_price}")
 
-        # Calculate risk amount in dollars
-        account_risk_dollars = self.current_equity * (risk_per_trade_pct / 100.0)
+        # Calculate risk amount in dollars using INITIAL capital (not current equity)
+        account_risk_dollars = self.initial_capital * (risk_per_trade_pct / 100.0)
 
         # Calculate points risked per unit
         price_diff = abs(entry_price - stop_loss_price)

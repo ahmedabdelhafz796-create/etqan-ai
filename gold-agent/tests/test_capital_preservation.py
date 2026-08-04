@@ -57,20 +57,36 @@ def test_van_tharp_position_sizing_basic(engine):
 
 
 def test_van_tharp_with_different_equity(engine):
-    """Test position sizing when equity changes."""
-    # After losing $1000, equity = $9000
+    """Test position sizing remains constant despite equity changes (Fixed Baseline Principle).
+
+    CRITICAL: Position sizing uses INITIAL capital, not current equity.
+    This test verifies that even when equity changes, position size remains constant.
+    """
+    # First trade: initial equity = $10,000, 2% risk
+    size1, _ = engine.calculate_position_size(
+        entry_price=2050.0,
+        stop_loss_price=2040.0,
+        risk_per_trade_pct=2.0,
+    )
+    # Account Risk = $10,000 × 2% = $200
+    # Position Size = $200 / $10 = 20 units
+    assert size1 == 20.0
+
+    # Simulate losing $1000 (equity now $9000)
     engine.current_equity = 9000.0
 
-    position_size, audit = engine.calculate_position_size(
+    # Second trade: equity changed but position size should REMAIN CONSTANT
+    size2, _ = engine.calculate_position_size(
         entry_price=2050.0,
         stop_loss_price=2040.0,
         risk_per_trade_pct=2.0,
     )
 
-    # Account Risk = $9,000 × 2% = $180
-    # Position Size = $180 / $10 = 18 units
-    assert position_size == 18.0
-    assert audit["account_risk_dollars"] == 180.0
+    # Position size should still be 20 units (based on initial $10K, not current $9K)
+    assert size2 == 20.0, (
+        f"Position size should remain 20 units even after equity drop to $9K. "
+        f"Got {size2}. If this fails, sizing is using current_equity (BUG)."
+    )
 
 
 def test_van_tharp_caps_risk_at_2_percent(engine):
@@ -480,6 +496,134 @@ def test_mixed_win_loss_sequence(engine):
 
     expected_equity = initial + 200 - 100 + 200  # = initial + 300
     assert engine.current_equity == expected_equity
+
+
+# ============================================================================
+# REGRESSION TESTS (P0) — These MUST FAIL if bugs are reintroduced
+# ============================================================================
+
+def test_position_sizing_never_uses_current_equity():
+    """REGRESSION TEST: Position sizing must use initial_capital, never current_equity.
+
+    BUG IDENTIFIED: capital_preservation.py line 96 was using current_equity instead of
+    initial_capital. This violates Fixed Baseline Principle from MASTER_PLAN.
+
+    IMPACT: If bug reappears, position sizes grow after wins (house-money effect).
+    REQUIREMENT: Position size must remain CONSTANT across win/loss sequences.
+
+    This test MUST FAIL if someone changes line 96 back to current_equity.
+    """
+    config = MockConfig()
+    engine = CapitalPreservationEngine(config, initial_capital=10000.0)
+
+    # First trade: entry $2050, stop $2040 (10 point risk), 1% risk
+    # Position Size = (Initial Capital × Risk%) / (Entry - Stop Loss)
+    #               = ($10,000 × 1%) / ($2050 - $2040)
+    #               = $100 / $10 = 10 units
+    size1, audit1 = engine.calculate_position_size(
+        entry_price=2050.0,
+        stop_loss_price=2040.0,
+        risk_per_trade_pct=1.0
+    )
+    assert size1 == 10.0, f"First trade size should be 10 units, got {size1}"
+    assert audit1['account_risk_dollars'] == 100.0, "Risk should be $100 (1% of $10K)"
+
+    # Simulate +$400 profit (equity now $10,400)
+    engine.current_equity = 10400.0
+
+    # Second trade: SAME entry/stop/risk parameters, should produce SAME position size
+    # (even though equity increased, position size stays constant)
+    size2, audit2 = engine.calculate_position_size(
+        entry_price=2050.0,
+        stop_loss_price=2040.0,
+        risk_per_trade_pct=1.0
+    )
+    assert size2 == 10.0, (
+        f"Second trade size should STILL be 10 units (not {size2}). "
+        f"If size2 != 10, position sizing is using current_equity (BUG REAPPEARED)"
+    )
+    assert audit2['account_risk_dollars'] == 100.0, (
+        "Risk dollars must be identical to first trade, regardless of current_equity"
+    )
+
+    # Simulate -$200 loss (equity now $10,200)
+    engine.current_equity = 10200.0
+
+    # Third trade: SAME parameters again
+    # Position size should remain constant (based on initial $10K, not current $10.2K or $10.4K)
+    size3, audit3 = engine.calculate_position_size(
+        entry_price=2050.0,
+        stop_loss_price=2040.0,
+        risk_per_trade_pct=1.0
+    )
+    assert size3 == 10.0, (
+        f"Third trade size should STILL be 10 units (not {size3}). "
+        f"Position size must not shrink after losses."
+    )
+
+    # Verify all three audits show identical risk dollars (proof of Fixed Baseline)
+    assert (audit1['account_risk_dollars'] ==
+            audit2['account_risk_dollars'] ==
+            audit3['account_risk_dollars'] == 100.0)
+
+
+def test_default_risk_is_one_percent_not_two_percent():
+    """REGRESSION TEST: Default risk per trade must be 1% (not 2%, which is absolute ceiling).
+
+    BUG IDENTIFIED: capital_preservation.py line 84 was setting default to
+    max_position_size_percent (2%) instead of 1%.
+
+    REQUIREMENT: Default risk = 1%, ceiling = 2%, explicit requests honored within ceiling.
+
+    This test MUST FAIL if someone changes line 84 default back to 2% or to max_position_size_percent.
+    """
+    config = MockConfig()
+    engine = CapitalPreservationEngine(config, initial_capital=10000.0)
+
+    # Test 1: No explicit risk_per_trade_pct should use 1% default
+    size_default, audit_default = engine.calculate_position_size(
+        entry_price=2050.0,
+        stop_loss_price=2040.0,
+        risk_per_trade_pct=None  # Explicitly None to test default
+    )
+    assert audit_default['risk_per_trade_percent'] == 1.0, (
+        f"Default risk should be 1.0%, got {audit_default['risk_per_trade_percent']}%"
+    )
+    assert audit_default['account_risk_dollars'] == 100.0, (
+        f"With 1% default on $10K, risk should be $100, got ${audit_default['account_risk_dollars']}"
+    )
+    # Position size = $100 / $10 = 10 units
+    assert size_default == 10.0, f"Position size should be 10 units (not 100), got {size_default}"
+
+    # Test 2: Request >2% should cap to 2% with warning
+    size_capped, audit_capped = engine.calculate_position_size(
+        entry_price=2050.0,
+        stop_loss_price=2040.0,
+        risk_per_trade_pct=2.5
+    )
+    assert audit_capped['risk_per_trade_percent'] == 2.0, (
+        f"2.5% request should cap to 2.0%, got {audit_capped['risk_per_trade_percent']}%"
+    )
+    assert audit_capped['account_risk_dollars'] == 200.0, (
+        f"Capped 2% on $10K should give $200 risk, got ${audit_capped['account_risk_dollars']}"
+    )
+    # Position size = $200 / $10 = 20 units
+    assert size_capped == 20.0, f"Position size should be 20 units, got {size_capped}"
+
+    # Test 3: Explicit 1.5% should be honored (between default and ceiling)
+    size_explicit, audit_explicit = engine.calculate_position_size(
+        entry_price=2050.0,
+        stop_loss_price=2040.0,
+        risk_per_trade_pct=1.5
+    )
+    assert audit_explicit['risk_per_trade_percent'] == 1.5, (
+        f"Explicit 1.5% should be honored, got {audit_explicit['risk_per_trade_percent']}%"
+    )
+    assert audit_explicit['account_risk_dollars'] == 150.0, (
+        f"1.5% on $10K should give $150 risk, got ${audit_explicit['account_risk_dollars']}"
+    )
+    # Position size = $150 / $10 = 15 units
+    assert size_explicit == 15.0, f"Position size should be 15 units, got {size_explicit}"
 
 
 if __name__ == "__main__":
