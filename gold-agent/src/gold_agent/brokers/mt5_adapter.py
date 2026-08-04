@@ -127,12 +127,12 @@ class MT5BrokerAdapter:
 
     def _fetch_symbol_info_mock(self, symbol: str) -> SymbolInfo:
         """
-        Return mock symbol info for testing.
-        Mock data represents a COMPLIANT spot instrument (swap=0, spot contract).
+        Return mock symbol info for multi-asset testing.
+        Includes compliant and non-compliant examples across Gold, Forex, and Stocks.
         """
-        symbol_upper = symbol.upper()
+        symbol_upper = symbol.upper().replace("/", "")
 
-        # Gold (XAU/USD) - compliant spot contract
+        # ===== GOLD (COMMODITY) =====
         if "XAU" in symbol_upper or "GOLD" in symbol_upper:
             return SymbolInfo(
                 name="XAUUSD",
@@ -146,8 +146,9 @@ class MT5BrokerAdapter:
                 leverage=100.0,
             )
 
-        # EUR/USD - compliant but with swap charges (would fail Sharia)
-        if "EUR" in symbol_upper or "EURUSD" in symbol_upper:
+        # ===== FOREX PAIRS =====
+        # EUR/USD - has swap charges (Sharia-non-compliant due to Riba)
+        if "EURUSD" in symbol_upper:
             return SymbolInfo(
                 name="EURUSD",
                 contract_type="SPOT",
@@ -155,12 +156,83 @@ class MT5BrokerAdapter:
                 swap_short=0.01,
                 swap_mode="INTEREST",
                 trade_mode="BUY_SELL",
-                settlement="T+2",
+                settlement="INSTANT",  # Forex is T+2 settlement, but MT5 treats as instant
                 margin_hedged=2.0,
                 leverage=30.0,
             )
 
-        # Default: unknown symbol (no swap, spot, compliant)
+        # GBP/USD - swap-free option available (Sharia-compliant)
+        if "GBPUSD" in symbol_upper:
+            return SymbolInfo(
+                name="GBPUSD",
+                contract_type="SPOT",
+                swap_long=0.0,
+                swap_short=0.0,
+                swap_mode="DISABLED",
+                trade_mode="BUY_SELL",
+                settlement="INSTANT",
+                margin_hedged=2.0,
+                leverage=30.0,
+            )
+
+        # AUD/USD - swap-free (Sharia-compliant)
+        if "AUDUSD" in symbol_upper:
+            return SymbolInfo(
+                name="AUDUSD",
+                contract_type="SPOT",
+                swap_long=0.0,
+                swap_short=0.0,
+                swap_mode="DISABLED",
+                trade_mode="BUY_SELL",
+                settlement="INSTANT",
+                margin_hedged=2.0,
+                leverage=30.0,
+            )
+
+        # ===== STOCKS (EQUITIES) =====
+        # MSFT - spot stock (Sharia-compliant if screened)
+        if "MSFT" in symbol_upper or "MICROSOFT" in symbol_upper:
+            return SymbolInfo(
+                name="MSFT",
+                contract_type="SPOT",  # Real spot equity
+                swap_long=0.0,
+                swap_short=0.0,
+                swap_mode="DISABLED",
+                trade_mode="BUY_SELL",
+                settlement="INSTANT",
+                margin_hedged=2.0,
+                leverage=10.0,  # Stocks typically lower leverage
+            )
+
+        # AAPL - spot stock (Sharia-compliant if screened)
+        if "AAPL" in symbol_upper or "APPLE" in symbol_upper:
+            return SymbolInfo(
+                name="AAPL",
+                contract_type="SPOT",
+                swap_long=0.0,
+                swap_short=0.0,
+                swap_mode="DISABLED",
+                trade_mode="BUY_SELL",
+                settlement="INSTANT",
+                margin_hedged=2.0,
+                leverage=10.0,
+            )
+
+        # BAC (Bank of America) - non-Sharia (banking sector)
+        if "BAC" in symbol_upper or "BANKAMERICA" in symbol_upper:
+            return SymbolInfo(
+                name="BAC",
+                contract_type="CFD",  # Marked as CFD (non-Sharia due to sector + structure)
+                swap_long=0.01,
+                swap_short=0.01,
+                swap_mode="INTEREST",
+                trade_mode="BUY_SELL",
+                settlement="INSTANT",
+                margin_hedged=2.0,
+                leverage=10.0,
+            )
+
+        # Default: unknown symbol (compliant defaults)
         return SymbolInfo(
             name=symbol_upper,
             contract_type="SPOT",
