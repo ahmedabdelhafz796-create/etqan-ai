@@ -1,14 +1,18 @@
 """MT5 Broker Adapter — MetaTrader 5 integration."""
 
+import asyncio
+import logging
 from datetime import datetime
 from typing import List, Dict, Optional
 
 from gold_agent.core.models import Order, OrderStatus
 from gold_agent.execution.engine import BrokerAdapter, ExecutionResult
 
+logger = logging.getLogger(__name__)
+
 
 class MT5BrokerAdapter(BrokerAdapter):
-    """MetaTrader 5 broker adapter."""
+    """MetaTrader 5 broker adapter with connection recovery."""
 
     def __init__(self, config):
         self.config = config
@@ -17,29 +21,41 @@ class MT5BrokerAdapter(BrokerAdapter):
         self.login = config.execution.brokers.mt5.login
         self.password = config.execution.brokers.mt5.password
         self.server = config.execution.brokers.mt5.server
+        self.max_retries = 3
+        self.failed_connection_attempts = 0
 
     async def connect(self) -> bool:
-        """Connect to MT5."""
-        try:
-            import MetaTrader5 as mt5
+        """Connect to MT5 with retry logic (exponential backoff)."""
+        for attempt in range(self.max_retries):
+            try:
+                import MetaTrader5 as mt5
 
-            self.mt5 = mt5
+                self.mt5 = mt5
 
-            if not mt5.initialize(login=self.login, password=self.password, server=self.server):
-                print(f"MT5 initialization failed: {mt5.last_error()}")
+                if not mt5.initialize(login=self.login, password=self.password, server=self.server):
+                    logger.warning(f"MT5 initialization failed (attempt {attempt+1}): {mt5.last_error()}")
+                    if attempt < self.max_retries - 1:
+                        # Exponential backoff: 2^attempt seconds
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    return False
+
+                self.connected = True
+                self.failed_connection_attempts = 0
+                account_info = mt5.account_info()
+                if account_info:
+                    logger.info(f"✓ MT5 Connected: {account_info.name} (Balance: ${account_info.balance:,.2f})")
+                return True
+            except ImportError:
+                logger.error("MetaTrader5 library not installed: pip install MetaTrader5")
                 return False
+            except Exception as e:
+                logger.warning(f"MT5 connection failed (attempt {attempt+1}): {e}")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(2 ** attempt)
 
-            self.connected = True
-            account_info = mt5.account_info()
-            if account_info:
-                print(f"✓ MT5 Connected: {account_info.name} (Balance: ${account_info.balance:,.2f})")
-            return True
-        except ImportError:
-            print("MetaTrader5 library not installed: pip install MetaTrader5")
-            return False
-        except Exception as e:
-            print(f"MT5 connection failed: {e}")
-            return False
+        logger.error(f"MT5 connection failed after {self.max_retries} attempts")
+        return False
 
     async def disconnect(self) -> bool:
         """Disconnect from MT5."""
@@ -58,12 +74,28 @@ class MT5BrokerAdapter(BrokerAdapter):
             return False
         return self.mt5.terminal_info().connected
 
-    async def place_order(self, order: Order) -> ExecutionResult:
-        """Place an order via MT5."""
+    async def _ensure_connected(self) -> bool:
+        """Verify connection, reconnect if needed."""
         if not self.connected or not self.mt5:
+            logger.warning("MT5 connection missing, attempting to connect...")
+            return await self.connect()
+
+        try:
+            if not self.mt5.terminal_info().connected:
+                logger.warning("MT5 connection lost, attempting to reconnect...")
+                return await self.connect()
+        except Exception as e:
+            logger.warning(f"Connection check failed: {e}, attempting reconnect...")
+            return await self.connect()
+
+        return True
+
+    async def place_order(self, order: Order) -> ExecutionResult:
+        """Place an order via MT5 with connection verification."""
+        if not await self._ensure_connected():
             return ExecutionResult(
                 success=False,
-                message="Not connected to MT5"
+                message="Failed to establish MT5 connection"
             )
 
         try:
@@ -130,12 +162,12 @@ class MT5BrokerAdapter(BrokerAdapter):
             )
 
     async def cancel_order(self, order_id: str) -> ExecutionResult:
-        """Cancel an order."""
+        """Cancel an order with connection verification."""
         try:
-            if not self.connected or not self.mt5:
+            if not await self._ensure_connected():
                 return ExecutionResult(
                     success=False,
-                    message="Not connected to MT5"
+                    message="Failed to establish MT5 connection"
                 )
 
             import MetaTrader5 as mt5
@@ -165,9 +197,9 @@ class MT5BrokerAdapter(BrokerAdapter):
             )
 
     async def get_order_status(self, order_id: str) -> Optional[Order]:
-        """Get order status."""
+        """Get order status with connection verification."""
         try:
-            if not self.connected or not self.mt5:
+            if not await self._ensure_connected():
                 return None
 
             order = self.mt5.orders_get(ticket=int(order_id))
@@ -178,12 +210,12 @@ class MT5BrokerAdapter(BrokerAdapter):
             return None
 
     async def close_position(self, symbol: str, quantity: float) -> ExecutionResult:
-        """Close a position."""
+        """Close a position with connection verification."""
         try:
-            if not self.connected or not self.mt5:
+            if not await self._ensure_connected():
                 return ExecutionResult(
                     success=False,
-                    message="Not connected to MT5"
+                    message="Failed to establish MT5 connection"
                 )
 
             import MetaTrader5 as mt5
@@ -249,9 +281,9 @@ class MT5BrokerAdapter(BrokerAdapter):
             )
 
     async def get_account_balance(self) -> Optional[float]:
-        """Get account balance."""
+        """Get account balance with connection verification."""
         try:
-            if not self.connected or not self.mt5:
+            if not await self._ensure_connected():
                 return None
 
             account_info = self.mt5.account_info()
@@ -262,9 +294,9 @@ class MT5BrokerAdapter(BrokerAdapter):
             return None
 
     async def get_open_positions(self) -> List[Dict]:
-        """Get all open positions."""
+        """Get all open positions with connection verification."""
         try:
-            if not self.connected or not self.mt5:
+            if not await self._ensure_connected():
                 return []
 
             positions = self.mt5.positions_get()
